@@ -13,31 +13,31 @@ public partial class HarvesterCollectionSystem
     // Consume charge from earlier pulls before this pickup creates any more.
     // Cascade pulls can recharge the capacitor, but never trigger another cascade here.
     if (harvester.TryConsumeCascade())
-      CollectModuleArea(harvester, origin, 90f, 6, Color.Violet);
+      CollectModuleArea(harvester, origin, 90f, 6, Color.Violet, GemCollectionMethod.CascadeCapacitor);
     ulong count = harvester.DirectModulePickups;
     if (harvester.HasModule(ShipModule.PulseHarvester) && count % 6 == 0)
-      CollectModuleArea(harvester, origin, 60f, 3, Color.DodgerBlue);
+      CollectModuleArea(harvester, origin, 60f, 3, Color.DodgerBlue, GemCollectionMethod.PulseHarvester);
     if (harvester.HasModule(ShipModule.GunPod) && count % ModuleCatalog.GunPodInterval == 0)
       UntitledGemGameGameScreen.Instance?.FireShipShell(origin);
     if (harvester.HasModule(ShipModule.TwinTractor))
-      CollectModuleArea(harvester, origin, 30f, 1, Color.Cyan);
+      CollectModuleArea(harvester, origin, 30f, 1, Color.Cyan, GemCollectionMethod.TwinTractor);
     if (harvester.HasModule(ShipModule.StormCoil) && count % 8 == 0)
-      CollectStormChain(harvester, origin);
+      CollectStormChain(harvester, origin, GemCollectionMethod.StormCoil);
     if (harvester.HasModule(ShipModule.RiftSiphon) && count == 1)
-      CollectModuleArea(harvester, origin, 110f, 10, Color.MediumPurple);
+      CollectModuleArea(harvester, origin, 110f, 10, Color.MediumPurple, GemCollectionMethod.RiftSiphon);
     if (harvester.HasModule(ShipModule.AstralRelay) && count % 5 == 0)
     {
       ulong value = BaseStats.GetHarvesterDeliveryValue(harvester, harvester.CarryingGemBaseValue);
       UntitledGemGameGameScreen.DeliveredUncounted = PrestigeProgression.AddSaturating(
         UntitledGemGameGameScreen.DeliveredUncounted, value);
-      RecordCollection(GemCollectionMeter.SourceFor(harvester.Type), value);
+      RecordCollection(harvester, GemCollectionMethod.AstralRelay, value);
       harvester.RelayOrigin = origin;
       harvester.RelayFlashRemaining = ModuleCatalog.PulseDuration;
       harvester.ShowModulePulse(origin, 80f, Color.Gold);
     }
   }
 
-  private bool TryCollectModuleGem(Harvester harvester, int index, out Vector2 position)
+  private bool TryCollectModuleGem(Harvester harvester, int index, GemCollectionMethod method, out Vector2 position)
   {
     position = default;
     ref var candidate = ref flatSpatialHash.Gems[index];
@@ -47,7 +47,7 @@ public partial class HarvesterCollectionSystem
       || !flatSpatialHash.TryClaim(index)) return false;
     position = gem.BoundingCircle.Center;
     // Bonus pulls cannot recursively trigger more pulls or charge direct-pickup modules.
-    CollectGem(gem, harvester, allowChainCollection: false);
+    CollectGemCore(gem, harvester, allowChainCollection: false, method);
     if (!gem.PickedUp && !gem.WasClicked && !gem.ShouldDestroy)
     {
       flatSpatialHash.ReleaseClaim(index);
@@ -56,18 +56,20 @@ public partial class HarvesterCollectionSystem
     return true;
   }
 
-  private void CollectModuleArea(Harvester harvester, Vector2 origin, float radius, int limit, Color color)
+  private void CollectModuleArea(Harvester harvester, Vector2 origin, float radius, int limit, Color color,
+    GemCollectionMethod method)
   {
     harvester.ShowModulePulse(origin, radius, color);
     int collected = 0;
     foreach (int index in flatSpatialHash.QueryCollection(origin.X, origin.Y, radius))
     {
       if (collected >= limit) break;
-      if (TryCollectModuleGem(harvester, index, out _)) ++collected;
+      if (TryCollectModuleGem(harvester, index, method, out _)) ++collected;
     }
   }
 
-  private void CollectStormChain(Harvester harvester, Vector2 origin, int limit = 6, float radius = 50f)
+  private void CollectStormChain(Harvester harvester, Vector2 origin, GemCollectionMethod method,
+    int limit = 6, float radius = 50f)
   {
     if (harvester.StormArcPoints == null || harvester.StormArcPoints.Length < limit + 1)
       harvester.StormArcPoints = new Vector2[limit + 1];
@@ -78,7 +80,7 @@ public partial class HarvesterCollectionSystem
       bool found = false;
       foreach (int index in flatSpatialHash.QueryCollection(origin.X, origin.Y, radius))
       {
-        if (!TryCollectModuleGem(harvester, index, out var target)) continue;
+        if (!TryCollectModuleGem(harvester, index, method, out var target)) continue;
         harvester.StormArcPoints[harvester.StormArcCount++] = target;
         origin = target;
         found = true;
@@ -100,7 +102,8 @@ public partial class HarvesterCollectionSystem
     // Bonus pickups use normal claims and cargo, without triggering further chains.
     int remainingCargo = BaseStats.GetHarvesterCapacity(drone) - (int)drone.CarryingGemCount;
     int limit = System.Math.Min(BaseStats.DroneLightningGemLimit, remainingCargo);
-    CollectStormChain(drone, drone.BoundingCircle.Center, limit, BaseStats.DroneLightningJumpRadius);
+    CollectStormChain(drone, drone.BoundingCircle.Center, GemCollectionMethod.StormDrones,
+      limit, BaseStats.DroneLightningJumpRadius);
     drone.DroneLightningCooldownRemaining = BaseStats.DroneLightningIntervalSeconds;
   }
 
@@ -112,12 +115,13 @@ public partial class HarvesterCollectionSystem
     {
       harvester.BuoyRemaining = System.Math.Max(0f, harvester.BuoyRemaining - dt);
       if (harvester.BuoyRemaining == 0f)
-        CollectModuleArea(harvester, harvester.BuoyPosition, 100f, 8, Color.MediumPurple);
+        CollectModuleArea(harvester, harvester.BuoyPosition, 100f, 8, Color.MediumPurple,
+          GemCollectionMethod.GravityBuoy);
     }
     if (harvester.ArcTravelCharge >= 90f)
     {
       harvester.ArcTravelCharge %= 90f;
-      CollectStormChain(harvester, harvester.BoundingCircle.Center, 4, 70f);
+      CollectStormChain(harvester, harvester.BoundingCircle.Center, GemCollectionMethod.ArcEmitter, 4, 70f);
     }
     if (harvester.BuoyTravelCharge >= 180f && harvester.BuoyRemaining == 0f)
     {
@@ -129,7 +133,7 @@ public partial class HarvesterCollectionSystem
     {
       harvester.RecallTravelCharge %= 120f;
       var endpoint = harvester.CollectionEndpoint.Value;
-      CollectModuleArea(harvester, endpoint, 100f, 3, Color.Cyan);
+      CollectModuleArea(harvester, endpoint, 100f, 3, Color.Cyan, GemCollectionMethod.RecallTether);
       harvester.TractorOrigin = endpoint;
       harvester.TractorTarget = harvester.BoundingCircle.Center;
       harvester.TractorFlashRemaining = 0.25f;
@@ -139,8 +143,8 @@ public partial class HarvesterCollectionSystem
   private void ApplyFullCargoModules(Harvester harvester, Vector2 origin)
   {
     if (harvester.TryBeginReactorBloom())
-      CollectModuleArea(harvester, origin, 50f, 6, Color.LimeGreen);
+      CollectModuleArea(harvester, origin, 50f, 6, Color.LimeGreen, GemCollectionMethod.ReactorBloom);
     if (harvester.TryBeginEventHorizon())
-      CollectModuleArea(harvester, origin, 200f, 48, Color.MediumPurple);
+      CollectModuleArea(harvester, origin, 200f, 48, Color.MediumPurple, GemCollectionMethod.EventHorizon);
   }
 }

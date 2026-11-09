@@ -140,11 +140,11 @@ public static class DebugProgressionPresets
   // Unlisted talents come last, in layout order.
   private static readonly string[] TalentPriority =
   [
-    "DEY1", "TR1", "CAT1", "TT1", "SLP1", "PRL1",
+    "DEY1", "TR1", "TT1", "SLP1", "PRL1", "BNW1",
     "HSK1", "BR1", "LR1", "SYF1", "GVS1", "MCSN1",
     "CRM1", "SCR1", "MD1", "EP1", "KNB1", "KNH1",
     "IFF1", "AE1", "DG1", "FSD1", "MBR1", "RCH1", "KD1",
-    "EXE1", "CHR1", "MRS1", "SR1", "CHT1",
+    "EXE1", "CAT1", "CHR1", "MRS1", "SR1", "CHT1",
     "OUR1", "SGR1", "RCO1", "OVC1",
   ];
 

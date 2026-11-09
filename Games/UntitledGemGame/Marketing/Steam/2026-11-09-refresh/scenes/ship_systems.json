@@ -1,0 +1,111 @@
+{
+  "output": "../takes/ship_systems_v1.mp4",
+  "preset": "Abilities: starter",
+  "width": 3840,
+  "height": 2160,
+  "fps": 60,
+  "warmup": 6,
+  "duration": 8,
+  "zoom": 1,
+  "hud": true,
+  "auto_fractures": false,
+  "stats": {
+    "AutoRefuel": true,
+    "FleetMaxFuel": 1000,
+    "AllHarvesterMaxFuel": 1000,
+    "AllHarvesterFuelEfficiency": 1000,
+    "MaxGemCount": 8000
+  },
+  "save": {
+    "gems": 500000,
+    "ability_points": 14,
+    "abilities": {
+      "*": 0,
+      "GS1": 1
+    },
+    "equip": [
+      "genesis"
+    ]
+  },
+  "actions": [
+    {
+      "at": -1,
+      "do": "panel",
+      "id": "abilities",
+      "value": 2
+    },
+    {
+      "at": 0.25,
+      "do": "pointer",
+      "ui": "buy_cell",
+      "dur": 0.45
+    },
+    {
+      "at": 0.8,
+      "do": "click",
+      "ui": "buy_cell"
+    },
+    {
+      "at": 1.25,
+      "do": "pointer",
+      "ui": "node:GSNG1",
+      "dur": 0.5
+    },
+    {
+      "at": 1.85,
+      "do": "upgrade",
+      "id": "GSNG1"
+    },
+    {
+      "at": 2.15,
+      "do": "upgrade",
+      "id": "GSNG1"
+    },
+    {
+      "at": 2.45,
+      "do": "upgrade",
+      "id": "GSNG1"
+    },
+    {
+      "at": 2.85,
+      "do": "pointer",
+      "ui": "node:GSSpiral1",
+      "dur": 0.45
+    },
+    {
+      "at": 3.4,
+      "do": "upgrade",
+      "id": "GSSpiral1"
+    },
+    {
+      "at": 3.85,
+      "do": "pointer",
+      "ui": "node:GSRV1",
+      "dur": 0.5
+    },
+    {
+      "at": 4.45,
+      "do": "upgrade",
+      "id": "GSRV1"
+    },
+    {
+      "at": 4.75,
+      "do": "upgrade",
+      "id": "GSRV1"
+    },
+    {
+      "at": 5.15,
+      "do": "pointer",
+      "ui": "node:GSMidas1",
+      "dur": 0.45
+    },
+    {
+      "at": 5.7,
+      "do": "upgrade",
+      "id": "GSMidas1"
+    }
+  ],
+  "encoder": "x264",
+  "quality": 14,
+  "encoder_preset": "veryfast"
+}

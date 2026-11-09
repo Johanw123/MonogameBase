@@ -151,7 +151,7 @@ internal static class MothershipProtocolChecks
       "The carrier delivers the whole hold at once");
     Check(carrier.IsCarrier && carrier.DepartingHomeBase, "A carrier leaves home like any other ship");
     carrier.CarryingGemCount = uint.MaxValue;
-    carrier.AddToHold(5, 0, 0);
+    carrier.AddToHold(5, 0);
     Check(carrier.CarryingGemCount == uint.MaxValue, "A hold saturates rather than wrapping");
   }
 

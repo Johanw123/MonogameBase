@@ -133,6 +133,16 @@ public static class PrestigeTalentEffects
   public const float ChaosSeconds = 10f;
   public const float ChaosLaunchInterval = 0.2f;
   public const int ChaosMaxCharge = 5000;
+  // A borrowed Railgun fires whole rounds, each with its shot sound, flash and impact,
+  // so it fires them less often; the cap grows with the interval so it carries the same
+  // damage per second.
+  public const float ChaosRailLaunchInterval = 1f;
+
+  public static float ChaosLaunchIntervalOf(MainShipWeapon borrowed)
+    => borrowed == MainShipWeapon.Railgun ? ChaosRailLaunchInterval : ChaosLaunchInterval;
+
+  public static int ChaosMaxChargeOf(MainShipWeapon borrowed)
+    => (int)Math.Round(ChaosMaxCharge * ChaosLaunchIntervalOf(borrowed) / ChaosLaunchInterval);
   // Ouroboros: every prestige point ever earned raises weapon damage.
   public const float OuroborosPerPoint = 0.02f;
   public const ulong OuroborosMaxPoints = 100_000;

@@ -17,6 +17,9 @@ public static class TractorBeltVisual
   private const float MouthRadius = 6f;
   // Arc quads are this many radians wide; the shader keeps the curve exact inside them.
   private const float ArcQuadStep = 0.12f;
+  // How dark the backing under the intake's marks is (TractorBeltRenderer.Shade).
+  private const float MouthShade = 0.45f;
+  private const float RingShade = 0.8f;
 
   // A shut-off belt dims a little while it reels in (TractorBelt.Retract).
   private static float Alpha(TractorBelt.Line line) => line.Expired ? 0.7f : 1f;
@@ -79,14 +82,22 @@ public static class TractorBeltVisual
     var lifeColor = (line.Warning ? Warning : Bright).ToVector3();
     // A permanent belt shows the run time full.
     float life = line.LifeFraction;
+    // Additive marks can only brighten, so over a bright gem field they need a dark backing:
+    // a small soft disc under the mouth.
+    renderer.Shade(intake, 0f, mouth + lineHalf, 3f * pixel, MouthShade * alpha);
     renderer.Square(intake, mouth * 2.6f + 2f * pixel, new Vector4(intake, mouth, life),
       new Vector4(2, dot, lineHalf, glow), new Vector4(alpha, lifeColor.X, lifeColor.Y, lifeColor.Z), rail);
     // The catch area only shows while the intake is being placed or the pointer is over the
-    // belt (Line.Highlight).
+    // belt (Line.Highlight). A dark band under it cuts a clean circle through the gems for
+    // the dashes to sit in.
     float ring = line.Highlight * alpha;
     if (ring > 0.01f)
+    {
+      float ringHalf = Math.Max(0.9f, 1.2f * pixel);
+      renderer.Shade(intake, intakeRadius, ringHalf + 2f * pixel, 4f * pixel, RingShade * ring);
       renderer.Square(intake, intakeRadius + 3f * pixel, new Vector4(intake, intakeRadius, line.Travel * 0.004f),
-        new Vector4(3, 0, Math.Max(0.4f, 0.5f * pixel), 0), new Vector4(ring, 0, 0, 0), rail);
+        new Vector4(3, 0, ringHalf, 0), new Vector4(ring, 0, 0, 0), Color.Lerp(rail, Bright, 0.5f));
+    }
   }
 
   public static void DrawPods(ShapeBatch batch, TractorBelt.Line line, float pixel, float clock)

@@ -38,24 +38,34 @@ public readonly record struct TractorBeltWidths(float Pixel, float RailOffset, f
 }
 
 // Batches TractorBelt.fx quads: belt pieces that tile at shared cross-sections, and the
-// intake's marks. A few dozen quads a frame, drawn in one call.
+// intake's marks. Shades go down first, alpha-blended, to darken the field under the marks;
+// everything else is drawn additively over them. A few dozen quads a frame, in two calls.
 public sealed class TractorBeltRenderer
 {
+  private const float ShadeKind = 4f;
+
+  private sealed class QuadList
+  {
+    public VertexTractorBelt[] Vertices = new VertexTractorBelt[128 * 4];
+    public int Count;
+  }
+
   private readonly GraphicsDevice device;
   private readonly Effect effect;
-  private VertexTractorBelt[] vertices = new VertexTractorBelt[128 * 4];
+  private readonly QuadList shades = new();
+  private readonly QuadList glows = new();
   private short[] indices = Array.Empty<short>();
-  private int quads;
 
   public TractorBeltRenderer(GraphicsDevice device, Effect effect)
   {
     this.device = device;
     this.effect = effect;
-    BuildIndices(vertices.Length / 4);
+    BuildIndices(glows.Vertices.Length / 4);
   }
 
   private void BuildIndices(int count)
   {
+    if (indices.Length >= count * 6) return;
     indices = new short[count * 6];
     for (int i = 0, j = 0; i < indices.Length; i += 6, j += 4)
     {
@@ -70,7 +80,7 @@ public sealed class TractorBeltRenderer
 
   public void Begin(Matrix viewProjection, in TractorBeltWidths widths)
   {
-    quads = 0;
+    shades.Count = glows.Count = 0;
     var parameters = effect.Parameters;
     parameters["MatrixTransform"]?.SetValue(viewProjection);
     parameters["PixelSize"]?.SetValue(widths.Pixel);
@@ -86,32 +96,55 @@ public sealed class TractorBeltRenderer
   // Corners in strip order: start-left, end-left, start-right, end-right.
   public void Quad(Vector2 startLeft, Vector2 endLeft, Vector2 startRight, Vector2 endRight,
     Vector4 shape, Vector4 shape2, Vector4 style, Color tint)
+    => Add(glows, startLeft, endLeft, startRight, endRight, shape, shape2, style, tint);
+
+  public void Square(Vector2 center, float halfSize, Vector4 shape, Vector4 shape2, Vector4 style, Color tint)
+    => Add(glows, center + new Vector2(-halfSize, -halfSize), center + new Vector2(halfSize, -halfSize),
+      center + new Vector2(-halfSize, halfSize), center + new Vector2(halfSize, halfSize), shape, shape2, style, tint);
+
+  // Darkens a band around a circle (a disc when radius is 0): solid out to halfWidth from it,
+  // fading over soft beyond that. strength is the darkness at the band's core, 0 to 1.
+  public void Shade(Vector2 center, float radius, float halfWidth, float soft, float strength)
   {
-    if ((quads + 1) * 4 > vertices.Length)
+    float halfSize = radius + halfWidth + soft + 1f;
+    Add(shades, center + new Vector2(-halfSize, -halfSize), center + new Vector2(halfSize, -halfSize),
+      center + new Vector2(-halfSize, halfSize), center + new Vector2(halfSize, halfSize),
+      new Vector4(center, radius, 0), new Vector4(ShadeKind, halfWidth, soft, 0),
+      new Vector4(Math.Clamp(strength, 0f, 1f), 0, 0, 0), Color.Black);
+  }
+
+  private void Add(QuadList list, Vector2 startLeft, Vector2 endLeft, Vector2 startRight, Vector2 endRight,
+    Vector4 shape, Vector4 shape2, Vector4 style, Color tint)
+  {
+    if ((list.Count + 1) * 4 > list.Vertices.Length)
     {
-      Array.Resize(ref vertices, vertices.Length * 2);
-      BuildIndices(vertices.Length / 4);
+      Array.Resize(ref list.Vertices, list.Vertices.Length * 2);
+      BuildIndices(list.Vertices.Length / 4);
     }
-    int v = quads * 4;
+    int v = list.Count * 4;
+    var vertices = list.Vertices;
     vertices[v] = new VertexTractorBelt { Position = new Vector3(startLeft, 0), Shape = shape, Shape2 = shape2, Style = style, Tint = tint };
     vertices[v + 1] = new VertexTractorBelt { Position = new Vector3(endLeft, 0), Shape = shape, Shape2 = shape2, Style = style, Tint = tint };
     vertices[v + 2] = new VertexTractorBelt { Position = new Vector3(startRight, 0), Shape = shape, Shape2 = shape2, Style = style, Tint = tint };
     vertices[v + 3] = new VertexTractorBelt { Position = new Vector3(endRight, 0), Shape = shape, Shape2 = shape2, Style = style, Tint = tint };
-    quads++;
+    list.Count++;
   }
-
-  public void Square(Vector2 center, float halfSize, Vector4 shape, Vector4 shape2, Vector4 style, Color tint)
-    => Quad(center + new Vector2(-halfSize, -halfSize), center + new Vector2(halfSize, -halfSize),
-      center + new Vector2(-halfSize, halfSize), center + new Vector2(halfSize, halfSize), shape, shape2, style, tint);
 
   public void End()
   {
-    if (quads == 0) return;
-    device.BlendState = BlendState.Additive;
+    if (shades.Count + glows.Count == 0) return;
     device.DepthStencilState = DepthStencilState.None;
     device.RasterizerState = RasterizerState.CullNone;
+    Draw(shades, BlendState.AlphaBlend);
+    Draw(glows, BlendState.Additive);
+  }
+
+  private void Draw(QuadList list, BlendState blend)
+  {
+    if (list.Count == 0) return;
+    device.BlendState = blend;
     effect.CurrentTechnique.Passes[0].Apply();
-    device.DrawUserIndexedPrimitives(PrimitiveType.TriangleList, vertices, 0, quads * 4, indices, 0, quads * 2);
-    quads = 0;
+    device.DrawUserIndexedPrimitives(PrimitiveType.TriangleList, list.Vertices, 0, list.Count * 4, indices, 0, list.Count * 2);
+    list.Count = 0;
   }
 }

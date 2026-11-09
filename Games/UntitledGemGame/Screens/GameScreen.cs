@@ -351,7 +351,7 @@ namespace UntitledGemGame.Screens
           save.PrestigeEcho, save.BestPrestigeProgress);
         m_gameState.RestoreCoreShards(save.CoreShards, save.CoreFractures, save.ShellDamage);
         m_gameState.Damage.RestoreRunTotals(save.DamageThisRun);
-        m_gameState.Collection.RestoreRunTotals(save.CollectionThisRun);
+        m_gameState.Collection.RestoreRunTotals(save.CollectionThisRun, save.CollectionMethodsThisRun);
         ManualAbilities.UpdateUnlocks(m_gameState.RedGemsEarnedThisRun);
         m_createdInitialGems = save.CreatedInitialGems;
         gemsPendingRestore = Math.Clamp(save.ActiveGemCount ?? 0, 0,
@@ -481,6 +481,7 @@ namespace UntitledGemGame.Screens
         ShellDamage = m_gameState.ShellDamage,
         DamageThisRun = m_gameState.Damage.RunTotals(),
         CollectionThisRun = m_gameState.Collection.RunTotals(),
+        CollectionMethodsThisRun = m_gameState.Collection.MethodRunTotals(),
         CoreExtractions = m_gameState.CoreExtractions,
         EscapedThisRun = m_gameState.EscapedThisRun,
         PrestigePointsEarned = m_gameState.PrestigePointsEarned,
@@ -511,6 +512,7 @@ namespace UntitledGemGame.Screens
         save.ShellDamage = 0;
         save.DamageThisRun = new();
         save.CollectionThisRun = new();
+        save.CollectionMethodsThisRun = new();
         // Power cells and Hollow World tunnels last one run (GameState.CompletePrestige).
         save.BlueGems = save.AbilityPointsPurchased = 0;
         save.CoreDrillTunnels = 0;

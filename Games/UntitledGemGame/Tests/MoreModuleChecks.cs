@@ -210,6 +210,9 @@ internal static class MoreModuleChecks
       Check(extras.Count(g => g.PickedUp) == test.Item3 && !reserved.PickedUp && !far.PickedUp,
         $"{test.Item1} respects radius, reservation and pull limits");
       Check(scene.Ship.DirectModulePickups == (ulong)test.Item2, "Bonus pulls do not charge direct-pickup effects");
+      var method = Enum.Parse<GemCollectionMethod>(test.Item1.ToString());
+      Check(scene.Ship.Credits.Count == 1 && scene.Ship.Credits[method] == (ulong)test.Item3 * 10,
+        $"{test.Item1} pulls are credited to the module for the Collection panel; direct pickups are not");
       if (test.Item1 == ShipModule.RiftSiphon)
       {
         var next = scene.AddGem(new Vector2(500, 500));

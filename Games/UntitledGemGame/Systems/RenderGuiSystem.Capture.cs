@@ -12,7 +12,7 @@ public partial class RenderGuiSystem
   internal static readonly string[] CaptureTargetNames =
     ["nav:upgrades", "nav:weaponry", "nav:abilities", "nav:shipyard", "nav:signals", "nav:talents", "discovery", "inspect", "reveal_skip",
      "reveal_continue", "reveal_shipyard", "ship:<name>", "slot:<0-3>", "module:<name>", "scan", "card:<0-2>", "signal_tile:<0-N>",
-     "buy_cheapest", "spend_all", "popout", "system_tab:<0-3>", "weapon_tab:<0-4>", "weapon_unlock", "weapon_module:<0-2>", "weapon_support:<0-14>", "weapon_slot:<0-3>", "panel_close", "panel_tab:<upgrades|weaponry|talents|systems|shipyard|signals>", "command:<0-4|name>", "node:<id>", "damage", "extract", "buy_cell"];
+     "buy_cheapest", "spend_all", "popout", "system_tab:<0-3>", "weapon_tab:<0-4>", "weapon_unlock", "weapon_module:<0-2>", "weapon_support:<0-14>", "weapon_slot:<0-3>", "panel_close", "panel_tab:<upgrades|weaponry|talents|systems|shipyard|signals>", "command:<0-4|name>", "node:<id>", "damage", "collection", "extract", "buy_cell"];
 
   internal Rectangle? CaptureTarget(string name)
   {
@@ -65,6 +65,8 @@ public partial class RenderGuiSystem
       case "scan": return SignalScanButton;
       // The Damage button at the HUD bar's right end, which opens and closes the panel above it.
       case "damage": return HudLayout.DamageButton;
+      // The chevron on the left edge that opens and closes the Collection panel.
+      case "collection": return HudLayout.SideCollectionButton();
       // The Extract Core panel: hover for its tooltip, hold to extract.
       case "extract": return m_upgradeWindowType == UpgradeTypes.Upgrades
         ? UpgradesExtractButton : HudLayout.PrestigePanel;

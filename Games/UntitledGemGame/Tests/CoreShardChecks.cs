@@ -164,14 +164,55 @@ internal static class CoreShardChecks
       && collectionNames.All(n => !string.IsNullOrWhiteSpace(n))
       && collectionNames.Distinct().Count() == collectionNames.Count,
       "Every collection source must have its own display name");
+    var methodNames = Enum.GetValues<GemCollectionMethod>().Where(GemCollectionMeter.IsBreakdown)
+      .Select(GemCollectionMeter.Name).ToList();
+    Check(methodNames.All(n => !string.IsNullOrWhiteSpace(n) && !collectionNames.Contains(n))
+      && methodNames.Distinct().Count() == methodNames.Count,
+      "Every bonus collection method must have its own display name, apart from the sources");
+
+    var split = new GemCollectionMeter();
+    var credits = new CargoCredits();
+    credits.Add(GemCollectionMethod.TractorTails, 30);
+    credits.Add(GemCollectionMethod.ManualClick, 10);
+    credits.Add(GemCollectionMethod.TractorTails, 10);
+    split.RecordDelivery(GemCollectionSource.Drifter, 200, 100, credits);
+    Check(credits.Count == 2 && split.ThisRun(GemCollectionMethod.TractorTails) == 80
+      && split.ThisRun(GemCollectionSource.Drifter) == 100 && split.ThisRun(GemCollectionSource.ManualClicks) == 20
+      && split.TotalThisRun == 200 && split.ThisRun(GemCollectionMethod.ManualClick) == 0,
+      "A delivery must split by its credits into rows of their own, apart from the collector's");
+    double rowSum = 0;
+    for (int row = 0; row < GemCollectionMeter.RowCount; row++)
+      if (GemCollectionMeter.IsRow(row)) rowSum += split.ThisRun(row);
+    Check(rowSum == split.TotalThisRun, "The Collection panel's rows must add up to its total");
+    split.Record(GemCollectionSource.HomeBase, GemCollectionMethod.TractorBelt, 40);
+    Check(split.ThisRun(GemCollectionSource.TractorBelt) == 40 && split.ThisRun(GemCollectionSource.HomeBase) == 0,
+      "Gems the Tractor Belt hands the home base must count as the belt's");
+    var overCredited = new CargoCredits();
+    overCredited.Add(GemCollectionMethod.ChainCollection, 500);
+    var capped = new GemCollectionMeter();
+    capped.RecordDelivery(GemCollectionSource.Prospector, 50, 100, overCredited);
+    Check(capped.ThisRun(GemCollectionMethod.ChainCollection) == 50 && capped.TotalThisRun == 50,
+      "Credits beyond the hold must never count more than the delivery");
+    var methodTotals = split.MethodRunTotals();
+    Check(methodTotals.Count == 1 && methodTotals["TractorTails"] == 80, "Method run totals must save by name");
+    var reloaded = new GemCollectionMeter();
+    reloaded.RestoreRunTotals(split.RunTotals(), new Dictionary<string, double>(methodTotals)
+      { ["Bogus"] = 4, ["5"] = 2, ["StormCoil"] = double.NaN, ["ManualClick"] = 9 });
+    Check(reloaded.ThisRun(GemCollectionMethod.TractorTails) == 80 && reloaded.ThisRun(GemCollectionSource.TractorBelt) == 40
+      && reloaded.ThisRun(GemCollectionMethod.StormCoil) == 0 && reloaded.ThisRun((GemCollectionMethod)5) == 0
+      && reloaded.ThisRun(GemCollectionMethod.ManualClick) == 0 && reloaded.TotalThisRun == split.TotalThisRun,
+      "Method run totals must reload, skipping unknown or corrupt entries");
+    state.Collection.Record(GemCollectionSource.Seeker, GemCollectionMethod.StormCoil, 5);
     Check(!HudLayout.SideCollectionButton().Intersects(HudLayout.SideDamageButton())
       && HudLayout.SideCollectionButton().Top > HudLayout.SideResourcePanel(1).Bottom
       && HudLayout.SideDamageButton().Top > HudLayout.SideCollectionButton().Bottom,
       "Collection and Damage expander buttons must stack cleanly below the resource pills");
     state.CompletePrestige();
     Check(state.Damage.TotalThisRun == 0 && state.Damage.TotalPerMinute == 0
-      && state.Collection.TotalThisRun == 0 && state.Collection.TotalPerMinute == 0,
-      "Extraction must clear the damage and collection meters by source");
+      && state.Collection.TotalThisRun == 0 && state.Collection.TotalPerMinute == 0
+      && state.Collection.ThisRun(GemCollectionMethod.StormCoil) == 0
+      && state.Collection.PerMinute(GemCollectionMethod.StormCoil) == 0,
+      "Extraction must clear the damage and collection meters by source and method");
   }
 
   private static void CheckRunState()

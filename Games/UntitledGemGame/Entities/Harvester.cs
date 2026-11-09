@@ -186,6 +186,8 @@ namespace UntitledGemGame.Entities
 
 
     public Bag<int> ClaimedGems = new Bag<int>(50);
+    // What the claims came from when a module or ability made them, until they resolve.
+    public GemCollectionMethod ClaimsMethod;
 
 
     public bool PositionMoved = false;
@@ -219,15 +221,17 @@ namespace UntitledGemGame.Entities
 
     public uint CarryingGemCount = 0;
     public ulong CarryingGemBaseValue = 0;
-    public ulong CarryingClickedBaseValue = 0;
+    // The hold's value by how it came in, for the Collection panel (GemCollectionMeter).
+    public readonly CargoCredits Credits = new();
 
     public void ClearCargoForPrestige()
     {
       ClearFleetTalents();
       CarryingGemCount = 0;
       CarryingGemBaseValue = 0;
-      CarryingClickedBaseValue = 0;
+      Credits.Clear();
       ClaimedGems.Clear();
+      ClaimsMethod = GemCollectionMethod.None;
       ReachedHome = false;
       EntangledValueAccumulator = 0;
       echoVaultDeliveries = 0;
@@ -281,7 +285,6 @@ namespace UntitledGemGame.Entities
           TimeAlive = 0;
       }
 
-      ulong previousBaseValue = CarryingGemBaseValue;
       uint pickupValue = Type == HarvesterType.Drone && ResolvingFinalSweep
         ? AbilityGemValue.AddBonus(gem.BaseValue, SignalStats.SweepValue)
         : gem.BaseValue;
@@ -293,9 +296,6 @@ namespace UntitledGemGame.Entities
         ShowModulePulse(BoundingCircle.Center, 48f, Color.MediumPurple);
       }
       ApplyAdditionalCargoModules(pickupValue);
-      if (gem.WasClicked)
-        CarryingClickedBaseValue = PrestigeProgression.AddSaturating(
-          CarryingClickedBaseValue, CarryingGemBaseValue - previousBaseValue);
       ++CarryingGemCount;
       if (DroneOverchargeMultiplier > 1f && CarryingGemCount <= 25 && CarryingGemCount % 5 == 0)
         ShowModulePulse(BoundingCircle.Center, 36f + CarryingGemCount, Color.Gold);

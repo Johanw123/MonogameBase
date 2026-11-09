@@ -19,14 +19,17 @@ public interface ITractorBeltCargo
   void Drop(in BeltRider rider);
 }
 
-// The belt's effective stats: run upgrades with signals applied.
+// The belt's effective stats: run upgrades with signals and talents applied.
 public readonly record struct TractorBeltStats(bool Enabled, float Radius, float Speed, int Capacity,
   float Duration, double ValueMultiplier, bool FullFreight, bool Sweep, int MaxIntakes)
 {
   public bool Permanent => float.IsPositiveInfinity(Duration);
 
+  // Belt Network (a prestige talent) doubles how many intakes run at once.
+  public const int NetworkIntakeMultiplier = 2;
+
   public static TractorBeltStats From(UpgradesGeneratorUpgrades upgrades, float clickRadius,
-    SignalProgression signals = null) => new(
+    SignalProgression signals = null, UpgradesGeneratorUpgrades_meta talents = null) => new(
     upgrades.TractorBeltEnabled,
     clickRadius * SignalStats.Scale(SignalKind.TractorBeltRadius, upgrades.TractorBeltRadiusMultiplier, signals),
     TractorBelt.BaseSpeed * SignalStats.Scale(SignalKind.TractorBeltSpeed, upgrades.TractorBeltSpeedMultiplier, signals),
@@ -35,7 +38,8 @@ public readonly record struct TractorBeltStats(bool Enabled, float Radius, float
     upgrades.TractorBeltPermanent ? float.PositiveInfinity
       : SignalStats.Scale(SignalKind.TractorBeltDuration, upgrades.TractorBeltDuration, signals),
     1 + Math.Max(0, upgrades.TractorBeltValue),
-    upgrades.TractorBeltFullFreight, upgrades.TractorBeltSweep, upgrades.TractorBeltBranch ? 2 : 1);
+    upgrades.TractorBeltFullFreight, upgrades.TractorBeltSweep,
+    (upgrades.TractorBeltBranch ? 2 : 1) * (talents?.BeltNetwork == true ? NetworkIntakeMultiplier : 1));
 }
 
 // One stretch of the belt: a line from A to B, or an arc around Center starting at angle

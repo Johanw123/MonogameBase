@@ -21,7 +21,7 @@ public partial class HarvesterCollectionSystem
       int forks = 0;
       foreach (int index in flatSpatialHash.QueryCollection(origin.X, origin.Y, 110f))
       {
-        if (!TryCollectModuleGem(ship, index, out var target)) continue;
+        if (!TryCollectModuleGem(ship, index, GemCollectionMethod.ThunderGod, out var target)) continue;
         ship.ThunderArcs.Add((origin, target));
         if (depth < 3) thunderFrontier.Enqueue((target, depth + 1));
         if (++forks == 3 || ship.ThunderArcs.Count == 40) break;
@@ -48,7 +48,7 @@ public partial class HarvesterCollectionSystem
         foreach (int index in flatSpatialHash.QueryCollection(ship.BoundingCircle.Center.X,
           ship.BoundingCircle.Center.Y, ship.WorldEaterRadius))
         {
-          if (TryCollectModuleGem(ship, index, out _))
+          if (TryCollectModuleGem(ship, index, GemCollectionMethod.WorldEater, out _))
           {
             ship.WorldEaterPickups = Math.Min(80, ship.WorldEaterPickups + 1);
             if (++swallowed == 16) break;
@@ -63,7 +63,7 @@ public partial class HarvesterCollectionSystem
   private void DetonateWorldEater(Harvester ship)
   {
     if (ship.MarkedForDestroy || !ship.HasModule(ShipModule.WorldEater) || ship.CarryingGemCount == 0) return;
-    CollectModuleArea(ship, ship.BoundingCircle.Center, 300f, 96, Color.MediumPurple);
+    CollectModuleArea(ship, ship.BoundingCircle.Center, 300f, 96, Color.MediumPurple, GemCollectionMethod.WorldEater);
   }
 
   private void UpdateHeistReplay(Harvester ship, float dt)
@@ -115,7 +115,7 @@ public partial class HarvesterCollectionSystem
         ulong value = BaseStats.GetHarvesterDeliveryValue(ship, gem.BaseValue);
         UntitledGemGameGameScreen.DeliveredUncounted = PrestigeProgression.AddSaturating(
           UntitledGemGameGameScreen.DeliveredUncounted, value);
-        RecordCollection(GemCollectionMeter.SourceFor(ship.Type), value);
+        RecordCollection(ship, GemCollectionMethod.TimeHeist, value);
       }
       ++collected;
       ++UntitledGemGameGameScreen.Collected;

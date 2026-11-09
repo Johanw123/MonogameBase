@@ -36,6 +36,7 @@ namespace UntitledGemGame
     public double ShellDamage { get; set; }
     public Dictionary<string, double> DamageThisRun { get; set; } = new();
     public Dictionary<string, double> CollectionThisRun { get; set; } = new();
+    public Dictionary<string, double> CollectionMethodsThisRun { get; set; } = new();
     public bool HasOpenedUpgrades { get; set; }
     public bool CreatedInitialGems { get; set; }
     public int? ActiveGemCount { get; set; }

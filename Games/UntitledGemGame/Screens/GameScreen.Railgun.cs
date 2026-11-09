@@ -46,6 +46,11 @@ public partial class UntitledGemGameGameScreen
   private const float RailgunMuzzleSeconds = 1f;
   private const float RailgunTrailSpan = 2f;
   private const float RailgunTrailSeconds = 0.9f;
+  // How far (effect units) the channel's and the muzzle's light reaches; the shader
+  // fades it out by then and the quads are padded to fit (RailgunBolt.fx: TRAIL_REACH
+  // and MUZZLE_REACH).
+  private const float RailgunTrailReach = 56f;
+  private const float RailgunMuzzleReach = 180f;
   private const int MaxRailTrails = 6;
 
   private static readonly Color RailGlow = new(110, 180, 255);
@@ -177,7 +182,6 @@ public partial class UntitledGemGameGameScreen
   // (Capacitor Bank) follow the gun's own round out.
   private void FireRailgun(bool bonus = false, bool barrage = false)
   {
-    AudioManager.Instance.PlaySound(SoundEvent.RailgunFire);
     var upgrades = UpgradeManager.Instance.UG;
     int firePower = SignalStats.FirePower(MainShipWeapon.Railgun);
     double gems = AutomaticWeaponYield(MainShipWeapons.RailgunGems(upgrades, firePower), arsenal: !bonus);
@@ -200,11 +204,23 @@ public partial class UntitledGemGameGameScreen
         railgunBarrageTimer = MainShipWeapons.CapacitorBarrageInterval;
       }
     }
+    ReleaseConstellation(target);
+    LaunchRailRound(target, (int)Math.Min(int.MaxValue, Math.Ceiling(gems)), firePower);
+    // Main Battery Relay: the rest of the arsenal answers the railgun.
+    if (UpgradeManager.Instance.UGM.MainBatteryRelay)
+      FireAllWeapons(false, PrestigeTalentEffects.RelayVolleyShells, arsenal: true);
+  }
+
+  // Every round the gun fires, its own or borrowed by Chaos Theory: the shot's sound,
+  // the round with its channel, the muzzle flash and the recoil. The sound only ever
+  // plays with a round the player can see leave the gun.
+  private void LaunchRailRound(Vector2 target, int damage, int firePower)
+  {
+    AudioManager.Instance.PlaySound(SoundEvent.RailgunFire);
     // The round leaves straight down the barrel.
     railgunAim = RailgunAimAt(target);
     Vector2 muzzle = RailgunMuzzlePoint();
-    ReleaseConstellation(target);
-    LaunchPlanetShot(PlanetShotKind.Rail, muzzle, target, (int)Math.Min(int.MaxValue, Math.Ceiling(gems)), firePower);
+    LaunchPlanetShot(PlanetShotKind.Rail, muzzle, target, damage, firePower);
     if (railTrails.Count >= MaxRailTrails) railTrails.RemoveAt(0);
     railTrails.Add(new RailTrail
     {
@@ -217,9 +233,6 @@ public partial class UntitledGemGameGameScreen
     railgunFiredFrom = muzzle;
     var along = target - muzzle;
     railgunFiredAlong = along.LengthSquared() > 1e-4f ? Vector2.Normalize(along) : RailgunDirection();
-    // Main Battery Relay: the rest of the arsenal answers the railgun.
-    if (UpgradeManager.Instance.UGM.MainBatteryRelay)
-      FireAllWeapons(false, PrestigeTalentEffects.RelayVolleyShells, arsenal: true);
   }
 
   private void FireBarrageRound()
@@ -445,7 +458,7 @@ public partial class UntitledGemGameGameScreen
     {
       effect.Value.CurrentTechnique = effect.Value.Techniques["RailTrail"];
       // Room for the helix, the haze and the impact bloom around the line of fire.
-      railgunRenderer.BaseGlowPadding = 44f * scale;
+      railgunRenderer.BaseGlowPadding = RailgunTrailReach * scale;
       railgunRenderer.Begin(m_camera.ViewProjection(), planetAge);
       foreach (var trail in railTrails)
       {
@@ -460,8 +473,8 @@ public partial class UntitledGemGameGameScreen
 
     if (!charging && !firing) return;
     effect.Value.CurrentTechnique = effect.Value.Techniques["RailMuzzle"];
-    // Room for the shock ring and the vortex around the muzzle.
-    railgunRenderer.BaseGlowPadding = 96f * scale;
+    // Room for the star's rays, the shock ring and the vortex around the muzzle.
+    railgunRenderer.BaseGlowPadding = RailgunMuzzleReach * scale;
     railgunRenderer.Begin(m_camera.ViewProjection(), planetAge);
     // r = wind-up phase, g = time since the shot over its span (a zero byte means no shot).
     if (charging)

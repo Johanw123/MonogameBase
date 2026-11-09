@@ -96,7 +96,7 @@ public partial class HarvesterCollectionSystem
       if (gem == null || gem.Id != id || !gem.IsLive) continue;
       if (!ship.MarkedForDestroy && ship.ReturningToHomebase
         && ship.TowedGemCount < PrestigeTalentEffects.TractorTailCapacity(ship))
-        CollectGemCore(gem, ship, allowChainCollection: false, towing: true);
+        CollectGemCore(gem, ship, allowChainCollection: false, GemCollectionMethod.TractorTails);
       if (!gem.PickedUp && !gem.WasClicked && !gem.ShouldDestroy)
         flatSpatialHash.ReleaseClaim(gem.GridIndex);
     }

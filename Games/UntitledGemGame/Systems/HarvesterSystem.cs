@@ -902,10 +902,14 @@ namespace UntitledGemGame.Systems
       CollectGem(gem, harvester, allowChainCollection: true);
     }
 
-    private void CollectGem(Gem gem, Harvester harvester, bool allowChainCollection)
-      => CollectGemCore(gem, harvester, allowChainCollection, towing: false);
+    // A pickup some talent, upgrade or module brought about, credited to it in the Collection panel.
+    public void CollectGem(Gem gem, Harvester harvester, GemCollectionMethod method)
+      => CollectGemCore(gem, harvester, allowChainCollection: true, method);
 
-    private void CollectGemCore(Gem gem, Harvester harvester, bool allowChainCollection, bool towing)
+    private void CollectGem(Gem gem, Harvester harvester, bool allowChainCollection)
+      => CollectGemCore(gem, harvester, allowChainCollection, GemCollectionMethod.None);
+
+    private void CollectGemCore(Gem gem, Harvester harvester, bool allowChainCollection, GemCollectionMethod method)
     {
       if (gem.PickedUp) return;
       if (gem.ShouldDestroy) return;
@@ -925,6 +929,9 @@ namespace UntitledGemGame.Systems
         return;
 
       var pickupPosition = gem.BoundingCircle.Center;
+      bool towing = method == GemCollectionMethod.TractorTails;
+      // Clicked gems only ever reach the home base: by hand, unless the belt brought them.
+      if (method == GemCollectionMethod.None && gem.WasClicked) method = GemCollectionMethod.ManualClick;
       if (harvester.TargetGemGridIndex == gem.GridIndex
         && harvester.TargetGemEntityId == gem.Id)
       {
@@ -939,7 +946,7 @@ namespace UntitledGemGame.Systems
       {
         UntitledGemGameGameScreen.DeliveredUncounted = PrestigeProgression.AddSaturating(
           UntitledGemGameGameScreen.DeliveredUncounted, gem.ManualClickBonus);
-        RecordCollection(GemCollectionSource.ManualClicks, gem.ManualClickBonus);
+        RecordCollection(harvester, method, gem.ManualClickBonus);
         gem.ManualClickBonus = 0;
       }
 
@@ -960,12 +967,15 @@ namespace UntitledGemGame.Systems
         ulong value = BaseStats.GetHarvesterDeliveryValue(harvester, gem.BaseValue);
         UntitledGemGameGameScreen.DeliveredUncounted = PrestigeProgression.AddSaturating(
           UntitledGemGameGameScreen.DeliveredUncounted, value);
-        RecordCollection(GemCollectionMeter.SourceFor(harvester.Type), value);
+        RecordCollection(harvester, method, value);
       }
-      else if (towing)
-        harvester.AddTowedGem(gem, gemEntity.Get<Sprite>(), pickupPosition);
       else
-        harvester.PickedUpGem(gem);
+      {
+        ulong held = harvester.CarryingGemBaseValue;
+        if (towing) harvester.AddTowedGem(gem, gemEntity.Get<Sprite>(), pickupPosition);
+        else harvester.PickedUpGem(gem);
+        harvester.Credits.Add(method, harvester.CarryingGemBaseValue - held);
+      }
 
       ++UntitledGemGameGameScreen.Collected;
       if (BaseStats.IsFleetHarvester(harvester)) UpgradeManager.Instance.Modules.RecordHarvest();
@@ -996,9 +1006,18 @@ namespace UntitledGemGame.Systems
       // spatialTest.Remove(gem);
     }
 
-    private static void RecordCollection(GemCollectionSource source, ulong amount)
+    private static void RecordCollection(Harvester collector, GemCollectionMethod method, ulong amount)
     {
-      if (amount > 0) UpgradeManager.Instance?.Collection?.Record(source, amount);
+      if (amount > 0)
+        UpgradeManager.Instance?.Collection?.Record(GemCollectionMeter.SourceFor(collector.Type), method, amount);
+    }
+
+    // Before the hold is emptied: the delivery is split by the credits its value came in with.
+    private static void RecordDelivery(Harvester collector, ulong delivered)
+    {
+      if (delivered > 0)
+        UpgradeManager.Instance?.Collection?.RecordDelivery(GemCollectionMeter.SourceFor(collector.Type),
+          delivered, collector.CarryingGemBaseValue, collector.Credits);
     }
 
     private void CollectSingularityGems(Vector2 origin, Harvester harvester)
@@ -1012,7 +1031,7 @@ namespace UntitledGemGame.Systems
         if (!candidate.IsActive || candidate.ClaimState != 0) continue;
         var gem = GetEntity(candidate.EntityId)?.Get<Gem>();
         if (gem == null || !gem.IsLive || !flatSpatialHash.TryClaim(index)) continue;
-        CollectGem(gem, harvester, allowChainCollection: false);
+        CollectGemCore(gem, harvester, allowChainCollection: false, GemCollectionMethod.SingularityEngine);
         if (!gem.PickedUp && !gem.WasClicked && !gem.ShouldDestroy) flatSpatialHash.ReleaseClaim(index);
         else ++collected;
       }
@@ -1029,7 +1048,7 @@ namespace UntitledGemGame.Systems
         harvester.TractorOrigin = origin;
         harvester.TractorTarget = gem.BoundingCircle.Center;
         harvester.TractorFlashRemaining = 0.25f;
-        CollectGem(gem, harvester, allowChainCollection: false);
+        CollectGemCore(gem, harvester, allowChainCollection: false, GemCollectionMethod.TractorLink);
         if (!gem.PickedUp && !gem.WasClicked && !gem.ShouldDestroy) flatSpatialHash.ReleaseClaim(index);
         return;
       }
@@ -1055,7 +1074,7 @@ namespace UntitledGemGame.Systems
           continue;
         }
 
-        CollectGem(chainedGem, harvester, allowChainCollection: false);
+        CollectGemCore(chainedGem, harvester, allowChainCollection: false, GemCollectionMethod.ChainCollection);
         ++collected;
       }
     }
@@ -1095,7 +1114,7 @@ namespace UntitledGemGame.Systems
       UntitledGemGameGameScreen.DeliveredUncounted = deliveryValue > ulong.MaxValue - queuedValue
         ? ulong.MaxValue
         : queuedValue + deliveryValue;
-      RecordCollection(GemCollectionMeter.SourceFor(harvester.Type), deliveryValue);
+      RecordDelivery(harvester, deliveryValue);
       if (harvester.IsCarrier && deliveredCargo > 0)
         UntitledGemGameGameScreen.Instance?.ShowCarrierDelivery(harvester.BoundingCircle.Center, deliveryValue);
       if (BaseStats.IsFleetHarvester(harvester) && deliveredCargo > 0)
@@ -1109,7 +1128,7 @@ namespace UntitledGemGame.Systems
       }
       harvester.CarryingGemCount = 0;
       harvester.CarryingGemBaseValue = 0;
-      harvester.CarryingClickedBaseValue = 0;
+      harvester.Credits.Clear();
       harvester.ReachedHome = false;
       if (harvester.Type == Harvester.HarvesterType.Drone)
       {
@@ -1321,7 +1340,11 @@ namespace UntitledGemGame.Systems
         var position = new Vector2(gem.X, gem.Y);
         float t = Math.Clamp(Vector2.Dot(position - start, segment) / lengthSquared, 0f, 1f);
         if (Vector2.DistanceSquared(position, start + segment * t) <= radius * radius
-          && flatSpatialHash.TryClaim(index)) harvester.ClaimedGems.Add(gem.EntityId);
+          && flatSpatialHash.TryClaim(index))
+        {
+          harvester.ClaimedGems.Add(gem.EntityId);
+          harvester.ClaimsMethod = GemCollectionMethod.WakeCollector;
+        }
       }
       harvester.WakeStart = start;
       harvester.WakeEnd = end;
@@ -1333,6 +1356,7 @@ namespace UntitledGemGame.Systems
     internal void ClaimFinalSweep(Harvester harvester, Vector2 position)
     {
       if (!harvester.TryBeginFinalSweep(position)) return;
+      harvester.ClaimsMethod = GemCollectionMethod.FinalSweep;
       foreach (int gemIndex in flatSpatialHash.QueryCollection(position.X, position.Y, harvester.FinalSweepRadius))
       {
         if (flatSpatialHash.TryClaim(gemIndex))
@@ -1354,10 +1378,14 @@ namespace UntitledGemGame.Systems
         harvester.ClaimedGems.Add(flatSpatialHash.Gems[index].EntityId);
         ++claimed;
       }
+      // Only claims get resolved; with none, the tag would linger onto a later pickup.
+      if (claimed > 0) harvester.ClaimsMethod = GemCollectionMethod.SupernovaCore;
     }
 
     internal void ResolveClaimedGems(Harvester harvester)
     {
+      var method = harvester.ClaimsMethod;
+      harvester.ClaimsMethod = GemCollectionMethod.None;
       foreach (int entityId in harvester.ClaimedGems)
       {
         var gem = _gemMapper.Get(entityId);
@@ -1366,7 +1394,7 @@ namespace UntitledGemGame.Systems
         if (!harvester.MarkedForDestroy
           && (!(harvester.Type == Harvester.HarvesterType.Drone && harvester.ReturningToHomebase)
             || harvester.ResolvingFinalSweep))
-          CollectGem(gem, harvester);
+          CollectGemCore(gem, harvester, allowChainCollection: true, method);
 
         // A reservation is not a completed pickup. Rejected pickups and ships
         // retiring this frame must leave loose gems available to every collector.
@@ -1461,15 +1489,11 @@ namespace UntitledGemGame.Systems
           ulong totalDelivery = BaseStats.GetHarvesterDeliveryValue(harvester, harvester.CarryingGemBaseValue);
           UntitledGemGameGameScreen.DeliveredUncounted = PrestigeProgression.AddSaturating(
             UntitledGemGameGameScreen.DeliveredUncounted, totalDelivery);
-          ulong clickedBase = Math.Min(harvester.CarryingClickedBaseValue, harvester.CarryingGemBaseValue);
-          ulong clickedDelivery = clickedBase > 0
-            ? Math.Min(totalDelivery, BaseStats.GetHarvesterDeliveryValue(harvester, clickedBase))
-            : 0;
-          RecordCollection(GemCollectionSource.ManualClicks, clickedDelivery);
-          RecordCollection(GemCollectionMeter.SourceFor(harvester.Type), totalDelivery - clickedDelivery);
+          // Clicked and belt-carried gems are credited to their own rows.
+          RecordDelivery(harvester, totalDelivery);
           harvester.CarryingGemCount = 0;
           harvester.CarryingGemBaseValue = 0;
-          harvester.CarryingClickedBaseValue = 0;
+          harvester.Credits.Clear();
 
           continue;
         }

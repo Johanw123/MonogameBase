@@ -65,7 +65,8 @@ def check(edit_path):
         'full_decode': 'passed', 'sources': source_checks}
 
 if __name__ == '__main__':
-    edits = sorted(ROOT.glob('[0-9][0-9]-*/edit.json'))
+    # The thirteen current shorts; 14-19 are blooper experiments outside the slate.
+    edits = sorted(e for e in ROOT.glob('[0-9][0-9]-*/edit.json') if int(e.parent.name[:2]) <= 13)
     assert len(edits) == 13
     results = []
     for edit in edits:

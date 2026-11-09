@@ -76,6 +76,17 @@
       "icon": "Textures/scifi_icons/icon_arrow/16_arrow.png"
     },
     {
+      "name": "Belt Network",
+      "propname": "BeltNetwork",
+      "shortname": "BNW",
+      "type": "bool",
+      "currency": "purple",
+      "base": "false",
+      "tooltip": "Run twice as many tractor belts at once.",
+      "tooltip_extra": "Two belts, or four with Branch Line. Needs the Tractor Belt upgrade.",
+      "icon": "Textures/scifi_icons/icon_arrow/15_arrow.png"
+    },
+    {
       "name": "Combined Arms",
       "propname": "CombinedArms",
       "shortname": "CA",

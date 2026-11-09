@@ -106,8 +106,14 @@ internal static class FleetTalentChecks
     Check(UntitledGemGameGameScreen.DeliveredUncounted - before == 260
       && scene.Ship.TowedGemCount == 0 && scene.Ship.TailGems.Count == 0 && scene.Ship.CarryingGemCount == 0,
       "Delivery pays hold and tow value with the same fleet bonus and clears the entire load");
+    var meter = scene.Manager.Collection;
+    Check(Math.Abs(meter.ThisRun(GemCollectionMethod.TractorTails) - 60) < 1e-6
+      && Math.Abs(meter.ThisRun(GemCollectionSource.Drifter) - 200) < 1e-6 && meter.TotalThisRun == 260
+      && scene.Ship.Credits.Count == 0,
+      "The Collection panel credits the towed share of a delivery to Tractor Tails, the rest to the Drifter");
     scene.Invoke("DeliverCargo", scene.Ship);
-    Check(UntitledGemGameGameScreen.DeliveredUncounted - before == 260, "A delivered tail never pays twice");
+    Check(UntitledGemGameGameScreen.DeliveredUncounted - before == 260
+      && Math.Abs(meter.ThisRun(GemCollectionMethod.TractorTails) - 60) < 1e-6, "A delivered tail never pays twice");
 
     scene.Manager.UG.HarvesterCapacity = 41;
     Check(PrestigeTalentEffects.TractorTailCapacity(scene.Ship) == 11, "Tow allowance scales with cargo and rounds up");
@@ -169,6 +175,8 @@ internal static class FleetTalentChecks
     Check(carrier.CarryingGemCount == hold + 3 && carrier.CarryingGemBaseValue == 130
       && scene.Ship.TowedGemCount == 0 && UntitledGemGameGameScreen.DeliveredUncounted == before,
       "Shuttles transfer tow counts and value to the carrier without paying out early");
+    Check(carrier.Credits[GemCollectionMethod.TractorTails] == 30 && scene.Ship.Credits.Count == 0,
+      "A shuttle's towed value reaches the carrier still credited to Tractor Tails");
     var tail = scene.Ship.DeliveredTails.Single();
     var last = tail.Gems[^1].Position;
     var flight = new Vector2(300, 40);
@@ -178,7 +186,8 @@ internal static class FleetTalentChecks
       && Vector2.Distance(tail.Gems[^1].Position, last + flight) < 0.01f,
       "A shuttle's handed-over tail reels in toward its carrier as the carrier flies on");
     scene.Invoke("DeliverCargo", carrier);
-    Check(UntitledGemGameGameScreen.DeliveredUncounted - before == 130,
+    Check(UntitledGemGameGameScreen.DeliveredUncounted - before == 130
+      && Math.Abs(scene.Manager.Collection.ThisRun(GemCollectionMethod.TractorTails) - 30) < 1e-6,
       "The carrier delivers shuttle tails once through the usual payout");
   }
 

@@ -39,7 +39,7 @@ public partial class UntitledGemGameGameScreen
       chaosLaunchTimer = Math.Max(0f, chaosLaunchTimer - dt);
       if (chaosLaunchTimer <= 0f && chaosCharge >= 1)
       {
-        chaosLaunchTimer = PrestigeTalentEffects.ChaosLaunchInterval;
+        chaosLaunchTimer = PrestigeTalentEffects.ChaosLaunchIntervalOf(chaosBorrowed);
         int damage = (int)Math.Min(int.MaxValue, chaosCharge);
         chaosCharge = 0;
         LaunchBorrowedHit(chaosBorrowed, chaosAngle, damage, chaosFirePower, bounds);
@@ -74,7 +74,7 @@ public partial class UntitledGemGameGameScreen
   private void FeedChaos(PlanetDamageSource source, float angle, int damage, int firePower)
   {
     if (chaosRemaining <= 0f || PrestigeTalentEffects.ChaosWeaponOf(source) != chaosWeapon) return;
-    chaosCharge = Math.Min(PrestigeTalentEffects.ChaosMaxCharge, chaosCharge + damage);
+    chaosCharge = Math.Min(PrestigeTalentEffects.ChaosMaxChargeOf(chaosBorrowed), chaosCharge + damage);
     chaosAngle = angle;
     chaosFirePower = firePower;
   }
@@ -94,9 +94,8 @@ public partial class UntitledGemGameGameScreen
         LaunchPlanetShot(PlanetShotKind.Rocket, RocketMount(chaosRocketTube++), target, damage, firePower);
         break;
       case MainShipWeapon.Railgun:
-        AudioManager.Instance.PlaySound(SoundEvent.RailgunFire);
-        railgunAim = RailgunAimAt(target);
-        LaunchPlanetShot(PlanetShotKind.Rail, RailgunMuzzlePoint(), target, damage, firePower);
+        // A full round, seen and heard leaving the gun like its own.
+        LaunchRailRound(target, damage, firePower);
         break;
       case MainShipWeapon.Flak:
         AudioManager.Instance.PlaySound(SoundEvent.FlakFire);

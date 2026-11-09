@@ -236,6 +236,22 @@ internal static class TractorBeltChecks
     belt.HandleInput(true, true, true, new Vector2(-300, 0), stats);
     Check(belt.ActiveCount == 2 && belt.Lines[0].Expired && !belt.Lines[1].Expired,
       "A third placement shuts off the oldest intake");
+
+    var talents = new UpgradesGeneratorUpgrades_meta { BeltNetwork = true };
+    upgrades.TractorBeltBranch = false;
+    Check(TractorBeltStats.From(upgrades, 19, null, talents).MaxIntakes == 2, "Belt Network alone runs two intakes");
+    upgrades.TractorBeltBranch = true;
+    stats = TractorBeltStats.From(upgrades, 19, null, talents);
+    belt.Reset();
+    for (int i = 0; i < 4; i++)
+    {
+      belt.HandleInput(true, true, true, new Vector2(300 * MathF.Cos(i * 1.5f), 300 * MathF.Sin(i * 1.5f)), stats);
+      belt.HandleInput(false, false, true, Vector2.Zero, stats);
+    }
+    Check(stats.MaxIntakes == 4 && belt.ActiveCount == 4 && belt.Lines.All(line => !line.Expired),
+      "Belt Network with Branch Line runs four intakes");
+    belt.HandleInput(true, true, true, new Vector2(-150, -150), stats);
+    Check(belt.ActiveCount == 4 && belt.Lines[0].Expired, "A fifth placement shuts off the oldest of the four");
   }
 
   private static void Retracting()

@@ -22,10 +22,11 @@
 //   1  an arc:             Shape = center.xy, radius, start angle; Shape2.z = turn direction
 //   2  the intake's mouth: Shape = center.xy, ring radius, run time left (0..1)
 //   3  the catch ring:     Shape = center.xy, radius, rotation
+//   4  a shade under a mark, drawn alpha-blended before the rest: Shape = center.xy, radius
 // Belt pieces carry Shape2.y = distance along the belt where they start, and Style =
-// (alpha, belt length, pod phase, reeled in): a shut-off belt only shows past the last. Their quads tile at shared cross-sections, so the
-// joints are seamless. Widths are in world units; PixelSize is one pixel in world units,
-// for anti-aliasing.
+// (alpha, belt length, pod phase, reeled in): a shut-off belt only shows past the last.
+// Their quads tile at shared cross-sections, so the joints are seamless. Widths are in world
+// units; PixelSize is one pixel in world units, for anti-aliasing.
 float4x4 MatrixTransform;
 float PixelSize;
 float RailOffset;
@@ -165,12 +166,23 @@ float4 MainPS(VertexShaderOutput input) : COLOR0
         return float4(color, input.Style.x);
     }
 
-    // The catch ring: eighteen dashes turning with the belt, over a faint fill.
+    if (kind > 3.5)
+    {
+        // A shade: a dark band (a disc when the radius is 0) drawn alpha-blended under a mark,
+        // so the mark reads over a bright gem field. Shape2.y = the band's solid half width,
+        // z = its soft edge; Style.x = how dark.
+        float d = abs(dist - radius);
+        float shade = 1.0 - smoothstep(input.Shape2.y, input.Shape2.y + input.Shape2.z, d);
+        return float4(0.0, 0.0, 0.0, shade * input.Style.x);
+    }
+
+    // The catch ring: an unbroken line, so the circle reads over a busy field, with eighteen
+    // brighter dashes turning along it with the belt, over a faint fill.
     float dashes = 18.0;
     float t = frac(WrapAngle(atan2(v.y, v.x) - input.Shape.w) / TAU * dashes);
     float dashEdge = PixelSize * dashes / max(radius * TAU, 1e-4);
-    float dash = smoothstep(0.0, dashEdge, t) * (1.0 - smoothstep(0.55 - dashEdge, 0.55, t));
-    float outline = Coverage(abs(dist - radius), input.Shape2.z) * dash * 0.55;
+    float dash = smoothstep(0.0, dashEdge, t) * (1.0 - smoothstep(0.6 - dashEdge, 0.6, t));
+    float outline = Coverage(abs(dist - radius), input.Shape2.z) * (0.5 + 0.5 * dash);
     float fill = (1.0 - smoothstep(radius - PixelSize, radius, dist)) * 0.035;
     return float4(input.Tint.rgb * (outline + fill), input.Style.x);
 }

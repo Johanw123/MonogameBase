@@ -1,5 +1,5 @@
 {
-  "output": "renders/btb_01_first-click_v1.mp4",
+  "output": "renders/btb_01_first-click_v2.mp4",
   "layout": "fullscreen",
   "size": [
     1080,
@@ -17,7 +17,7 @@
   },
   "shots": [
     {
-      "take": "takes/mine_v1.mp4",
+      "take": "takes/mine_v2.mp4",
       "in": 0.15,
       "dur": 3,
       "zoom": 1.5,
@@ -27,22 +27,22 @@
       ]
     },
     {
-      "take": "takes/upgrade_v1.mp4",
+      "take": "takes/upgrade_v2.mp4",
       "in": 1.2,
       "dur": 4.5,
       "focus": [
-        0.52,
-        0.52
+        0.57,
+        0.5
       ],
       "zoom": 1.5
     },
     {
-      "take": "takes/automated_v1.mp4",
+      "take": "takes/automated_v2.mp4",
       "in": 0.4,
       "dur": 4.5
     },
     {
-      "take": "takes/later_v1.mp4",
+      "take": "takes/later_v2.mp4",
       "in": 1,
       "dur": 9
     }

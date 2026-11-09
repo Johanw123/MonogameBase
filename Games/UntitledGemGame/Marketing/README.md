@@ -243,6 +243,14 @@ python3 $S/capture.py Marketing/Shorts/01-first-click/scenes/*.json            #
 python3 $S/render_short.py Marketing/Shorts/01-first-click/edit.json            # final MP4 + review sheet
 ```
 
+`Demo.IsDev` has been off in source since the playtest build, so a plain capture
+exits with "only available in development builds". Copy `bin/Debug/net10.0` to a
+private folder, add `CaptureLauncher.dll` (it sets `IsDev` and stops a capture
+whose game loop hangs) plus a `launcher.runtimeconfig.json` with dynamic code
+on, and run with `BTB_CAPTURE_SNAPSHOT=<folder>`. Add `BTB_GPU_LOCK=<file>` so
+parallel jobs take turns on the GPU. The private copy also protects a batch from
+other sessions rebuilding the shared `bin` folder.
+
 ## Current shorts slate
 
 The old shorts, their scenes, edits, takes, renders and ZIP archive were removed on
@@ -254,14 +262,16 @@ All ten were approved for production. Full-resolution exports and their current
 status are indexed in [Shorts/README.md](Shorts/README.md); suggested titles and
 captions are in [Shorts/POSTING.md](Shorts/POSTING.md).
 
-## Updated store media — 25 October 2026
+## Updated store media — 9 November 2026
 
-The [Steam refresh](Steam/2026-10-25-refresh/STORE_PAGE.md) contains eleven silent
-feature loops and eleven native 4K screenshots from the current 25 October footage,
-with updated description copy. [Review all assets](Steam/2026-10-25-refresh/review.html).
-The [itch.io package](Itch/2026-10-25-refresh/ITCH_PAGE.md) reuses the footage as
-eleven GIFs and eleven 1920×1080 JPEG screenshots; its upload notes include checked
-format and size guidance.
+The [Steam refresh](Steam/2026-11-09-refresh/STORE_PAGE.md) contains twelve silent
+feature loops and thirteen native 4K screenshots from 9 November footage, including
+the new Weaponry panel and Tractor Belt, with updated description copy.
+[Review all assets](Steam/2026-11-09-refresh/review.html).
+The [itch.io package](Itch/2026-11-09-refresh/ITCH_PAGE.md) reuses the footage as
+twelve GIFs and thirteen 1920×1080 JPEG screenshots. The 25 October packages are
+kept next to them.
 
-All current shorts use music only. Current exports are linked in
-[Shorts/README.md](Shorts/README.md). Nothing has been published.
+All thirteen shorts were recaptured and re-rendered on the same day; current
+exports are linked in [Shorts/README.md](Shorts/README.md). Nothing has been
+published.

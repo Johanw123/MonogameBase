@@ -64,10 +64,10 @@ public partial class Harvester
     BeginModuleTrip();
   }
 
-  public void AddToHold(uint gems, ulong baseValue, ulong clickedBaseValue)
+  public void AddToHold(uint gems, ulong baseValue, CargoCredits credits = null)
   {
     CarryingGemCount = (uint)Math.Min(uint.MaxValue, (ulong)CarryingGemCount + gems);
     CarryingGemBaseValue = PrestigeProgression.AddSaturating(CarryingGemBaseValue, baseValue);
-    CarryingClickedBaseValue = PrestigeProgression.AddSaturating(CarryingClickedBaseValue, clickedBaseValue);
+    credits?.MoveTo(Credits);
   }
 }

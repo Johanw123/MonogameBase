@@ -16,7 +16,8 @@ namespace UntitledGemGame.Systems
       var belt = screen.TractorBelt;
       var upgrades = UpgradeManager.Instance.UG;
       if (!upgrades.TractorBeltEnabled && belt.Lines.Count == 0) return;
-      var stats = TractorBeltStats.From(upgrades, screen.GemClickRadius, UpgradeManager.Instance.Signals);
+      var stats = TractorBeltStats.From(upgrades, screen.GemClickRadius, UpgradeManager.Instance.Signals,
+        UpgradeManager.Instance.UGM);
       if (belt.HandleInput(rightPressed, rightHeld, inputEnabled, pointer, stats))
         AudioManager.Instance.PlaySound(SoundEvent.TractorBeltPlace);
       var home = HomeBase.Instance?.Entity?.Get<Transform2>()?.Position ?? UntitledGemGameGameScreen.HomeBasePos;
@@ -64,7 +65,8 @@ namespace UntitledGemGame.Systems
       if (gem == null) return;
       gem.LeaveTractorBelt();
       gem.ManualClickBonus = UntitledGemGameGameScreen.Instance.ClickUtility.BonusValue(gem.BaseValue, valueMultiplier);
-      HarvesterCollectionSystem.Instance.CollectGem(gem, HomeBase.Instance.Entity.Get<Harvester>());
+      HarvesterCollectionSystem.Instance.CollectGem(gem, HomeBase.Instance.Entity.Get<Harvester>(),
+        GemCollectionMethod.TractorBelt);
       // A gem the home base could not take must not linger, claimed and invisible to everything.
       if (!gem.PickedUp && !gem.ShouldDestroy) gem.ShouldDestroy = true;
     }

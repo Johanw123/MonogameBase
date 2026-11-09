@@ -14,7 +14,8 @@ public partial class UntitledGemGameGameScreen
   private void DrawTractorBelt()
   {
     if (TractorBelt.Lines.Count == 0) return;
-    var stats = TractorBeltStats.From(UpgradeManager.Instance.UG, GemClickRadius, UpgradeManager.Instance.Signals);
+    var stats = TractorBeltStats.From(UpgradeManager.Instance.UG, GemClickRadius, UpgradeManager.Instance.Signals,
+      UpgradeManager.Instance.UGM);
     float pixel = 1f / Math.Max(0.1f, m_camera.Zoom);
     float clock = (float)Entities.Gem.FlightClock;
     var effect = EffectCache.TractorBeltFx;

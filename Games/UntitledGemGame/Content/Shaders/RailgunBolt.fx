@@ -36,9 +36,15 @@
 //
 // Thickness carries the effect scale (world units per effect unit) for both.
 // Output is premultiplied, for additive blending.
+//
+// Each technique's light fades to nothing within its reach (effect units from the
+// line of fire, or from the muzzle), so the quad's edge never cuts a ray or a glow
+// off. GameScreen.Railgun.cs pads the quads by the same reaches.
 #define TRAIL_SPAN 2.0
 #define TRAIL_FADE 0.9
 #define MUZZLE_SPAN 1.0
+#define TRAIL_REACH 56.0
+#define MUZZLE_REACH 180.0
 
 float4x4 MatrixTransform;
 float Time;
@@ -107,6 +113,13 @@ float Gauss(float d, float w)
 float Ring(float d, float r, float w)
 {
     return Gauss(d - r, w);
+}
+
+// 1 near the source, easing to 0 at the reach so nothing is left at the quad's edge.
+float Reach(float d, float reach)
+{
+    float t = 1.0 - smoothstep(reach * 0.45, reach, d);
+    return t * t;
 }
 
 static const float3 White = float3(1.0, 1.0, 1.0);
@@ -187,8 +200,13 @@ float4 TrailPS(VertexShaderOutput input) : COLOR
         * pow(saturate(1.0 - since / 0.45), 1.5) * step(flight, age);
     color += (White * 0.8 + tint * 0.6) * impact;
 
-    color *= intensity;
-    float alpha = saturate((core + glow + strands + haze) * channel + round + impact) * intensity;
+    // Everything fades out within reach of the line of fire, impact bloom included.
+    float2 nearest = float2(clamp(along, 0.0, len), 0.0);
+    float fromLine = length(float2(along, across) - nearest) / s;
+    float within = Reach(fromLine, TRAIL_REACH);
+
+    color *= intensity * within;
+    float alpha = saturate((core + glow + strands + haze) * channel + round + impact) * intensity * within;
     return float4(color, alpha);
 }
 
@@ -294,8 +312,10 @@ float4 MuzzlePS(VertexShaderOutput input) : COLOR
         alpha += hot + bloom + burst + spike + ring + disc + jet + backflash;
     }
 
-    color *= intensity;
-    return float4(color, saturate(alpha) * intensity);
+    // The rays and the shock ring taper out before the quad's edge.
+    float within = Reach(r, MUZZLE_REACH);
+    color *= intensity * within;
+    return float4(color, saturate(alpha) * intensity * within);
 }
 
 technique RailTrail

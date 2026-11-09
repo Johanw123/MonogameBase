@@ -1,0 +1,46 @@
+{
+  "output": "../takes/weaponry_ui_v1.mp4",
+  "preset": "Weapons: all unlocked",
+  "width": 3840,
+  "height": 2160,
+  "fps": 60,
+  "warmup": 6,
+  "duration": 10,
+  "zoom": 1,
+  "hud": true,
+  "auto_fractures": false,
+  "stats": {
+    "AutoRefuel": true,
+    "FleetMaxFuel": 1000,
+    "AllHarvesterMaxFuel": 1000,
+    "AllHarvesterFuelEfficiency": 1000,
+    "MaxGemCount": 8000
+  },
+  "save": {
+    "gems": 5000000000,
+    "upgrades": {"LZR1": 1, "LZP1": 1, "LZH1": 0, "RPR1": 1, "RPC1": 0}
+  },
+  "actions": [
+    {"at": -1, "do": "panel", "id": "weaponry"},
+    {"at": 0.2, "do": "pointer", "ui": "weapon_tab:1", "dur": 0.45},
+    {"at": 0.75, "do": "click", "ui": "weapon_tab:1"},
+    {"at": 1.4, "do": "pointer", "ui": "node:LZR1", "dur": 0.5},
+    {"at": 2.0, "do": "upgrade", "id": "LZR1"},
+    {"at": 2.3, "do": "upgrade", "id": "LZR1"},
+    {"at": 2.7, "do": "pointer", "ui": "node:LZP1", "dur": 0.5},
+    {"at": 3.3, "do": "upgrade", "id": "LZP1"},
+    {"at": 3.6, "do": "upgrade", "id": "LZP1"},
+    {"at": 4.0, "do": "pointer", "ui": "node:LZH1", "dur": 0.5},
+    {"at": 4.6, "do": "upgrade", "id": "LZH1"},
+    {"at": 5.3, "do": "pointer", "ui": "weapon_tab:3", "dur": 0.5},
+    {"at": 5.9, "do": "click", "ui": "weapon_tab:3"},
+    {"at": 6.6, "do": "pointer", "ui": "node:RPR1", "dur": 0.5},
+    {"at": 7.2, "do": "upgrade", "id": "RPR1"},
+    {"at": 7.6, "do": "pointer", "ui": "node:RPC1", "dur": 0.5},
+    {"at": 8.2, "do": "upgrade", "id": "RPC1"}
+  ],
+  "stills": [1.2, 3.0, 5.0, 8.6],
+  "encoder": "x264",
+  "quality": 14,
+  "encoder_preset": "veryfast"
+}

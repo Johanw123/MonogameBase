@@ -1,0 +1,29 @@
+{
+  "output": "../takes/fleet_close_v1.mp4",
+  "width": 3840,
+  "height": 2160,
+  "preset": "Developing fleet",
+  "warmup": 8,
+  "duration": 7,
+  "zoom": 2.8,
+  "stats": {
+    "AutoRefuel": true,
+    "FleetMaxFuel": 1000,
+    "AllHarvesterMaxFuel": 1000,
+    "AllHarvesterFuelEfficiency": 1000,
+    "HarvesterCount": 8,
+    "ExpertHarvesterUnlocked": true,
+    "ExpertHarvesterCount": 5,
+    "AdvancedHarvesterUnlocked": true,
+    "AdvancedHarvesterCount": 4,
+    "UltimateHarvesterUnlocked": true,
+    "UltimateHarvesterCount": 3,
+    "PerimeterHarvesterUnlocked": true,
+    "PerimeterHarvesterCount": 2
+  },
+  "auto_fractures": false,
+  "fps": 60,
+  "encoder": "x264",
+  "quality": 14,
+  "encoder_preset": "veryfast"
+}

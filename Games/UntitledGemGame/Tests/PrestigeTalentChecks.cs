@@ -28,11 +28,11 @@ internal static class PrestigeTalentChecks
 
     string[] activeTalents =
     [
-      "TR1", "PRL1", "CAT1", "DEY1", "TT1", "SLP1", "CBK1",
+      "TR1", "PRL1", "DEY1", "TT1", "SLP1", "CBK1", "BNW1",
       "LR1", "BR1", "SYF1", "GVS1", "MCSN1", "HSK1", "FCL1",
       "EP1", "MD1", "IOM1", "KNH1", "KNB1", "CRM1", "SCR1",
       "MBR1", "DG1", "KD1", "FSD1", "AE1", "RCH1", "IFF1",
-      "CHR1", "SR1", "MRS1", "EXE1", "CHT1",
+      "CHR1", "SR1", "MRS1", "EXE1", "CHT1", "CAT1",
       "SGR1", "OVC1", "HVO1", "RCO1", "LOP1", "MSP1", "OUR1",
     ];
     Check(activeTalents.SequenceEqual(PrestigeTalentLayout.Tiers.SelectMany(tier => tier.Talents)),
@@ -40,10 +40,10 @@ internal static class PrestigeTalentChecks
     Check(PrestigeTalentLayout.Tiers.Length == 6
       && PrestigeTalentLayout.Tiers.Select(t => t.RequiredEarlierPoints).SequenceEqual([0, 3, 5, 10, 16, 20]),
       "Six tiers open at 0, 3, 5, 10, 16 and 20 earlier points");
-    Check(activeTalents.Distinct().Count() == 40
+    Check(activeTalents.Distinct().Count() == 41
       && activeTalents.All(id => tree[id].Data.NumLevels == 1
         && tree[id].Data.LevelInfo.Count == 1 && tree[id].Data.LevelInfo[0].Cost == 1),
-      "The complete tree contains forty unique one-point talents");
+      "The complete tree contains forty-one unique one-point talents");
     // The system unlocks are free rewards of tiers two to four, so the first extraction adds none.
     string[] systemUnlocks = [ShipSystems.UnlockTalent, "SYU1", "SGU1"];
     Check(PrestigeTalentLayout.Tiers.Skip(1).Take(3).Select(tier => tier.FreeRewards[0]).SequenceEqual(systemUnlocks)
@@ -94,8 +94,8 @@ internal static class PrestigeTalentChecks
     GameSave TierPoints(int fullTiers, int extra = 0)
       => Points(PrestigeTalentLayout.Tiers.Take(fullTiers).Sum(t => t.Talents.Length) + extra);
     manager = new UpgradeManager();
-    manager.RestoreProgress(new GameSave { Meta = new() { ["TR1"] = 1, ["CAT1"] = 1, ["PRL1"] = 1 } });
-    Check(manager.UGM.PrismaticLens && manager.UGM.ThermiteRounds && manager.UGM.CargoCatapult
+    manager.RestoreProgress(new GameSave { Meta = new() { ["TR1"] = 1, ["BNW1"] = 1, ["PRL1"] = 1 } });
+    Check(manager.UGM.PrismaticLens && manager.UGM.ThermiteRounds && manager.UGM.BeltNetwork
       && tree["LR1"].State == UpgradeButton.UnlockState.Unlocked,
       "Any three first-tier points activate their effects and unlock the second tier");
     manager.RestoreProgress(Points(4));
@@ -122,7 +122,7 @@ internal static class PrestigeTalentChecks
     // Return to three actually allocated points for the refund check below (none of them a
     // combo talent the next checks expect unbought).
     manager = new UpgradeManager();
-    manager.RestoreProgress(new GameSave { Meta = new() { ["TR1"] = 1, ["CAT1"] = 1, ["AE1"] = 1 } });
+    manager.RestoreProgress(new GameSave { Meta = new() { ["TR1"] = 1, ["BNW1"] = 1, ["AE1"] = 1 } });
 
     CheckWeaponTalents(manager);
     CheckComboTalents(manager);
@@ -143,10 +143,10 @@ internal static class PrestigeTalentChecks
     Check(manager.RespecPrestigeTalents() == 3 && manager.CurrentPrestigePoints == 3,
       "Refund all returns the exact allocated prestige cost");
     Check(tree.Values.All(button => button.CurrentLevel == 0 || PrestigeTalentLayout.IsFreeReward(button.Data.ShortName))
-      && !manager.UGM.CommandCenterUnlocked && !manager.UGM.CargoCatapult && !manager.UGM.ThermiteRounds,
+      && !manager.UGM.CommandCenterUnlocked && !manager.UGM.BeltNetwork && !manager.UGM.ThermiteRounds,
       "Refund all clears talent levels and their effects");
 
-    Console.WriteLine("Prestige talent checks passed: 40 talents in 6 tiers, free tier rewards, all tier gates, either/or choices, combo rules, unlearning, refund and reset.");
+    Console.WriteLine("Prestige talent checks passed: 41 talents in 6 tiers, free tier rewards, all tier gates, either/or choices, combo rules, unlearning, refund and reset.");
   }
 
   // Either/or talents and unlearning one talent at a time.
@@ -180,7 +180,7 @@ internal static class PrestigeTalentChecks
       "Presets take one side of every either/or choice");
 
     // Three first-tier and two second-tier points open the third tier.
-    var opened = new Dictionary<string, int> { ["TR1"] = 1, ["CAT1"] = 1, ["PRL1"] = 1, ["LR1"] = 1, ["SYF1"] = 1 };
+    var opened = new Dictionary<string, int> { ["TR1"] = 1, ["BNW1"] = 1, ["PRL1"] = 1, ["LR1"] = 1, ["SYF1"] = 1 };
     var manager = new UpgradeManager();
     manager.RestoreProgress(new GameSave { Meta = new(opened) { ["MD1"] = 1 } });
     Check(!PrestigeTalentLayout.CanLearn(tree, "IOM1") && tree["IOM1"].State == UpgradeButton.UnlockState.Revealed
@@ -200,7 +200,7 @@ internal static class PrestigeTalentChecks
       "A talent whose point a later tier needs cannot be unlearned");
     Check(manager.UnlearnPrestigeTalent(tree["MD1"]) && tree["MD1"].CurrentLevel == 0 && !manager.UGM.MagmaDetonation
       && manager.CurrentPrestigePoints == points + 1 && PrestigeTalentLayout.CanLearn(tree, "IOM1")
-      && tree["IOM1"].State == UpgradeButton.UnlockState.Unlocked && tree["CAT1"].CurrentLevel == 1 && manager.UGM.CargoCatapult,
+      && tree["IOM1"].State == UpgradeButton.UnlockState.Unlocked && tree["BNW1"].CurrentLevel == 1 && manager.UGM.BeltNetwork,
       "Unlearning one talent refunds its point, ends its effect, frees its rivals and keeps the rest");
     Check(manager.UnlearnPrestigeTalent(tree["SYF1"]) && !manager.UGM.SympatheticFire
       && tree["IOM1"].State == UpgradeButton.UnlockState.Revealed
@@ -391,6 +391,14 @@ internal static class PrestigeTalentChecks
     Check(seen.SetEquals([MainShipWeapon.Cannon, MainShipWeapon.Laser, MainShipWeapon.Railgun])
       && borrowedSeen.Contains(MainShipWeapon.Rockets) && borrowedSeen.Contains(MainShipWeapon.Flak),
       "Every owned weapon takes its turn, and unowned weapons can be borrowed");
+    // A borrowed Railgun fires whole rounds, so it fires them far less often than the
+    // other borrowed hits, and its larger cap carries the same damage per second.
+    float railInterval = PrestigeTalentEffects.ChaosLaunchIntervalOf(MainShipWeapon.Railgun);
+    Check(railInterval >= 0.5f && PrestigeTalentEffects.ChaosLaunchIntervalOf(MainShipWeapon.Cannon)
+      == PrestigeTalentEffects.ChaosLaunchInterval, "A borrowed Railgun fires at a railgun's pace; the rest keep the quick cadence");
+    Check(Math.Abs(PrestigeTalentEffects.ChaosMaxChargeOf(MainShipWeapon.Railgun) / railInterval
+      - PrestigeTalentEffects.ChaosMaxCharge / PrestigeTalentEffects.ChaosLaunchInterval) < 1f,
+      "A borrowed Railgun's slower cadence must not cap away damage");
   }
 
   // The rules behind the combo talents (their effects play out in the game screen).
@@ -401,8 +409,8 @@ internal static class PrestigeTalentChecks
       if (!condition) throw new Exception(message);
     }
     var meta = manager.UGM;
-    // The manager owns Cargo Catapult (a first-tier point for the refund check); the rules
-    // below start from no combo talents and put it back at the end.
+    // The rules below start from no combo talents and put Cargo Catapult back as it was at
+    // the end.
     bool catapult = meta.CargoCatapult;
     meta.CargoCatapult = false;
     long load = 0;

@@ -148,6 +148,36 @@ internal sealed class VisualEffectsChecks : Game
     Check(Light(shot, 40, 48) > 300, "The shot must flash at the muzzle");
     Check(Light(RenderRail("RailMuzzle", () => rail.DrawLine(new Vector2(40, 48), new Vector2(41, 48), 1f,
       new Color(0f, 0f, 0f, 1f), railTint)), 40, 48) == 0, "An idle muzzle draws nothing");
+    // No ray or glow is cut off in a straight line: at the height of the flash the light
+    // has faded out by the edge of the quad, padded by the reach the game gives it
+    // (GameScreen.Railgun.cs RailgunMuzzleReach and RailgunTrailReach), yet still
+    // reaches well out from the muzzle and the channel.
+    int MaxLight(Color[] pixels, Func<int, int, bool> where)
+    {
+      int max = 0;
+      for (int y = 0; y < 96; y++)
+        for (int x = 0; x < 128; x++)
+          if (where(x, y)) max = Math.Max(max, Light(pixels, x, y));
+      return max;
+    }
+    const float muzzleScale = 0.25f, trailScale = 0.4f;
+    rail.BaseGlowPadding = 180f * muzzleScale;
+    float muzzleEdge = muzzleScale + rail.BaseGlowPadding;
+    var flash = RenderRail("RailMuzzle", () => rail.DrawLine(new Vector2(64, 48), new Vector2(65, 48), muzzleScale,
+      new Color(0f, 0.02f, 0f, 1f), railTint));
+    float Square(int x, int y) => Math.Max(Math.Abs(x + 0.5f - 64.5f), Math.Abs(y + 0.5f - 48f));
+    Check(MaxLight(flash, (x, y) => Square(x, y) >= muzzleEdge - 2f) <= 1,
+      "The shot's star must fade out before the edge of its quad");
+    Check(MaxLight(flash, (x, y) => Math.Abs(Square(x, y) - muzzleEdge * 0.5f) < 1f) > 60,
+      "The shot's star must still reach out from the muzzle");
+    rail.BaseGlowPadding = 56f * trailScale;
+    float trailEdge = trailScale + rail.BaseGlowPadding;
+    var landed = RenderRail("RailTrail", () => rail.DrawLine(new Vector2(14, 48), new Vector2(114, 48), trailScale,
+      new Color(0.05f / 2f, 0.3f, 0.04f / 0.5f, 1f), railTint, pulseProgress: 1f));
+    Check(MaxLight(landed, (x, y) => Math.Abs(y + 0.5f - 48f) >= trailEdge - 2f) <= 1,
+      "The channel's flash and impact must fade out before the edge of their quad");
+    Check(MaxLight(landed, (x, y) => Math.Abs(Math.Abs(y + 0.5f - 48f) - trailEdge * 0.4f) < 1f) > 20,
+      "The channel's glow must still reach out from the line of fire");
     VisualEffects.Recommended();
     VisualEffects.Settings.Grain = true;
     VisualEffects.Settings.Exposure = .7f;

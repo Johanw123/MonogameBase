@@ -100,10 +100,9 @@ public partial class HarvesterCollectionSystem
   private void TransferToCarrier(Harvester shuttle)
   {
     ReleaseTreasureScannerTarget(shuttle);
-    shuttle.Carrier.AddToHold(shuttle.CarryingGemCount, shuttle.CarryingGemBaseValue, shuttle.CarryingClickedBaseValue);
+    shuttle.Carrier.AddToHold(shuttle.CarryingGemCount, shuttle.CarryingGemBaseValue, shuttle.Credits);
     shuttle.CarryingGemCount = 0;
     shuttle.CarryingGemBaseValue = 0;
-    shuttle.CarryingClickedBaseValue = 0;
     shuttle.ReachedHome = false;
     shuttle.ShuttleUnloading = false;
     shuttle.TargetScreenPosition = null;
