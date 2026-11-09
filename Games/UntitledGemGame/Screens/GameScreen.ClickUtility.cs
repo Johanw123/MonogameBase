@@ -42,8 +42,14 @@ public partial class UntitledGemGameGameScreen
 
   private void DrawGemClickRadius()
   {
-    if ((!GemClickInputEnabled && !CursorGravity.IsActive && CursorGravity.CollapseGlow <= 0)
-      || gemPointerViewport.Width <= 0 || gemPointerViewport.Height <= 0) return;
+    if (!GemClickInputEnabled || gemPointerViewport.Width <= 0 || gemPointerViewport.Height <= 0) return;
+    var upgrades = UpgradeManager.Instance.UG;
+    // While right is held the belt's intake ring sits under the pointer (DrawTractorBelt).
+    if (rightPointerHeld && upgrades.TractorBeltEnabled)
+    {
+      ClickUtility.AcknowledgeHoldVisual();
+      return;
+    }
     var targetSize = new Vector2(GraphicsDevice.Viewport.Width, GraphicsDevice.Viewport.Height);
     var center = UntitledGemGame.ClickUtility.PointerToTarget(gemPointerScreen, gemPointerViewport, targetSize);
     var projection = m_camera.ViewProjection();
@@ -55,37 +61,10 @@ public partial class UntitledGemGameGameScreen
     float pixel = targetSize.X / gemPointerViewport.Width;
     m_shapeBatch.Begin(Matrix.Identity,
       Matrix.CreateOrthographicOffCenter(0, targetSize.X, targetSize.Y, 0, 0, 1), blendState: BlendState.AlphaBlend);
-    var upgrades = UpgradeManager.Instance.UG;
-    if (CursorGravity.IsActive || CursorGravity.CollapseGlow > 0)
-    {
-      var projected = Vector3.Transform(new Vector3(CursorGravity.Position, 0), projection);
-      var wellCenter = new Vector2((projected.X + 1) * targetSize.X / 2,
-        (1 - projected.Y) * targetSize.Y / 2);
-      var wellRadius = radius * (CursorGravity.Radius / GemClickRadius);
-      if (CursorGravity.IsActive)
-        ClickCursorVisual.DrawGravityWell(m_shapeBatch, wellCenter, wellRadius, pixel, CursorGravity.LifeProgress);
-      if (CursorGravity.HasEventHorizon)
-        ClickCursorVisual.DrawEventHorizon(m_shapeBatch, wellCenter,
-          radius * (CursorGravity.CoreRadius / GemClickRadius), pixel);
-      if (CursorGravity.CollapseGlow > 0)
-        ClickCursorVisual.DrawGravityCollapse(m_shapeBatch, wellCenter, wellRadius, pixel, CursorGravity.CollapseGlow);
-    }
-    if (GemClickInputEnabled && rightPointerHeld && upgrades.CursorGravityEnabled)
-      ClickCursorVisual.DrawGravity(m_shapeBatch, center,
-        radius * (CursorGravityWell.PreviewRadius(upgrades, GemClickRadius, UpgradeManager.Instance.Signals) / GemClickRadius), pixel,
-        CursorGravity.ActivationPending ? 1 : CursorGravity.CooldownRemaining > 0 ? CursorGravity.RechargeProgress : 0,
-        CursorGravity.ActivationGlow, CursorGravity.CooldownRemaining <= 0, CursorGravity.DenialGlow);
-    else if (GemClickInputEnabled)
-      ClickCursorVisual.Draw(m_shapeBatch, center, radius, pixel,
-        upgrades.HoldClickEnabled && ClickUtility.IsHolding,
-        ClickUtility.HoldVisualFill, ClickUtility.HoldActivationGlow);
-    if (GemClickInputEnabled && upgrades.CursorGravityEnabled && CursorGravity.ReadyGlow > 0)
-    {
-      ClickCursorVisual.DrawGravityReady(m_shapeBatch, center, radius, pixel, CursorGravity.ReadyGlow);
-      CursorGravity.AcknowledgeReadyVisual();
-    }
+    ClickCursorVisual.Draw(m_shapeBatch, center, radius, pixel,
+      upgrades.HoldClickEnabled && ClickUtility.IsHolding,
+      ClickUtility.HoldVisualFill, ClickUtility.HoldActivationGlow);
     m_shapeBatch.End();
     ClickUtility.AcknowledgeHoldVisual();
-    CursorGravity.AcknowledgeVisual();
   }
 }

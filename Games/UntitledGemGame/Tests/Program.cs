@@ -126,7 +126,7 @@ if (args.Length == 3 && args[0] == "--click-cursor-render-check")
 if (args.Contains("--click-utility-check"))
 {
   ClickUtilityChecks.Run();
-  CursorGravityChecks.Run();
+  TractorBeltChecks.Run();
   UpgradeManager.CurrentUpgrades = new();
   var clickTree = UpgradeManager.CurrentUpgrades;
   clickTree.LoadJson(File.ReadAllText("Content/Data/upgrades.json"),
@@ -274,7 +274,7 @@ SleepingGemChecks.Run();
 ChainLifetimeChecks.Run();
 GemClaimChecks.Run();
 ClickUtilityChecks.Run();
-CursorGravityChecks.Run();
+TractorBeltChecks.Run();
 DroneChecks.Run();
 FleetDeliveryValueChecks.Run();
 if (args.Contains("--spatial-check")) return;

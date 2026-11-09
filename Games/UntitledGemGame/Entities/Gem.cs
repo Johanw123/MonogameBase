@@ -175,8 +175,6 @@ namespace UntitledGemGame.Entities
 
     public void MoveByChain(Vector2 position) => MoveLooseGem(position, wake: true);
 
-    internal void MoveByManualGravity(Vector2 position) => MoveLooseGem(position, wake: false);
-
     private void MoveLooseGem(Vector2 position, bool wake)
     {
       // A queued effect can outlive collection and the pool reset.
@@ -280,6 +278,7 @@ namespace UntitledGemGame.Entities
       ShouldDestroy = false;
       PickedUp = false;
       WasClicked = false;
+      RidingTractorBelt = false;
       ManualClickBonus = 0;
       Id = -1;
       GridIndex = -1;

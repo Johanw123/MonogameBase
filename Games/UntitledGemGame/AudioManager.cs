@@ -39,8 +39,8 @@ public enum SoundEvent
   GemPickup,
   GemClick,
   GemMerge,
-  CursorGravityCollapse,
-  CursorGravityReady,
+  TractorBeltPlace,
+  TractorBeltExpire,
 
   // Harvesters & Refueling
   RefuelRequest,
@@ -238,8 +238,8 @@ public partial class AudioManager
     [SoundEvent.GemPickup]             = [new(SfxGemPickup, PitchJitter: 0.2f, Priority: 0.5f, Type: SoundType.GemCollect, Preload: false)],
     [SoundEvent.GemClick]              = [new(SfxGemClick, PitchJitter: 0.15f)],
     [SoundEvent.GemMerge]              = [new(SfxMerge, Volume: 0.28f, PitchJitter: 0.06f)],
-    [SoundEvent.CursorGravityCollapse] = [new(SfxGemClick)],
-    [SoundEvent.CursorGravityReady]    = [new(SfxBlip, Pitch: 0.25f)],
+    [SoundEvent.TractorBeltPlace]      = [new(SfxServoRise, Volume: 0.35f, Pitch: 0.2f)],
+    [SoundEvent.TractorBeltExpire]     = [new(SfxServoFall, Volume: 0.3f, Pitch: 0.15f)],
 
     // Harvesters & Refueling
     [SoundEvent.RefuelRequest]         = [new(SfxBlip)],

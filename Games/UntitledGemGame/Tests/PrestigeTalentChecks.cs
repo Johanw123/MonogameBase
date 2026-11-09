@@ -65,8 +65,8 @@ internal static class PrestigeTalentChecks
       "Every tier shows free rewards that cost nothing and cannot be bought");
     Check(activeTalents.Concat(freeRewards).All(id => File.Exists(Path.Combine("Content", tree[id].Data.UpgradeDefinition.Icon))),
       "Every talent and free reward has an icon");
-    foreach (string retired in new[] { "TPM1", "JHM1", "FLR1", "CA1", "RCM1", "QEM1", "MA1", "MM1", "CCN1", "MGS1",
-      "DCM1", "OH1", "GM1", "MGD1", "PCO1", "MGF1", "WCM1", "SPC1", "HST1", "SCH1",
+    foreach (string retired in new[] { "TPM1", "JHM1", "FLR1", "CA1", "RCM1", "QEM1", "MA1", "MM1", "CCN1",
+      "DCM1", "OH1", "GM1", "PCO1", "WCM1", "SPC1", "HST1", "SCH1",
       "PO1", "MLC1", "SHS1", "DSP1", "CC1", "ODP1", "CN1" })
       Check(!PrestigeTalentLayout.IsShown(retired) && tree[retired].State == UpgradeButton.UnlockState.Invisible,
         $"{retired} is retired from the tree");

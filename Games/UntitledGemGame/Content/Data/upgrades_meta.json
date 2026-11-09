@@ -389,43 +389,10 @@
       "shortname": "MCR",
       "type": "float",
       "base": "1",
-      "tooltip": "Doubles your click radius and the gravity well's radius.",
+      "tooltip": "Doubles your click radius and the tractor belt's intake.",
       "tooltip_extra": "Stacks with run upgrades and signals.",
       "currency": "purple",
       "icon": "Textures/scifi_icons/icon_accuracy/14_accuracy.png"
-    },
-    {
-      "name": "Event Horizon",
-      "propname": "CursorGravityEventHorizon",
-      "shortname": "MGS",
-      "type": "bool",
-      "base": "false",
-      "tooltip": "The gravity well's core harvests gems at double click value.",
-      "tooltip_extra": "Requires Gravity Well in the run tree.",
-      "currency": "purple",
-      "icon": "Textures/scifi_icons/icon_power/11_power.png"
-    },
-    {
-      "name": "Gravity Mastery",
-      "propname": "CursorGravityMobile",
-      "shortname": "MGD",
-      "type": "bool",
-      "base": "false",
-      "tooltip": "Hold right-click to steer the gravity well. Its core harvests gems at double click value.",
-      "tooltip_extra": "Requires Gravity Well in the run tree.",
-      "currency": "purple",
-      "icon": "Textures/scifi_icons/icon_power/13_power.png"
-    },
-    {
-      "name": "Singularity Collapse",
-      "propname": "CursorGravityCollapse",
-      "shortname": "MGF",
-      "type": "bool",
-      "base": "false",
-      "tooltip": "The gravity well detonates when it ends, harvesting up to 128 gems at triple click value.",
-      "tooltip_extra": "Requires Gravity Well in the run tree. Canceling the well doesn't detonate it.",
-      "currency": "purple",
-      "icon": "Textures/scifi_icons/icon_heal/17_heal.png"
     },
     {
       "name": "Planet Cracker Core",
@@ -643,7 +610,7 @@
       "currency": "purple",
       "base": "false",
       "tooltip": "For 3 seconds after each Railgun round, gems you collect by hand are worth three times as much.",
-      "tooltip_extra": "Counts clicks and the gravity well. Requires Railgun in the run tree.",
+      "tooltip_extra": "Requires Railgun in the run tree.",
       "icon": "Textures/scifi_icons/icons_hexagon/2_hexagon.png"
     },
     {
@@ -862,7 +829,7 @@
       "type": "bool",
       "currency": "purple",
       "base": "false",
-      "tooltip": "Your fleet stays docked. Clicks and the gravity well collect five times the value, and your shots hit five times as hard.",
+      "tooltip": "Your fleet stays docked. Clicks collect five times the value, and your shots hit five times as hard.",
       "tooltip_extra": "Fleet upgrades and the Shipyard do nothing. Drones still fly.",
       "icon": "Textures/scifi_icons/icon_misc/10_misc.png"
     },

@@ -560,7 +560,7 @@ namespace UntitledGemGame.Screens
     // private int time;
     private float spawnTimer;
     public ClickUtility ClickUtility { get; } = new();
-    public CursorGravityWell CursorGravity { get; } = new();
+    public TractorBelt TractorBelt { get; } = new();
     private float passiveIncomeTimer = 0;
     private string previousButtonName = "null";
     public bool m_prestiging = false;
@@ -580,7 +580,7 @@ namespace UntitledGemGame.Screens
       worldPolish.Clear();
       ManualAbilities.Reset();
       ClickUtility.Reset();
-      CursorGravity.Reset();
+      TractorBelt.Reset(Systems.UpdateSystem2.Instance);
       m_homeBaseEntity?.Get<HomeBase>()?.CancelAbilityEffects();
       m_entityFactory?.ClearPendingGemSpawns();
       ClearPlanetShots();
@@ -1745,6 +1745,7 @@ namespace UntitledGemGame.Screens
       DrawWeapons();
       DrawMiningFragments();
       gpuParticles?.Draw(m_camera.ViewProjection());
+      DrawTractorBelt();
       // Shapes render into the virtual-sized target, before it is scaled to the window.
       m_shapeBatch.Begin(UntitledGemGame.ClickUtility.RenderView(m_camera.GetViewMatrix(),
           BaseGame.BoxingViewportAdapter.GetScaleMatrix()),

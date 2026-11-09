@@ -111,7 +111,7 @@ static class DebugProgressionChecks
       {
         var baseline = DebugProgressionPresets.Create(DebugProgressionPresets.ProgressionStage(stage), upgrades);
         bool Clicking(JsonUpgrade definition) => definition.PropertyName.StartsWith("Click")
-          || definition.PropertyName.StartsWith("HoldClick") || definition.PropertyName.StartsWith("CursorGravity");
+          || definition.PropertyName.StartsWith("HoldClick") || definition.PropertyName.StartsWith("TractorBelt");
         ulong ClickSpending(GameSave snapshot) => snapshot.Upgrades.Where(pair => Clicking(upgrades.UpgradeButtons[pair.Key].Data.UpgradeDefinition))
           .Aggregate(0UL, (sum, pair) => sum + upgrades.UpgradeButtons[pair.Key].Data.LevelInfo.Take(pair.Value)
             .Aggregate(0UL, (cost, info) => cost + info.Cost));
@@ -123,7 +123,7 @@ static class DebugProgressionChecks
         {
           long clicks = Enumerable.Range((int)SignalKind.ClickValue, SignalProgression.SignalCount - (int)SignalKind.ClickValue)
             .Sum(save.Signals.StackCount);
-          if (clicks <= save.Signals.Counts.Sum() / 2 || save.Upgrades.GetValueOrDefault("CGE1") == 0
+          if (clicks <= save.Signals.Counts.Sum() / 2 || save.Upgrades.GetValueOrDefault("TBE1") == 0
             || save.Upgrades.GetValueOrDefault("HCE1") == 0)
             throw new Exception("Developed clicking build is missing manual systems or focused signals");
         }

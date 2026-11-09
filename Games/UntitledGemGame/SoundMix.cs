@@ -19,7 +19,10 @@ public static class SoundMix
         or SoundEvent.SignalDecodeFirst or SoundEvent.SignalDecodeSecond or SoundEvent.SignalDecodeThird
         or SoundEvent.SignalRevealCommon or SoundEvent.SignalRevealUncommon or SoundEvent.SignalRevealRare
         or SoundEvent.SignalRevealEpic or SoundEvent.SignalRevealLegendary
-        or SoundEvent.GemClick or SoundEvent.CursorGravityCollapse or SoundEvent.RefuelStart
+        or SoundEvent.GemClick or SoundEvent.TractorBeltPlace or SoundEvent.RefuelStart
+        // The belt shutting off is the cue to place it again: the railgun can fill the
+        // milestone voices, so it sits with the player's own sounds.
+        or SoundEvent.TractorBeltExpire
         or SoundEvent.ModuleRevealStart or SoundEvent.ModuleRevealCommon or SoundEvent.ModuleRevealEpic
         or SoundEvent.ModuleRevealLegendary or SoundEvent.ModuleEquip or SoundEvent.ModuleUnequip
         or SoundEvent.CannonFireManual or SoundEvent.CoreShardClick => new(SoundBus.Player, 0.025f),
@@ -42,7 +45,7 @@ public static class SoundMix
         or SoundEvent.SupercriticalBurst or SoundEvent.ChaosTheoryStart
         or SoundEvent.CarrierDelivery => new(SoundBus.Milestone, 0.12f),
       SoundEvent.RefuelRequest or SoundEvent.RefuelComplete => new(SoundBus.Automation, 0.8f),
-      SoundEvent.UpgradeComplete or SoundEvent.ModuleSalvageReady or SoundEvent.CursorGravityReady
+      SoundEvent.UpgradeComplete or SoundEvent.ModuleSalvageReady
         or SoundEvent.JackpotHaul or SoundEvent.PrestigePointEarned
         or SoundEvent.PrestigePointLanded => new(SoundBus.Automation, 0.65f),
       SoundEvent.CannonFireAuto or SoundEvent.CannonImpact or SoundEvent.RocketMiniImpact

@@ -34,9 +34,10 @@ internal static class ExpandedSignalChecks
       (SignalKind.ClickChainRange, () => SignalStats.ClickChainRange, false),
       (SignalKind.HoldClickFrequency, () => SignalStats.HoldClickFrequency, false),
       (SignalKind.ClickComboWindow, () => SignalStats.ClickComboWindow, false),
-      (SignalKind.CursorGravityRadius, () => SignalStats.CursorGravityRadius, false),
-      (SignalKind.CursorGravityStrength, () => SignalStats.CursorGravityStrength, false),
-      (SignalKind.CursorGravityDuration, () => SignalStats.CursorGravityDuration, false),
+      (SignalKind.TractorBeltRadius, () => SignalStats.TractorBeltRadius, false),
+      (SignalKind.TractorBeltSpeed, () => SignalStats.TractorBeltSpeed, false),
+      (SignalKind.TractorBeltDuration, () => SignalStats.TractorBeltDuration, false),
+      (SignalKind.TractorBeltCapacity, () => SignalStats.TractorBeltCapacity, true),
       (SignalKind.DroneCount, () => SignalStats.DroneCount, true),
       (SignalKind.DroneLifetime, () => SignalStats.DroneLifetime, false),
       (SignalKind.DroneSpeed, () => SignalStats.DroneSpeed, false),
@@ -131,16 +132,20 @@ internal static class ExpandedSignalChecks
 
     manager = new UpgradeManager();
     foreach (var kind in new[] { SignalKind.ClickChainRange, SignalKind.HoldClickFrequency, SignalKind.ClickComboWindow,
-      SignalKind.CursorGravityRadius, SignalKind.CursorGravityStrength, SignalKind.CursorGravityDuration, SignalKind.CursorGravityCooldown })
+      SignalKind.TractorBeltRadius, SignalKind.TractorBeltSpeed, SignalKind.TractorBeltDuration, SignalKind.TractorBeltCapacity })
       Check(!SignalCatalog.IsAvailable((int)kind), $"Locked click utility excluded: {kind}");
     Check(SignalCatalog.IsAvailable((int)SignalKind.ClickValue), "Manual click value is always useful");
     manager.UG.ClickChainCount = 1;
     manager.UG.HoldClickEnabled = true;
     manager.UG.ClickComboBonus = 0.05f;
-    manager.UG.CursorGravityEnabled = true;
+    manager.UG.TractorBeltEnabled = true;
     foreach (var kind in new[] { SignalKind.ClickChainRange, SignalKind.HoldClickFrequency, SignalKind.ClickComboWindow,
-      SignalKind.CursorGravityRadius, SignalKind.CursorGravityStrength, SignalKind.CursorGravityDuration, SignalKind.CursorGravityCooldown })
+      SignalKind.TractorBeltRadius, SignalKind.TractorBeltSpeed, SignalKind.TractorBeltDuration, SignalKind.TractorBeltCapacity })
       Check(SignalCatalog.IsAvailable((int)kind), $"Unlocked click utility included: {kind}");
+    manager.UG.TractorBeltPermanent = true;
+    Check(!SignalCatalog.IsAvailable((int)SignalKind.TractorBeltDuration)
+      && SignalCatalog.IsAvailable((int)SignalKind.TractorBeltSpeed), "A permanent belt no longer offers run time signals");
+    manager.UG.TractorBeltPermanent = false;
     Check(!SignalCatalog.IsAvailable((int)SignalKind.DroneCount), "Locked drone ability excluded");
     Check(SignalCatalog.IsAvailable((int)SignalKind.ClickShotDamage), "Clicking the planet always fires shots");
     foreach (var kind in new[] { SignalKind.AbilityCooldown, SignalKind.CommandOverdriveDuration,
@@ -214,11 +219,12 @@ internal static class ExpandedSignalChecks
     var ug = new UpgradesGeneratorUpgrades
     {
       ClickValueMultiplier = 2, ClickChainCount = 1, ClickChainRange = 60,
-      ClickComboBonus = 0.05f, HoldClickEnabled = true, CursorGravityEnabled = true
+      ClickComboBonus = 0.05f, HoldClickEnabled = true, TractorBeltEnabled = true
     };
     var signals = new SignalProgression();
     foreach (var kind in new[] { SignalKind.ClickValue, SignalKind.ClickChainRange, SignalKind.HoldClickFrequency,
-      SignalKind.ClickComboWindow, SignalKind.CursorGravityRadius, SignalKind.CursorGravityStrength, SignalKind.CursorGravityDuration })
+      SignalKind.ClickComboWindow, SignalKind.TractorBeltRadius, SignalKind.TractorBeltSpeed, SignalKind.TractorBeltDuration,
+      SignalKind.TractorBeltCapacity })
       signals.Counts[(int)kind * SignalProgression.RarityCount] = 4;
     var clicks = new ClickUtility();
     Check(clicks.ShouldClick(true, true, true, 0, ug, signals), "Signals preserve immediate manual clicks");
@@ -240,23 +246,15 @@ internal static class ExpandedSignalChecks
     Near(clicks.ComboRemaining, 2.4, "Combo signal extends the live combo timer");
     Near(ug.ClickValueMultiplier, 2, "Signals leave purchased click stats intact");
     Near(ug.ClickChainRange, 60, "Signals leave purchased chain stats intact");
-    var well = new CursorGravityWell();
-    signals.Counts[(int)SignalKind.CursorGravityCooldown * SignalProgression.RarityCount] = 1;
-    signals.Counts[(int)SignalKind.AbilityCooldown * SignalProgression.RarityCount] = 1;
-    Check(well.HandleInput(true, true, true, Microsoft.Xna.Framework.Vector2.Zero, 19, ug, signals),
-      "An aimed cast uses gravity signals");
-    Near(well.Radius, CursorGravityWell.PreviewRadius(ug, 19, signals), "Gravity targeting matches its signaled preview");
-    Near(well.Radius, 57 * 1.1, "Horizon signal applies reduced range bonuses");
-    Near(well.CooldownRemaining, 20 * 0.95 * 0.95, "Gravity recharge stacks with global ability cooldown signals");
-    int gem = grid.AddGem(3, 50, 0, 1);
-    well.Update(1, grid, (index, position) => grid.MoveGem(index, position.X, position.Y));
-    Near(grid.Gems[gem].X, 50 * Math.Exp(-0.45 * 1.2), "Gravity strength signal changes actual gem attraction");
-    well.Update(1.1f, grid, (_, _) => { });
-    Check(well.IsActive, "Duration signal keeps a well active beyond its base expiry");
-    well.Update(0.31f, grid, (_, _) => { });
-    Check(!well.IsActive, "Boosted gravity well expires at its effective duration");
-    signals.Counts[(int)SignalKind.CursorGravityCooldown * SignalProgression.RarityCount] = 1000;
-    Near(CursorGravityWell.Cooldown(ug, signals), 1, "Gravity cooldown remains bounded with many permanent signals");
-    Near(ug.CursorGravityRadiusMultiplier, 3, "Signals leave purchased gravity stats intact");
+    var beltStats = TractorBeltStats.From(ug, 19, signals);
+    Near(beltStats.Radius, 57 * 1.1, "Intake Lens applies reduced range bonuses");
+    Near(beltStats.Speed, TractorBelt.BaseSpeed * 1.2, "Mag-Rail Coils speed up the belt");
+    Near(beltStats.Duration, 15 * 1.2, "Belt Capacitors lengthen each placement");
+    Check(beltStats.Capacity == 2, "Cargo Racks round pod capacity up");
+    var belt = new TractorBelt();
+    Check(belt.HandleInput(true, true, true, Microsoft.Xna.Framework.Vector2.Zero, beltStats)
+      && Math.Abs(belt.Lines[0].Remaining - 18) < 0.001, "A placement runs for its signaled time");
+    Near(ug.TractorBeltRadiusMultiplier, 3, "Signals leave purchased belt stats intact");
+    Check(ug.TractorBeltCapacity == 1, "Signals leave purchased pod capacity intact");
   }
 }

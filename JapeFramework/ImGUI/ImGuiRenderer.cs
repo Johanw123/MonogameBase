@@ -189,9 +189,14 @@ public class ImGuiRenderer
     /// </summary>
     protected virtual void UpdateInput()
     {
-        if (!_game.IsActive) return;
-
         var io = ImGui.GetIO();
+
+        // Set before the focus check: ImGui starts at -1 x -1 and aborts the process in NewFrame
+        // if a window that opens without focus still has that size on its first frame.
+        io.DisplaySize = new System.Numerics.Vector2(_graphicsDevice.PresentationParameters.BackBufferWidth, _graphicsDevice.PresentationParameters.BackBufferHeight);
+        io.DisplayFramebufferScale = new System.Numerics.Vector2(1f, 1f);
+
+        if (!_game.IsActive) return;
 
         var mouse = Mouse.GetState();
         var keyboard = Keyboard.GetState();
@@ -216,9 +221,6 @@ public class ImGuiRenderer
                 io.AddKeyEvent(imguikey, keyboard.IsKeyDown(key));
             }
         }
-
-        io.DisplaySize = new System.Numerics.Vector2(_graphicsDevice.PresentationParameters.BackBufferWidth, _graphicsDevice.PresentationParameters.BackBufferHeight);
-        io.DisplayFramebufferScale = new System.Numerics.Vector2(1f, 1f);
     }
 
     private bool TryMapKeys(Keys key, out ImGuiKey imguikey)

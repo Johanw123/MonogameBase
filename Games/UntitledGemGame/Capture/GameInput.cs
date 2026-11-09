@@ -3,7 +3,7 @@ using MonoGame.Extended.Input;
 
 namespace UntitledGemGame;
 
-// Pointer input for world gameplay (clicking, holding, cursor gravity, manual abilities).
+// Pointer input for world gameplay (clicking, holding, the tractor belt, manual abilities).
 // Normally the real mouse; a capture session substitutes a scripted pointer.
 public static class GameInput
 {

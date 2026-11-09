@@ -310,7 +310,7 @@ public static class PrestigeTalentEffects
   // Layers every weapon hit reaches beyond its fire power.
   public static int HeavyOrdnanceBonusLayers => Meta?.HeavyOrdnance == true ? HeavyOrdnanceLayers : 0;
 
-  // Clicks and the gravity well: Lone Operator, and Recoil Harvest after a Railgun round.
+  // Gems collected by hand: Lone Operator, and Recoil Harvest after a Railgun round.
   public static float HandValueMultiplier => (Meta?.LoneOperator == true ? LoneOperatorMultiplier : 1f)
     * (Meta?.RecoilHarvest == true && RecoilHarvestActive ? RecoilHarvestValue : 1f);
 

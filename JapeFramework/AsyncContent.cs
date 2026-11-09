@@ -92,7 +92,22 @@ namespace AsyncContent
       DefaultTexture.SetData(data);
     }
 
+    // Draw code calls AssetManager.Load every frame, and each resolution costs up to three
+    // filesystem checks and some garbage. Found paths are remembered; a path that was not
+    // found is looked up again next time, so a file added later is still picked up.
+    private static readonly System.Collections.Concurrent.ConcurrentDictionary<string, string> s_resolvedContentPaths = new();
+
     private static string GetContentPath(string path)
+    {
+      if (s_resolvedContentPaths.TryGetValue(path, out var resolved))
+        return resolved;
+      var found = ResolveContentPath(path);
+      if (found != null)
+        s_resolvedContentPaths[path] = found;
+      return found ?? path;
+    }
+
+    private static string? ResolveContentPath(string path)
     {
       if (Path.Exists(path))
         return path;
@@ -118,7 +133,7 @@ namespace AsyncContent
 
       if (!Path.Exists(p))
       {
-        return path;
+        return null;
       }
 
       var files = Directory.GetFiles(p);
@@ -131,7 +146,7 @@ namespace AsyncContent
         }
       }
 
-      return path;
+      return null;
     }
 
     public static Stream GetFileStream(string path)

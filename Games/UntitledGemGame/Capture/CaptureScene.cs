@@ -65,6 +65,8 @@ public sealed class SceneSave
   public double? PrestigeEarned { get; set; }
   public double? PrestigePending { get; set; }
   public double? PrestigeEcho { get; set; }
+  // Core extractions so far: from the first one on, talents grant Gem Lore and Expand Space.
+  public int? Extractions { get; set; }
   public int? ActiveGems { get; set; }
   public Dictionary<string, JsonElement> Upgrades { get; set; } = new();
   public Dictionary<string, JsonElement> Abilities { get; set; } = new();
@@ -93,7 +95,7 @@ public sealed class SceneSignal
   public int Count { get; set; } = 1;
 }
 
-// do: pointer, hide, dismiss_tooltip, click, hold, gravity, click_gems, ability, manual, upgrade, stat, zoom, panel, prestige, fracture, marker, gems
+// do: pointer, hide, dismiss_tooltip, click, hold, belt, click_gems, ability, manual, upgrade, stat, zoom, panel, prestige, fracture, marker, gems
 public sealed class SceneAction
 {
   public double At { get; set; }

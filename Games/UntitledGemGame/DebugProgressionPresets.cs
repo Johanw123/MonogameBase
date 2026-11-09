@@ -17,8 +17,8 @@ public static class DebugProgressionPresets
      "Production preference, developed ship systems, incomplete module collection.",
      "Fleet preference, deeper permanent upgrades, still missing many signals.",
      "Click value, click radius and early chains, with a small supporting fleet.",
-     "Click combos, sustained harvesting and cursor gravity; manual collection signals and permanent bonuses.",
-     "Deep click chains, sustained harvesting and gravity upgrades with a focused signal collection.",
+     "Click combos, sustained harvesting and the tractor belt; manual collection signals and permanent bonuses.",
+     "Deep click chains, sustained harvesting and tractor belt upgrades with a focused signal collection.",
      "Everything maxed for chaos testing; deliberately unrealistic."];
   public static readonly string[] FeatureNames =
     ["Abilities: starter", "Abilities: fully upgraded", "Shipyard: Drifters", "Shipyard: Seekers",
@@ -105,8 +105,8 @@ public static class DebugProgressionPresets
           [SignalKind.SpawnCount, SignalKind.SpawnFrequency, SignalKind.GemValue, SignalKind.Capacity] ];
         SignalKind[] preferred = clicking
           ? [SignalKind.ClickValue, SignalKind.ClickRadius, SignalKind.ClickChainRange,
-             SignalKind.HoldClickFrequency, SignalKind.ClickComboWindow, SignalKind.CursorGravityRadius,
-             SignalKind.CursorGravityStrength, SignalKind.CursorGravityDuration, SignalKind.CursorGravityCooldown]
+             SignalKind.HoldClickFrequency, SignalKind.ClickComboWindow, SignalKind.TractorBeltRadius,
+             SignalKind.TractorBeltSpeed, SignalKind.TractorBeltDuration, SignalKind.TractorBeltCapacity]
           : builds[stage == 5 ? 1 : stage == 6 ? 2 : 0];
         var random = new Random(730 + stage + (clicking ? 100 : 0));
         var wallet = new GameState { CurrentRedGemCount = total * 10 / 100 };
@@ -133,7 +133,7 @@ public static class DebugProgressionPresets
 
   private static bool IsClickStat(JsonUpgrade definition) => definition.PropertyName.StartsWith("Click", StringComparison.Ordinal)
     || definition.PropertyName.StartsWith("HoldClick", StringComparison.Ordinal)
-    || definition.PropertyName.StartsWith("CursorGravity", StringComparison.Ordinal);
+    || definition.PropertyName.StartsWith("TractorBelt", StringComparison.Ordinal);
 
   // The order a player takes each tier's talents in: crits and the cannon's craters first, since
   // every run has them, then the fleet and the weapons and systems bought later in a run.
@@ -285,7 +285,7 @@ public static class DebugProgressionPresets
     else
     {
       if (feature == 9)
-        foreach (string id in new[] { "CVM1", "CLC1", "CR1", "CSC1", "CCB1", "CGE1" })
+        foreach (string id in new[] { "CVM1", "CLC1", "CR1", "CSC1", "CCB1", "TBE1" })
           Buy(upgrades.UpgradeButtons, save.Upgrades, id);
       else
         foreach (string id in FullWeaponNodes)

@@ -180,6 +180,10 @@ namespace UntitledGemGame
       // KNI's HiDef profile caps shader metadata at SM3. Our browser effects
       // use SM4 metadata, supported by its WebGL2 FL10_0 device profile.
       _graphics.GraphicsProfile = GraphicsProfile.FL10_0;
+#else
+      // BaseGame creates the device with VSync off; apply the player's setting (on by default)
+      // before the device exists. The settings checkbox changes it while running.
+      _graphics.SynchronizeWithVerticalRetrace = _settings.IsVSync;
 #endif
     }
 

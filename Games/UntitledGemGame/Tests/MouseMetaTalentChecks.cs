@@ -11,9 +11,7 @@ internal static class MouseMetaTalentChecks
   public static void Run()
   {
     ComboSupernova();
-    GravityTalents();
-    DenseLimits();
-    Console.WriteLine("Mouse meta talents passed: combo bursts, core harvesting, steering, collapse, reservations and bounded work.");
+    Console.WriteLine("Mouse meta talents passed: combo bursts.");
   }
 
   private static bool Collect(GemSpatialIndex grid, int index)
@@ -63,77 +61,5 @@ internal static class MouseMetaTalentChecks
     clicks.Activate(grid, new[] { seed }, Vector2.Zero, ug, Pickup, 1, meta: meta);
     clicks.Reset();
     Check(clicks.SupernovaProgress == 0, "New runs must reset Supernova charge");
-  }
-
-  private static void GravityTalents()
-  {
-    var ug = new UpgradesGeneratorUpgrades { CursorGravityEnabled = true };
-    var meta = new UpgradesGeneratorUpgrades_meta { CursorGravityEventHorizon = true,
-      CursorGravityMobile = true, CursorGravityCollapse = true, ClickValueMultiplier = 3 };
-    var well = new CursorGravityWell();
-    var grid = new GemSpatialIndex(8, 30);
-    int core = grid.AddGem(1, 5, 0, 10);
-    int rim = grid.AddGem(2, 50, 0, 10);
-    int outside = grid.AddGem(3, 100, 0, 10);
-    int reserved = grid.AddGem(4, 2, 0, 10);
-    grid.Gems[reserved].ClaimState = 1;
-    var collected = new Dictionary<int, double>();
-    void Move(int index, Vector2 position) => grid.MoveGem(index, position.X, position.Y);
-    bool Pickup(int index, double multiplier)
-    {
-      if (!Collect(grid, index)) return false;
-      collected.Add(index, multiplier);
-      return true;
-    }
-    well.TryActivate(Vector2.Zero, 19, ug, meta: meta);
-    well.Update(0.1f, grid, Move, collect: Pickup);
-    Check(collected.Count == 1 && collected[core] == 6 && well.HasEventHorizon,
-      "The inner core must harvest at twice effective click value");
-    well.Update(3, grid, Move, collect: Pickup);
-    Check(collected.Count == 2 && collected[rim] == 9 && !collected.ContainsKey(outside)
-      && !collected.ContainsKey(reserved) && well.CollapseGlow == 1
-      && well.TakeCollapseNotification() && !well.TakeCollapseNotification(),
-      "Expiration must harvest the full radius at triple value without claiming ship targets");
-    well.Update(1, grid, Move, collect: Pickup);
-    Check(collected.Count == 2 && well.CollapseGlow == 0, "Collapse must fire only once and fade");
-    well.Reset();
-    well.TryActivate(Vector2.Zero, 19, ug, meta: meta);
-    float cooldown = well.CooldownRemaining;
-    well.HandleInput(true, false, true, new Vector2(200, 100), 19, ug, meta: meta);
-    Check(well.Position == new Vector2(200, 100) && well.CooldownRemaining == cooldown,
-      "Steering must move the well without restarting timers");
-    well.HandleInput(false, false, true, Vector2.Zero, 19, ug, meta: meta);
-    well.HandleInput(true, false, false, Vector2.Zero, 19, ug, meta: meta);
-    Check(well.Position == new Vector2(200, 100), "Releasing aim or opening menus must park the well");
-    well.Reset();
-    Check(!well.TakeCollapseNotification() && well.CollapseGlow == 0,
-      "Cancellation must clear the field without paying a collapse reward");
-    well.TryActivate(Vector2.Zero, 19, ug);
-    well.HandleInput(true, false, true, new Vector2(200, 100), 19, ug);
-    Check(well.Position == Vector2.Zero, "Unpurchased wells must remain anchored");
-    well.Update(3, grid, Move, collect: Pickup);
-    Check(!well.TakeCollapseNotification(), "Unpurchased wells must not detonate");
-  }
-
-  private static void DenseLimits()
-  {
-    var grid = new GemSpatialIndex(10000, 30);
-    for (int i = 0; i < 10000; i++) grid.AddGem(i, 1, 1, 1);
-    var well = new CursorGravityWell();
-    var ug = new UpgradesGeneratorUpgrades { CursorGravityEnabled = true };
-    var meta = new UpgradesGeneratorUpgrades_meta { CursorGravityEventHorizon = true, CursorGravityCollapse = true };
-    int collected = 0, moved = 0;
-    bool Pickup(int index, double multiplier)
-    {
-      if (!Collect(grid, index)) return false;
-      collected++;
-      return true;
-    }
-    well.TryActivate(Vector2.Zero, 19, ug, meta: meta);
-    well.Update(0.1f, grid, (_, _) => moved++, collect: Pickup);
-    Check(collected == 16 && moved <= CursorGravityWell.FrameBudget, "Core harvesting must remain bounded in dense piles");
-    collected = moved = 0;
-    well.Update(3, grid, (_, _) => moved++, collect: Pickup);
-    Check(collected == 128 && moved <= CursorGravityWell.FrameBudget, "Collapse must share its 128-pickup budget with core harvesting");
   }
 }

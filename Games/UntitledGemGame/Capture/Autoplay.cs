@@ -12,7 +12,8 @@ namespace UntitledGemGame.Capture;
 // Core Shards as they appear, on the planet while the cannon is still manual or the field is
 // thin, and on gem clusters otherwise. It fires fleet commands as they come ready and goes
 // shopping every few seconds: Core Shard upgrades first, then the cheapest affordable regular
-// upgrade (or a power cell when that is cheaper), then system talents. It extracts by the
+// upgrade (or a power cell when that is cheaper), then system talents, and fits each weapon
+// blueprint it buys to a free hardpoint. It extracts by the
 // scene's rule, learns talents (highest open tier first, skipping ones a pick rules out) and
 // starts the next run. It works in game seconds, whatever the scene's time scale. A shopping
 // round that buys nothing logs "idle" with the cheapest open upgrade, its price and the gems
@@ -29,6 +30,9 @@ public sealed class SceneAutoplay
   public int Points { get; set; } = 3;
   public double StallMinutes { get; set; } = 5;
   public double MinRunMinutes { get; set; } = 10;
+  // "stall" extracts only a run holding at least this many points. Above 0, a run that stops
+  // earning points is played on instead, so a late game saves up for the warp drive.
+  public int MinPoints { get; set; }
   public int Loops { get; set; } = 100;
   // Core Shard upgrades to buy, in order of preference, and only these ([] buys none). Unset:
   // ShardPriority, then any other.
@@ -103,7 +107,8 @@ internal static class Autoplay
     return plan.Extract switch
     {
       "points" => state.PendingPrestigePoints >= (ulong)plan.Points,
-      "stall" => t - runStart >= plan.MinRunMinutes * 60 && t - lastProgress >= plan.StallMinutes * 60,
+      "stall" => t - runStart >= plan.MinRunMinutes * 60 && t - lastProgress >= plan.StallMinutes * 60
+        && state.PendingPrestigePoints >= (ulong)plan.MinPoints,
       _ => false,
     };
   }
@@ -169,6 +174,9 @@ internal static class Autoplay
       return false;
     CaptureSession.Log("buy", button.Data.ShortName);
     bought++;
+    // A bought weapon blueprint waits in inventory; fit it as a player drags it to a hardpoint.
+    if (Weaponry.BlueprintWeapon(button.Data.ShortName) is { } weapon && UpgradeManager.Instance.Weapons.TryAutoFit(weapon))
+      CaptureSession.Log("fit", weapon.ToString());
     return true;
   }
 

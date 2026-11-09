@@ -10,7 +10,7 @@ using UntitledGemGame.Screens;
 
 namespace UntitledGemGame.Systems
 {
-  public class UpdateSystem2 : EntityUpdateSystem
+  public partial class UpdateSystem2 : EntityUpdateSystem
   {
     private ComponentMapper<Gem> _gemMapper;
     private readonly OrthographicCamera m_camera;
@@ -35,8 +35,7 @@ namespace UntitledGemGame.Systems
     private uint _hoverFrame;
     private readonly List<int> _directClicks = new();
     private readonly System.Func<int, double, bool> _collectManualGem;
-    private readonly System.Action<int, Vector2> _moveManualGravity;
-    private readonly System.Func<int, Vector2, float, bool> _gravityOverlaps;
+    private readonly System.Func<int, Vector2, float, bool> _clickOverlaps;
     private PlayAreaBounds _previousBounds;
     public static UpdateSystem2 Instance;
     public int UpdatingGemCount => _awake.Count;
@@ -45,8 +44,7 @@ namespace UntitledGemGame.Systems
     public UpdateSystem2(OrthographicCamera camera) : base(Aspect.All(typeof(Gem)))
     {
       m_camera = camera;
-      _moveManualGravity = MoveManualGravity;
-      _gravityOverlaps = GravityOverlaps;
+      _clickOverlaps = ClickOverlaps;
       _collectManualGem = CollectManualGem;
       Instance = this;
     }
@@ -162,19 +160,11 @@ namespace UntitledGemGame.Systems
         }
     }
 
-    private bool GravityOverlaps(int index, Vector2 position, float radius)
+    private bool ClickOverlaps(int index, Vector2 position, float radius)
     {
       var grid = HarvesterCollectionSystem.Instance.flatSpatialHash;
       var gem = _gemMapper.Get(grid.Gems[index].EntityId);
       return gem != null && gem.IsLive && !gem.PickedUp && !gem.WasClicked && gem.OverlapsClick(position, radius);
-    }
-
-    private void MoveManualGravity(int index, Vector2 position)
-    {
-      var grid = HarvesterCollectionSystem.Instance.flatSpatialHash;
-      var gem = _gemMapper.Get(grid.Gems[index].EntityId);
-      if (gem != null && gem.IsLive && !gem.PickedUp && !gem.WasClicked)
-        gem.MoveByManualGravity(position);
     }
 
     private bool CollectManualGem(int index, double multiplier)
@@ -218,15 +208,8 @@ namespace UntitledGemGame.Systems
       bool boundsChanged = bounds.Minimum != _previousBounds.Minimum || bounds.Maximum != _previousBounds.Maximum;
       _previousBounds = bounds;
       bool magnetsActive = MagnetizerCache.ActiveMagnets.Count > 0;
-      screen.CursorGravity.FollowPointer(mousePosition, hovering && mouse.IsButtonDown(MouseButton.Right));
-      screen.CursorGravity.Update(dt, grid, _moveManualGravity, _gravityOverlaps, _collectManualGem);
-      if (screen.CursorGravity.TakeCollapseNotification())
-        AudioManager.Instance.PlaySound(SoundEvent.CursorGravityCollapse);
-      if (screen.CursorGravity.TakeReadyNotification() && UpgradeManager.Instance.UG.CursorGravityEnabled)
-        AudioManager.Instance.PlaySound(SoundEvent.CursorGravityReady);
-      screen.CursorGravity.HandleInput(mouse.IsButtonDown(MouseButton.Right),
-        mouse.WasButtonPressed(MouseButton.Left), hovering,
-        mousePosition, screen.GemClickRadius, UpgradeManager.Instance.UG, UpgradeManager.Instance.Signals, UpgradeManager.Instance.UGM);
+      UpdateTractorBelt(screen, grid, mouse.WasButtonPressed(MouseButton.Right),
+        mouse.IsButtonDown(MouseButton.Right), hovering, mousePosition, dt);
       // Idle gems sleep indefinitely. Only camera changes require a population-wide
       // update; magnets wake the gems in their reach each frame. The extraction's
       // collapse swallows the field on the GPU (Gem.Swallow), so it wakes nothing.
@@ -258,7 +241,7 @@ namespace UntitledGemGame.Systems
       if (clicked && UntitledGemGameGameScreen.Instance.ClickUtility.Activate(
         grid, _directClicks, mousePosition, UpgradeManager.Instance.UG, _collectManualGem, System.Random.Shared.NextDouble(),
         UpgradeManager.Instance.Signals, UpgradeManager.Instance.UGM,
-        clickRadius, _gravityOverlaps))
+        clickRadius, _clickOverlaps))
         AudioManager.Instance.PlaySound(SoundEvent.GemClick);
       foreach (var gem in _hovered)
         if (gem.UpdateRegistered && gem.HoverFrame != _hoverFrame) gem.SetHovered(false);
@@ -279,8 +262,9 @@ namespace UntitledGemGame.Systems
             gem.SynchronizeSpatialIndex(grid);
 
           // Clicked gems have left the index. Deliver directly on arrival so
-          // their flight never needs a spatial query or a second claim.
-          if (gem.WasClicked && !gem.PickedUp && !gem.CollectingOnGpu)
+          // their flight never needs a spatial query or a second claim. The Tractor
+          // Belt delivers its own gems at the end of the belt.
+          if (gem.WasClicked && !gem.PickedUp && !gem.CollectingOnGpu && !gem.RidingTractorBelt)
           {
             var home = HomeBase.Instance.Entity.Get<Harvester>();
             float reach = BaseStats.GetHarvesterCollectionRange(home) + gem.CollectionRadius;

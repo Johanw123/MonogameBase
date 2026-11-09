@@ -52,7 +52,7 @@ internal sealed class DebugSoundEffects : IDisposable
       or SoundEvent.WindowOpen or SoundEvent.WindowClose or SoundEvent.UpgradeStart
       or SoundEvent.UpgradeComplete or SoundEvent.UpgradeError or SoundEvent.UpgradeRefund => "Menu & UI",
     SoundEvent.GemPickup or SoundEvent.GemClick or SoundEvent.GemMerge
-      or SoundEvent.CursorGravityCollapse or SoundEvent.CursorGravityReady => "Gems & Cursor",
+      or SoundEvent.TractorBeltPlace or SoundEvent.TractorBeltExpire => "Gems & Cursor",
     SoundEvent.RefuelRequest or SoundEvent.RefuelStart or SoundEvent.RefuelLoop or SoundEvent.RefuelComplete
       or SoundEvent.HarvesterDeliverCargo or SoundEvent.HarvesterWarpDrive or SoundEvent.JackpotHaul
       or SoundEvent.CarrierDelivery => "Harvesters & Refueling",

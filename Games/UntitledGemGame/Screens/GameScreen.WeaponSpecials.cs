@@ -21,6 +21,10 @@ public partial class UntitledGemGameGameScreen
   private const float OrbitalRocketSeconds = 1.35f;
   private const float MiniRocketSeconds = 0.35f;
   private const float ShockwaveSeconds = 0.9f;
+  // Seismic cannon fire can keep thousands of waves alive (3,768 in the endgame benchmark),
+  // 16 lines each, and a few hundred already saturate the ring. Beyond this many, only a
+  // share of them is drawn; the waves and their damage are unchanged.
+  private const int MaxDrawnShockwaves = 256;
   private const int MaxMagmaScars = 32;
   private static int MagmaScarCap => PrestigeTalentEffects.MoltenSpotCap(MaxMagmaScars);
   private const float MagmaTrailInterval = 0.04f;
@@ -57,6 +61,11 @@ public partial class UntitledGemGameGameScreen
     public PlanetDamageSource Source;
     public float Angle, Age;
     public int Gems, Emitted, FirePower;
+    // In [0, 1), fixed for the wave's life and evenly spread over consecutive waves (Fibonacci
+    // hashing), so the drawn share stays the same waves every frame and covers every age.
+    // 24 bits, so the largest rank stays below 1 in a float.
+    public readonly float DrawRank = (unchecked(nextDrawRank++ * 2654435769u) >> 8) / 16777216f;
+    private static uint nextDrawRank;
   }
 
   private readonly List<MagmaScar> magmaScars = new();
@@ -276,17 +285,18 @@ public partial class UntitledGemGameGameScreen
         }
       }
     }
+    float scarSeconds = MagmaScarSeconds;
     for (int i = magmaScars.Count - 1; i >= 0; i--)
     {
       var scar = magmaScars[i];
       scar.Age += dt;
-      scar.Carry += scar.Budget * dt / MagmaScarSeconds;
+      scar.Carry += scar.Budget * dt / scarSeconds;
       while (scar.Carry >= 1f)
       {
         scar.Carry -= 1f;
         KnockGemsLoose(PlanetDamageSource.MagmaScars, 1, scar.FirePower, bounds, LaserReach, scar.Angle, 0.2f, scar.Value);
       }
-      if (scar.Age >= MagmaScarSeconds) magmaScars.RemoveAt(i);
+      if (scar.Age >= scarSeconds) magmaScars.RemoveAt(i);
     }
   }
 
@@ -301,7 +311,8 @@ public partial class UntitledGemGameGameScreen
     }
     // Points are added in time order, so the oldest are at the front.
     int expired = 0;
-    while (expired < magmaTrail.Count && magmaTrail[expired].Age >= MagmaScarSeconds) expired++;
+    float scarSeconds = MagmaScarSeconds;
+    while (expired < magmaTrail.Count && magmaTrail[expired].Age >= scarSeconds) expired++;
     magmaTrail.RemoveRange(0, expired);
 
     if (!cutting)
@@ -410,13 +421,15 @@ public partial class UntitledGemGameGameScreen
   private void DrawMagmaScars()
   {
     if (magmaTrail.Count == 0 || !BeginMoltenSpots(out var center, out float texel)) return;
-    DrawMagmaScarPass(center, texel, ScarSoot);
-    DrawMagmaScarPass(center, texel, CraterBedPass);
-    DrawMagmaScarPass(center, texel, soot: 0f);
+    // Looked up once: it multiplies signal and talent bonuses, and every spot needs it.
+    float scarSeconds = MagmaScarSeconds;
+    DrawMagmaScarPass(center, texel, ScarSoot, scarSeconds);
+    DrawMagmaScarPass(center, texel, CraterBedPass, scarSeconds);
+    DrawMagmaScarPass(center, texel, soot: 0f, scarSeconds);
     m_spriteBatch.End();
   }
 
-  private void DrawMagmaScarPass(Vector2 center, float texel, float soot)
+  private void DrawMagmaScarPass(Vector2 center, float texel, float soot, float scarSeconds)
   {
     Array.Clear(scarHasPrevious);
     float spacing = ScarSpotSpacing * texel;
@@ -434,19 +447,19 @@ public partial class UntitledGemGameGameScreen
           float t = step / (float)steps;
           var normal = Vector3.Normalize(Vector3.Lerp(previous.Normal, point.Normal, t));
           DrawMoltenSpot(center, texel, normal, ScarSpotTexels,
-            ScarLife(MathHelper.Lerp(previous.Age, point.Age, t)), (byte)(point.Seed + step * 37), soot);
+            ScarLife(MathHelper.Lerp(previous.Age, point.Age, t), scarSeconds), (byte)(point.Seed + step * 37), soot);
         }
       }
-      DrawMoltenSpot(center, texel, point.Normal, ScarSpotTexels, ScarLife(point.Age), point.Seed, soot);
+      DrawMoltenSpot(center, texel, point.Normal, ScarSpotTexels, ScarLife(point.Age, scarSeconds), point.Seed, soot);
       scarPrevious[beam] = point;
       scarHasPrevious[beam] = true;
     }
   }
 
   // A cut stays molten most of its life, then cools and crumbles near the end.
-  private float ScarLife(float age)
+  private static float ScarLife(float age, float scarSeconds)
   {
-    float progress = Math.Clamp(age / MagmaScarSeconds, 0f, 1f);
+    float progress = Math.Clamp(age / scarSeconds, 0f, 1f);
     return 1f - progress * progress;
   }
 
@@ -454,8 +467,10 @@ public partial class UntitledGemGameGameScreen
   private void DrawWeaponSpecialGlows(float feather, bool laserMounted)
   {
     DrawShipTerminalGlow(feather);
+    float drawnShare = MaxDrawnShockwaves / (float)Math.Max(MaxDrawnShockwaves, shockwaves.Count);
     foreach (var wave in shockwaves)
     {
+      if (wave.DrawRank >= drawnShare) continue;
       float progress = Math.Clamp(wave.Age / ShockwaveSeconds, 0f, 1f);
       float fade = 1f - progress * 0.6f;
       for (int side = -1; side <= 1; side += 2)

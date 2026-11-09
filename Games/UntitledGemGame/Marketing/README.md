@@ -203,7 +203,7 @@ These are intentionally short for a standard post. Check the composer after repl
 [Skills/beyond-the-belt-shorts](Skills/beyond-the-belt-shorts/SKILL.md) makes a short end to end from new footage, for Claude Code and Codex alike:
 
 1. **Stage** any game state in a scene file: a debug preset plus exact upgrade levels, currencies, stats, abilities, modules and signals.
-2. **Record** it with the game's own capture mode (`--capture scene.json`). The game renders offscreen in a native 9:16 play field at 4K/60, on a fixed timestep, with scripted clicks, holds, gravity wells, abilities, upgrades and zooms. Every sound the game plays is logged, so the real game audio can be rebuilt.
+2. **Record** it with the game's own capture mode (`--capture scene.json`). The game renders offscreen in a native 9:16 play field at 4K/60, on a fixed timestep, with scripted clicks, holds, tractor belts, abilities, upgrades and zooms. Every sound the game plays is logged, so the real game audio can be rebuilt.
 3. **Edit** to music with `render_short.py`: punch-ins, slow pushes, slow motion, honest live numbers from the capture log, and text in the `fullscreen` layout (default).
 
 Work folders live in `Marketing/Shorts/NN-slug/` (scenes and edit files are versioned; takes and renders are ignored by Git). The capture mode never uses the player's save or `Settings.json`, and only runs in development builds (`Demo.IsDev`).

@@ -30,12 +30,18 @@ internal static class Staging
     // This run's points are on the ladder too.
     save.PrestigePointsEarned = Math.Max(save.PrestigePointsEarned, save.PendingPrestigePoints);
     if (wanted.PrestigeEcho is double echo) save.PrestigeEcho = PrestigeProgression.SanitizeEcho(echo);
+    if (wanted.Extractions is int extractions) save.CoreExtractions = (ulong)Math.Max(0, extractions);
     if (wanted.ActiveGems is int active)
     {
       save.ActiveGemCount = Math.Max(0, active);
       save.CreatedInitialGems = true;
     }
     SetLevels(upgrades.UpgradeButtons, save.Upgrades, wanted.Upgrades);
+    // Like the presets, a staged ship carries the weapons it owns; in play a bought blueprint
+    // waits in inventory until it is dragged onto a hardpoint.
+    foreach (var tab in Weaponry.Tabs)
+      if (tab.Weapon != MainShipWeapon.Cannon && save.Upgrades.GetValueOrDefault(tab.Root) > 0)
+        save.Weapons.TryAutoFit(tab.Weapon);
     SetLevels(upgrades.UpgradeButtonsAbilities, save.Abilities, wanted.Abilities);
     SetLevels(upgrades.UpgradeButtonsMeta, save.Meta, wanted.Meta);
     if (wanted.Equip != null)

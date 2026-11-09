@@ -65,7 +65,7 @@ internal static class Actions
   internal static string Slug(string name) => new(name.ToLowerInvariant().Where(char.IsLetterOrDigit).ToArray());
 
   private static readonly string[] Kinds =
-    ["pointer", "hide", "dismiss_tooltip", "click", "hold", "gravity", "click_gems", "ability", "manual", "upgrade", "level",
+    ["pointer", "hide", "dismiss_tooltip", "click", "hold", "belt", "click_gems", "ability", "manual", "upgrade", "level",
      "stat", "zoom", "panel", "prestige", "fracture", "new_run", "marker", "gems", "event", "menu", "language"];
 
   // Catch typos before a long boot.
@@ -79,7 +79,7 @@ internal static class Actions
     if (action.Do is "manual") ManualSlot(Require(action, action.Id, "id"));
     if (action.Do is "upgrade" or "level" or "stat" or "panel") Require(action, action.Id, "id");
     if (action.Do is "stat" or "zoom" && action.Value == null) throw new ArgumentException($"{action.Do} needs a value");
-    if (action.Do is "hold" or "gravity" or "click_gems" or "zoom" && action.Dur <= 0) throw new ArgumentException($"{action.Do} needs dur");
+    if (action.Do is "hold" or "belt" or "click_gems" or "zoom" && action.Dur <= 0) throw new ArgumentException($"{action.Do} needs dur");
     if (action.Do is "event" && action.Id is not ("cannon" or "rockets" or "railgun" or "particles" or "particle_multiplier" or "thruster_multiplier" or "weapon_multiplier"))
       throw new ArgumentException("event: id must be cannon, rockets, railgun, particles, particle_multiplier, thruster_multiplier or weapon_multiplier");
     if (action.Do is "event" && action.Id is "particle_multiplier" or "thruster_multiplier" or "weapon_multiplier")
@@ -142,17 +142,15 @@ internal static class Actions
         return _ => { if (++frames < 2) return false; pointer.Left = false; return true; };
       }
       case "hold":
-      case "gravity":
+      case "belt":
       {
         pointer.Position = Aim(action, pointer.Position);
         pointer.Visible = true;
+        // The right press places a Tractor Belt intake; a concurrent pointer glide drags it.
         bool left = action.Do == "hold";
         if (left) pointer.Left = true; else pointer.Right = true;
-        int frames = 0;
         return t =>
         {
-          // The gravity well casts on a left click while the right button is held.
-          if (!left) pointer.Left = ++frames == 2;
           if (t < start + action.Dur) return false;
           if (left) pointer.Left = false; else pointer.Right = false;
           return true;
