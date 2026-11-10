@@ -1,5 +1,5 @@
 {
-  "output": "../takes/harpoon_railgun_v2.mp4",
+  "output": "../takes/harpoon_railgun_v3.mp4",
   "preset": "Weapons: all unlocked",
   "width": 2160,
   "height": 3840,
@@ -7,6 +7,7 @@
   "warmup": 6,
   "duration": 6,
   "zoom": 1,
+  "frame_planet": 0.46,
   "auto_fractures": false,
   "stats": {
     "AutoRefuel": true,
@@ -19,7 +20,6 @@
     "RocketPods": false,
     "Railgun": false,
     "RocketOrbitalStrike": false,
-    "CameraZoomScale": 2.8,
     "MaxGemCount": 8000
   },
   "save": {

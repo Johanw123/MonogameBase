@@ -29,6 +29,15 @@ public static class CaptureSession
   public static string SavePath => Path.Combine(workDirectory, "progress.json");
   // Leave the HUD strip free of gems only when the HUD is part of the shot (or asked for).
   public static bool ReserveHudSpace => !Active || Scene.Hud || Scene.HudInset;
+  public static bool FramesPlanet => Active && Scene.FramePlanet != null;
+
+  // Where frame_planet puts the ship and planet: just inside the left and right edges of the view.
+  // The right margin is wider, clear of the buttons that phone apps draw over that edge.
+  public static (float Ship, float Planet) FramedOffsets(float zoom, float planetRadius, float shipHalfWidth)
+  {
+    float half = RenderWidth / (2f * zoom);
+    return (shipHalfWidth - half * 0.92f, half * 0.86f - planetRadius);
+  }
   // The world renders at the pixel area of a 4K screen in the shot's aspect (2160x3840 for 9:16),
   // so framing never depends on the output size; smaller outputs are scaled down on the GPU.
   // The window matches, keeping the HUD, its text and bloom in the same pixel space.
@@ -117,6 +126,7 @@ public static class CaptureSession
     if (Scene.TimeScale < 1) throw new ArgumentException("time_scale must be 1 or more");
     if (Scene.EncoderPreset is not ("ultrafast" or "superfast" or "veryfast" or "faster" or "fast" or "medium" or "slow" or "slower" or "veryslow"))
       throw new ArgumentException("encoder_preset must be an x264 speed preset");
+    if (Scene.FramePlanet is < 0.05f or > 0.8f) throw new ArgumentException("frame_planet is the planet's share of the frame width, 0.05 to 0.8");
     if (Scene.Hud && Scene.Width * 9 != Scene.Height * 16) throw new ArgumentException("The HUD is laid out for 16:9; use a 16:9 size with hud");
     double aspect = Scene.Width / (double)Scene.Height;
     RenderHeight = (int)Math.Round(Math.Sqrt(3840.0 * 2160 / aspect) / 2) * 2;
@@ -323,6 +333,16 @@ public static class CaptureSession
     game.CaptureScreens.ReplaceScreen(new UntitledGemGameGameScreen(game));
     var screen = UntitledGemGameGameScreen.Instance;
     if (screen == first) throw new InvalidOperationException("Staged session did not load");
+    if (Scene.FramePlanet is float share)
+    {
+      float radius = 93f * PlanetPresentation.PlanetSize(screen.State.CoreFractures, UpgradeManager.Instance.ExpandSpaceLevel);
+      // Never closer than 3: a small early planet would otherwise put the ship right up against it.
+      float framed = Math.Min(3f, share * RenderWidth / (2f * radius));
+      // As a stat, so it stays on top of later upgrade changes like any other scene stat.
+      using var value = JsonDocument.Parse(framed.ToString(System.Globalization.CultureInfo.InvariantCulture));
+      Scene.Stats["CameraZoomScale"] = value.RootElement.Clone();
+      Console.WriteLine($"CAPTURE FRAME: planet radius {radius:0}, camera zoom {framed:0.00}");
+    }
     Staging.ApplyStats(Scene.Stats);
     // Cooldowns were set while loading; restart them so cooldown stats count from the first frame.
     foreach (var ability in HomeBase.Instance.ActiveAbilities.Where(a => a is not EmptyAbility))

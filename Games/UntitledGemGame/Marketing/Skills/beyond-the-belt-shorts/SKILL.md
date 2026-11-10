@@ -28,6 +28,12 @@ Scripts are in `scripts/` next to this file. Run them with `python3`.
   planet's world position relative to already-spawned gems, placing gems on top
   of the planet. Keep `CameraZoomScale` and scene `zoom` constant within each
   take; do any push-in or pull-out in `edit.json` (`zoom` / `zoom_end`).
+- **Show the ship and the whole planet.** Portrait world shots use
+  `"frame_planet": 0.46` in the scene, and the edit keeps them at `zoom` 1
+  (at most a slight push). A punch-in that crops the ship or half the planet
+  makes the shot confusing: the viewer cannot tell what the game is.
+- **First person singular.** The user is a solo developer: captions and posting
+  copy say "I" and "my", never "we" or "our".
 - **Keep harvesters active (use infinite fuel for behavior showcases).** Enable
   auto-refuel in showcase scenes with `"stats": {"AutoRefuel": true}`. When
   showcasing harvester movement, classes, or collection behavior (where fuel is

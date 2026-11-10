@@ -101,7 +101,7 @@ gameplay action.
 
 **Shots:** 0–3 s: full weapon barrage (`"In my incremental space game / you crack planets for gems"`).
 3–6.5 s: Arc Harpoon & Railgun shockwave spawning dense circular clusters faster than basic ships can collect (`"Problem: weapons spawn gems / faster than ships can collect"`).
-6.5–12 s: Prospectors flying into clusters and pulling them in (`"So we added Prospector ships / that pull in whole clusters"`).
+6.5–12 s: Prospectors flying into clusters and pulling them in (`"So I added Prospector ships / that pull in whole clusters"`).
 12–18 s: upgraded Genesis Pulse and Graviton Cascade chaining the ring home (`"Plus Graviton Cascade / to chain the entire ring home"`).
 
 ## 10 — Problem: Fleet traffic jams vs. Five specialized classes (18 s)
@@ -110,7 +110,7 @@ gameplay action.
 
 **Shots:** 0–3 s: basic Drifters (`"In my space mining game / you start with basic Drifter ships"`).
 3–6 s: crowded Drifter fleet roaming the inner field (`"Problem: Drifters all roam / the same inner field"`).
-6–9 s: Rimrunners sweeping the outer orbit (`"So we built 5 ship classes: / Rimrunners sweep the edges"`).
+6–9 s: Rimrunners sweeping the outer orbit (`"So I built 5 ship classes: / Rimrunners sweep the edges"`).
 9–12 s: Seekers hunting high-tier gems (`"Seekers hunt high-tier gems"`).
 12–15 s: Prospectors scooping clusters (`"Prospectors scoop gem clusters"`).
 15–18 s: Trove Hunters warping home (`"And Trove Hunters / warp straight home"`).
@@ -139,6 +139,6 @@ gameplay action.
 
 **Shots:** 0–3.3 s: unarmed Drifters (`"In my space game / your fleet starts out unarmed"`).
 3.3–6.5 s: basic collector ships passively gathering gems (`"Problem: collector ships / did zero damage to the planet"`).
-6.5–11.3 s: opening the Shipyard tab in the Ship Terminal and equipping `Thunder God` and `Rocket Rack` (`"So we built a Shipyard / to fit weapons on every class"`).
+6.5–11.3 s: opening the Shipyard tab in the Ship Terminal and equipping `Thunder God` and `Rocket Rack` (`"So I built a Shipyard / to fit weapons on every class"`).
 11.3–16.5 s: closing the terminal as the armed fleet unleashes lightning and rockets alongside the mothership (`"Now the whole fleet / fights alongside the mothership"`).
 

@@ -55,6 +55,7 @@ Comments (`//`) and trailing commas are allowed (also in edit files).
 | `stats` | | Raw stat values by short or property name (`"CameraZoomScale": 2.0`, `"HCE": true`), applied after loading, like the debug stat sliders. Kept on top of later upgrades. |
 | `auto_fractures` | true | `false` stops damage from setting off core fractures on its own (weapon showcases deal plenty); the `fracture` action still works. |
 | `zoom` | 1 | Multiplies the camera zoom after loading. Gameplay happens in the camera view, so zooming in also makes the play area smaller and denser; zooming out gives more space. |
+| `frame_planet` | | Portrait framing: the planet's width as a share of the frame width (`0.46`). Sets the camera zoom from the staged planet's size (never closer than 3) and puts the ship just inside the left edge and the whole planet inside the right edge. Use it on every portrait world shot instead of `stats.CameraZoomScale`: the game spaces ship and planet for 16:9, so a grown late-game planet is otherwise half off the frame. `zoom` still multiplies the result. |
 | `hud` | false | Compose the real HUD over the world. Needs a 16:9 size (renders 3840x2160). For upgrade trees, shipyard, signals. |
 | `hud_inset` | false | Keep gems out of the HUD strip even without a HUD. Off: the whole frame is play area. |
 | `main_menu` | false | Record the title screen from the moment it appears (the fleet warping in) instead of a staged session; `preset`, `save` and `stats` are ignored. Use `hud: true` to include the logo and buttons, and `warmup: 0` to catch the arrival. |
@@ -148,9 +149,10 @@ numbers in text. `scripts/sfx.py` rebuilds the game audio from the sound events
 Capture samples also include `fleet_ships`, `ships_waiting_for_fuel` (OutOfFuel
 or RequestingFuel) and `ships_refueling`. Use these with visual review to check
 showcase fleets. Brief automatic refueling is normal; sustained waiting is not.
-For portrait shots in the current ship-left/planet-right layout, start with
-`stats.CameraZoomScale: 2.8` and `zoom: 1` so both fit; old scene zoom multipliers
-can crop the ship or planet. Recheck each scene's framing in a preview.
+For portrait shots use `"frame_planet": 0.46` so the ship and the whole planet are
+in frame (user feedback 2026-11-10: shots with half a planet and no ship do not
+show what the game is about). A fixed `stats.CameraZoomScale: 2.8` only fits the
+small first-run planet. Recheck each scene's framing in a preview.
 
 World-only captures disable pointer hit-testing against the hidden HUD; use `hud`
 or `hud_inset` when scripting named HUD targets.

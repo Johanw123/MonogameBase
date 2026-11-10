@@ -1,5 +1,5 @@
 {
-  "output": "../takes/rocket_carpet_v1.mp4",
+  "output": "../takes/rocket_carpet_v2.mp4",
   "preset": "Late game: fleet",
   "width": 2160,
   "height": 3840,
@@ -7,6 +7,7 @@
   "warmup": 6,
   "duration": 18,
   "zoom": 1,
+  "frame_planet": 0.46,
   "auto_fractures": false,
   "stats": {
     "AutoRefuel": true,
@@ -26,13 +27,12 @@
     "RocketClusterWarheads": false,
     "RocketOrbitalStrike": false,
     "RocketSwarm": false,
-    "CameraZoomScale": 2.8,
     "MaxGemCount": 38000,
     "AllHarvesterCollectionRange": 0.45
   },
   "save": {
-    "gems": 1e12,
-    "earned_this_run": 1e12,
+    "gems": 1000000000000.0,
+    "earned_this_run": 1000000000000.0,
     "active_gems": 120,
     "equip": []
   },

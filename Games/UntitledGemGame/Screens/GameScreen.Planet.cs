@@ -61,6 +61,10 @@ public partial class UntitledGemGameGameScreen
         * (home.VisualCollectionRangeMultiplier ?? BaseStats.GetHarvesterCollectionRangeMultiplier(home));
     var offsets = PlanetPresentation.HorizontalOffsets(m_camera.Zoom / RenderQuality.WorldScale,
       31f * BasePlanetScale * planetVisualSize, width);
+#if !KNI_WEB
+    if (Capture.CaptureSession.FramesPlanet)
+      offsets = Capture.CaptureSession.FramedOffsets(m_camera.Zoom, 31f * BasePlanetScale * planetVisualSize, width);
+#endif
     HomeBasePos = PlanetMiningEnabled ? center + new Vector2(offsets.Ship, 0f) : center;
     PlanetPos = center + new Vector2(offsets.Planet, 0f) + IntroPlanetOffset;
   }

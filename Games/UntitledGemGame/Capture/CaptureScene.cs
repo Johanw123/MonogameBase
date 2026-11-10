@@ -37,6 +37,10 @@ public sealed class CaptureScene
   public Dictionary<string, JsonElement> Stats { get; set; } = new();
   // Multiplies the camera zoom after loading; below 1 shows (and plays in) more space.
   public float Zoom { get; set; } = 1;
+  // Portrait framing: the planet's width as a share of the frame width (0.46 is a good start). Sets the
+  // camera zoom from the staged planet's size (at most 3) and keeps the ship and the whole planet inside
+  // the frame; the game's own spacing is made for 16:9 and pushes a grown planet off a narrow frame.
+  public float? FramePlanet { get; set; }
   // Whether damage can set off core fractures on its own; the fracture action works either way.
   public bool AutoFractures { get; set; } = true;
   public List<SceneAction> Actions { get; set; } = new();
