@@ -29,9 +29,14 @@ public static class PrestigeTalentEffects
   public const float SlipstreamSpeedMultiplier = 1.5f;
 
   public static int TractorTailCapacity(Harvester ship)
-    => Meta?.TractorTails == true && BaseStats.IsFleetHarvester(ship)
-      ? Math.Max(TractorTailMinimum, (int)(((long)BaseStats.GetHarvesterCapacity(ship)
-        + TractorTailCapacityDivisor - 1) / TractorTailCapacityDivisor)) : 0;
+  {
+    // Tow Winch tows without the talent, and triples the tail with it.
+    bool talent = Meta?.TractorTails == true, winch = ship.HasModule(ShipModule.TowWinch);
+    if ((!talent && !winch) || !BaseStats.IsFleetHarvester(ship)) return 0;
+    long tail = Math.Max(TractorTailMinimum, ((long)BaseStats.GetHarvesterCapacity(ship)
+      + TractorTailCapacityDivisor - 1) / TractorTailCapacityDivisor);
+    return (int)Math.Min(int.MaxValue, talent && winch ? tail * 3 : tail);
+  }
   // Mothership Protocol: each harvester type flies as one carrier and a swarm of shuttles
   // (Systems/HarvesterSystem.Carriers.cs). Shuttles share out a ship's hold; the carrier's
   // hold has room for a full ship's load per shuttle, so a delivery is several trips' worth.

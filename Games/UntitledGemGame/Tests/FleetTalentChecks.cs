@@ -126,7 +126,7 @@ internal static class FleetTalentChecks
 
   private static void CheckTailReservations()
   {
-    using var scene = new Scene(ShipModule.EchoChamber);
+    using var scene = new Scene(ShipModule.GemPolisher);
     scene.Manager.UGM.TractorTails = true;
     scene.Manager.UG.HarvesterCapacity = 20;
     var reserved = scene.AddGem(new Vector2(550, 500));
@@ -141,8 +141,8 @@ internal static class FleetTalentChecks
     Check(gems.All(g => !g.PickedUp), "Refueling ships cannot gather a tail");
     scene.Ship.CurrentState = Harvester.HarvesterState.Collecting;
     Tow(scene);
-    Check(!reserved.PickedUp && scene.Ship.TowedGemCount == 5 && scene.Ship.CarryingGemBaseValue == 170,
-      "Tails respect other reservations and run the ordinary Echo Chamber pickup bonus");
+    Check(!reserved.PickedUp && scene.Ship.TowedGemCount == 5 && scene.Ship.CarryingGemBaseValue == 165,
+      "Tails respect other reservations and run the ordinary Gem Polisher pickup bonus");
     scene.Ship.SlipstreamTimeRemaining = 3;
     scene.Ship.ClearCargoForPrestige();
     Check(scene.Ship.TowedGemCount == 0 && scene.Ship.TailGems.Count == 0

@@ -450,11 +450,17 @@ public partial class UntitledGemGameGameScreen
           gems, firePower);
       }
     }
-    if (harvester.HasModule(ShipModule.LaserUplink) && UpgradeManager.Instance.UG.MiningLaser)
-      laserOvercharge = Math.Max(laserOvercharge,
-        Math.Min(ModuleCatalog.LaserUplinkMaxSeconds, cargo * ModuleCatalog.LaserUplinkSecondsPerGem));
+    if (harvester.HasModule(ShipModule.SiegeCannon))
+    {
+      // One shell carrying the fire power of many: a bigger load, a bigger shell.
+      long shells = Math.Clamp((long)cargo / ModuleCatalog.SiegeGemsPerPower, 1, ModuleCatalog.SiegeMaxPower);
+      int firePower = (int)Math.Min(int.MaxValue, SignalStats.FirePower(MainShipWeapon.Cannon) * shells);
+      int gems = AutomaticWeaponYield(firePower, arsenal: false);
+      if (gems > 0)
+        LaunchCannonShot(PlanetShotKind.Cannon, from, PlanetPos + PlanetDirection(facing) * PlanetRadius * 0.9f, gems, firePower);
+    }
     if (harvester.HasModule(ShipModule.DetonatorCharge))
-      DetonateMolten(facing, ModuleCatalog.DetonatorRadius, weaponBounds, force: true);
+      DetonateMolten(facing, MathF.PI, weaponBounds, force: true);
   }
 
   // Every weapon you own fires at once (Main Battery Relay, Shard Reactor, Planetary

@@ -25,7 +25,7 @@ public partial class RenderSystem
     float seed = ShipSeed(ship);
     var center = ship.BoundingCircle.Center;
 
-    // Tractor Link and Recall Tether: a beam from the gem to where it is going.
+    // Tractor Link: a beam from the gem to where it is going.
     if (ship.TractorFlashRemaining > 0f)
       _moduleEffects.Beam(ship.TractorOrigin, ship.TractorTarget, 1f - ship.TractorFlashRemaining / 0.25f,
         TractorTint, 1.2f, seed);
@@ -49,7 +49,7 @@ public partial class RenderSystem
         OverdriveTint, 5.5f, seed, 0.45f + 0.55f * boost);
     }
 
-    // World Eater: the ship is a black hole that grows as it feeds.
+    // World Eater: a black hole on the ship that grows as it feeds.
     if (ship.HasModule(ShipModule.WorldEater))
       _moduleEffects.Vortex(center, ship.WorldEaterRadius, 22f + ship.WorldEaterPickups * 0.25f, GravityTint,
         seed, spin: 0.6f, brightness: 0.6f);
@@ -93,11 +93,10 @@ public partial class RenderSystem
           ship.StormArcSeed + seed + arc * 0.193f, StormTint);
     }
 
-    // Astral Relay: the cargo's value beamed home. It fires every few pickups across the
-    // whole field, so the beam is kept thin and faint.
+    // Astral Relay: the cargo's value beamed home, twice a trip.
     if (ship.RelayFlashRemaining > 0f)
       _moduleEffects.Beam(ship.RelayOrigin, UntitledGemGameGameScreen.HomeBasePos,
-        1f - ship.RelayFlashRemaining / ModuleCatalog.PulseDuration, RelayTint, 1f, seed, 0.4f);
+        1f - ship.RelayFlashRemaining / ModuleCatalog.PulseDuration, RelayTint, 2f, seed, 0.7f);
 
     if (ship.ModulePulseRemaining > 0f)
     {

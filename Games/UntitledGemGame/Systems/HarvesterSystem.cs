@@ -864,7 +864,6 @@ namespace UntitledGemGame.Systems
       var fuelCost = isDrone || freeFuel ? 0f : (moveLen * 1.5f) / BaseStats.GetHarvesterFuelEfficiency(harvester)
         * PrestigeTalentEffects.FuelCostMultiplier(harvester);
 
-      harvester.TryRestorePhoenixFuel(fuelCost);
 
       // Hardcode Pi/2 constant to avoid calculating it every frame
       float radians = (float)Math.Atan2(dir.Y, dir.X);
@@ -974,6 +973,7 @@ namespace UntitledGemGame.Systems
         ulong held = harvester.CarryingGemBaseValue;
         if (towing) harvester.AddTowedGem(gem, gemEntity.Get<Sprite>(), pickupPosition);
         else harvester.PickedUpGem(gem);
+        harvester.AddModuleGemBonus(method, gem.BaseValue);
         harvester.Credits.Add(method, harvester.CarryingGemBaseValue - held);
       }
 
@@ -993,7 +993,7 @@ namespace UntitledGemGame.Systems
       }
 
       if (allowChainCollection && harvester.HasModule(ShipModule.TractorLink)
-        && moduleRandom.NextSingle() < ModuleCatalog.TractorChance)
+        && moduleRandom.NextSingle() < harvester.Tuned(ModuleCatalog.TractorChance))
         CollectTractorGem(pickupPosition, harvester);
 
       if (allowChainCollection
@@ -1026,11 +1026,14 @@ namespace UntitledGemGame.Systems
 
     private void CollectTractorGem(Vector2 origin, Harvester harvester)
     {
-      if (!TryCollectNearbyModuleGem(harvester, origin, ModuleCatalog.TractorRadius,
-        GemCollectionMethod.TractorLink, out var target)) return;
-      harvester.TractorOrigin = origin;
-      harvester.TractorTarget = target;
-      harvester.TractorFlashRemaining = 0.25f;
+      for (int pull = ModuleLimit(harvester, 1); pull > 0; pull--)
+      {
+        if (!TryCollectNearbyModuleGem(harvester, origin, ModuleCatalog.TractorRadius,
+          GemCollectionMethod.TractorLink, out var target)) return;
+        harvester.TractorOrigin = origin;
+        harvester.TractorTarget = target;
+        harvester.TractorFlashRemaining = 0.25f;
+      }
     }
 
     private void CollectChainedGems(Vector2 origin, Harvester harvester)
@@ -1085,9 +1088,11 @@ namespace UntitledGemGame.Systems
       if (deliveredCargo > 0)
         AudioManager.Instance.PlaySound(SoundEvent.HarvesterDeliverCargo);
       ReleaseTreasureScannerTarget(harvester);
-      DetonateWorldEater(harvester);
-      harvester.StartHeistReplay();
       ulong deliveryValue = CalculateDeliveryValue(harvester);
+      // A ghost still on its route pays out before the next one sets off.
+      PayGhost(harvester);
+      double heistCopy = Math.Ceiling(deliveryValue * ModuleCatalog.HeistCopyMultiplier);
+      harvester.StartHeistReplay(heistCopy >= ulong.MaxValue ? ulong.MaxValue : (ulong)heistCopy);
       var endpoint = harvester.CollectionEndpoint;
       ulong queuedValue = UntitledGemGameGameScreen.DeliveredUncounted;
       UntitledGemGameGameScreen.DeliveredUncounted = deliveryValue > ulong.MaxValue - queuedValue
@@ -1122,7 +1127,8 @@ namespace UntitledGemGame.Systems
       harvester.TargetScreenPosition = harvester.DepartingHomeBase
         ? GetHomeBaseDepartureTarget(harvester) : null;
       harvester.ReturnGateCheckedForCurrentLoad = false;
-      if (harvester.HasModule(ShipModule.ReturnBeacon) && endpoint is Vector2 beacon)
+      if ((harvester.HasModule(ShipModule.ReturnBeacon) || harvester.HasModule(ShipModule.PhaseAnchor))
+        && endpoint is Vector2 beacon)
       {
         var transform = harvester.Entity?.Get<Transform2>();
         if (transform != null) WarpToBeacon(harvester, transform, beacon);
@@ -1461,6 +1467,7 @@ namespace UntitledGemGame.Systems
         ApplyDroneLightning(harvester, (float)gameTime.ElapsedGameTime.TotalSeconds);
         ApplyTravelModules(harvester, (float)gameTime.ElapsedGameTime.TotalSeconds);
         ApplyMythicModules(harvester, (float)gameTime.ElapsedGameTime.TotalSeconds);
+        IgnitePhoenix(harvester);
         // Capacity can be reached during pickup resolution. Sweep before Return Gate
         // can deliver this load, and remember the collection endpoint before any warp.
         if (!harvester.ForceInstantCollection && harvester.ReturningToHomebase)

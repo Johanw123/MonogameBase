@@ -89,7 +89,6 @@ namespace UntitledGemGame.Entities
     public float WakeFlashRemaining;
     public float OverdriveTimeRemaining;
     public int SingularityPickups;
-    private int echoPickups;
     private bool supernovaConsumed;
     public Vector2 ModulePulsePosition;
     public float ModulePulseRadius, ModulePulseRemaining;
@@ -121,7 +120,6 @@ namespace UntitledGemGame.Entities
       ResetAdditionalModuleTrip(previousLoadout);
       finalSweepConsumed = false;
       supernovaConsumed = false;
-      echoPickups = 0;
       SingularityPickups = 0;
       OverdriveTimeRemaining = 0f;
       CollectionEndpoint = null;
@@ -237,6 +235,7 @@ namespace UntitledGemGame.Entities
       echoVaultDeliveries = 0;
       nextOverflowDriveStacks = 0;
       GhostRoute = null;
+      GhostPayout = 0;
       droneRelayUsed = false;
       BeginModuleTrip();
     }
@@ -289,12 +288,6 @@ namespace UntitledGemGame.Entities
         ? AbilityGemValue.AddBonus(gem.BaseValue, SignalStats.SweepValue)
         : gem.BaseValue;
       CarryingGemBaseValue = PrestigeProgression.AddSaturating(CarryingGemBaseValue, pickupValue);
-      if (HasModule(ShipModule.EchoChamber) && ++echoPickups >= ModuleCatalog.EchoInterval)
-      {
-        echoPickups = 0;
-        CarryingGemBaseValue = PrestigeProgression.AddSaturating(CarryingGemBaseValue, (ulong)pickupValue * 2);
-        ShowModulePulse(BoundingCircle.Center, 48f, Color.MediumPurple);
-      }
       ApplyAdditionalCargoModules(pickupValue);
       ++CarryingGemCount;
       if (DroneOverchargeMultiplier > 1f && CarryingGemCount <= 25 && CarryingGemCount % 5 == 0)

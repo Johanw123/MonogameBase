@@ -42,25 +42,47 @@ public partial class HarvesterCollectionSystem
       ship.EaterCooldown = Math.Max(0f, ship.EaterCooldown - dt);
       if (ship.EaterCooldown == 0f && !ship.ReachedHome)
       {
-        int swallowed = CollectModuleGems(ship, ship.BoundingCircle.Center, ship.WorldEaterRadius, 16,
-          GemCollectionMethod.WorldEater);
-        ship.WorldEaterPickups = Math.Min(80, ship.WorldEaterPickups + swallowed);
-        ship.EaterCooldown = 0.25f;
+        ship.WorldEaterPickups = Math.Min(80, ship.WorldEaterPickups + SwallowGems(ship));
+        ship.EaterCooldown = 0.1f;
       }
     }
     UpdateHeistReplay(ship, dt);
   }
 
-  private void DetonateWorldEater(Harvester ship)
+  // The black hole feeds from all around: random probes first, then whatever is in reach.
+  private int SwallowGems(Harvester ship)
   {
-    if (ship.MarkedForDestroy || !ship.HasModule(ShipModule.WorldEater) || ship.CarryingGemCount == 0) return;
-    CollectModuleArea(ship, ship.BoundingCircle.Center, 300f, 96, Color.MediumPurple, GemCollectionMethod.WorldEater);
+    var center = ship.BoundingCircle.Center;
+    float radius = ship.WorldEaterRadius;
+    // It always nibbles, so the hole is alive before the ship's first pickup.
+    int limit = ModuleLimit(ship, Math.Max(1, ship.WorldEaterHunger)), swallowed = 0;
+    ship.WorldEaterHunger = 0;
+    for (int misses = 0; swallowed < limit && misses < 4;)
+    {
+      int index = FindModuleGem(center, radius);
+      if (index >= 0 && TrySendModuleGemHome(ship, index, GemCollectionMethod.WorldEater, center)) ++swallowed;
+      else ++misses;
+    }
+    if (swallowed >= limit) return swallowed;
+    foreach (int index in flatSpatialHash.QueryCollection(center.X, center.Y, radius))
+      if (TrySendModuleGemHome(ship, index, GemCollectionMethod.WorldEater, center) && ++swallowed >= limit) break;
+    return swallowed;
+  }
+
+  private static void PayGhost(Harvester ship)
+  {
+    if (ship.GhostPayout == 0) return;
+    UntitledGemGameGameScreen.DeliveredUncounted = PrestigeProgression.AddSaturating(
+      UntitledGemGameGameScreen.DeliveredUncounted, ship.GhostPayout);
+    RecordCollection(ship, GemCollectionMethod.TimeHeist, ship.GhostPayout);
+    ship.GhostPayout = 0;
   }
 
   private void UpdateHeistReplay(Harvester ship, float dt)
   {
     if (ship.GhostRoute == null || dt <= 0f) return;
-    float travel = 300f * dt;
+    // The ghost keeps pace with its ship, so a fast ship's ghost finishes before the next delivery.
+    float travel = Math.Max(300f, BaseStats.GetHarvesterSpeed(ship)) * dt;
     int collected = 0;
     // Walk each recorded segment independently, preserving discontinuities at warps.
     while (travel > 0f && ship.GhostSegment < ship.GhostRoute.Length)
@@ -81,7 +103,11 @@ public partial class HarvesterCollectionSystem
         ship.GhostSegmentDistance = 0f;
       }
     }
-    if (ship.GhostSegment >= ship.GhostRoute.Length) ship.GhostRoute = null;
+    if (ship.GhostSegment >= ship.GhostRoute.Length)
+    {
+      ship.GhostRoute = null;
+      PayGhost(ship);
+    }
   }
 
   private void CollectGhostTrail(Harvester ship, Vector2 start, Vector2 end, ref int collected)
@@ -97,20 +123,7 @@ public partial class HarvesterCollectionSystem
       var position = new Vector2(candidate.X, candidate.Y);
       float t = lengthSquared > 0f ? Math.Clamp(Vector2.Dot(position - start, direction) / lengthSquared, 0f, 1f) : 0f;
       if (Vector2.DistanceSquared(position, start + direction * t) > 70f * 70f) continue;
-      var gem = GetEntity(candidate.EntityId)?.Get<Gem>();
-      if (gem == null || !gem.IsLive || !flatSpatialHash.TryClaim(index)) continue;
-      // Bloom seeds keep their ordinary split behavior; they do not pay twice.
-      if (!gem.TryBloom())
-      {
-        gem.MergeGem(position);
-        ulong value = BaseStats.GetHarvesterDeliveryValue(ship, gem.BaseValue);
-        UntitledGemGameGameScreen.DeliveredUncounted = PrestigeProgression.AddSaturating(
-          UntitledGemGameGameScreen.DeliveredUncounted, value);
-        RecordCollection(ship, GemCollectionMethod.TimeHeist, value);
-      }
-      ++collected;
-      ++UntitledGemGameGameScreen.Collected;
-      UpgradeManager.Instance.Modules.RecordHarvest();
+      if (TrySendModuleGemHome(ship, index, GemCollectionMethod.TimeHeist, position)) ++collected;
     }
   }
 }

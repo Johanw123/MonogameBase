@@ -13,7 +13,7 @@ internal static class MythicModuleChecks
 
   public static void Run()
   {
-    using (var scene = new Scene(ShipModule.ThunderGod, ShipModule.CascadeCapacitor))
+    using (var scene = new Scene(ShipModule.ThunderGod))
     {
       var gems = Enumerable.Range(0, 80).Select(i => scene.AddGem(new Vector2(530 + i % 10 * 12, 450 + i / 10 * 12))).ToArray();
       var reserved = scene.AddGem(new Vector2(510, 500));
@@ -27,7 +27,8 @@ internal static class MythicModuleChecks
       Check(gems.Count(g => g.PickedUp) == 40 && !reserved.PickedUp, "Forking thunder caps at forty and leaves reservations alone");
       Check(scene.Ship.ThunderArcs.Count == 40 && scene.Ship.ThunderArcs.GroupBy(a => a.Start).All(g => g.Count() <= 3),
         "Each visible thunder strike forks at most three times");
-      Check(scene.Ship.DirectModulePickups == 0 && scene.Ship.CascadeCharges == 24, "Storm bonus pulls cannot recursively trigger direct effects");
+      Check(scene.Ship.DirectModulePickups == 0 && scene.Ship.Credits[GemCollectionMethod.ThunderGod] == 800,
+        "Storm bonus pulls are worth double and cannot recursively trigger direct effects");
       scene.Ship.BeginModuleTrip();
       Check(scene.Ship.ThunderTravelCharge == 0 && scene.Ship.ThunderArcs.Count == 0, "Thunder resets on docking");
     }
@@ -48,37 +49,37 @@ internal static class MythicModuleChecks
       scene.Invoke("ApplyMythicModules", ship, 1f);
       Check(first.PickedUp && second.PickedUp && !warpGap.PickedUp && ship.GhostRoute == null,
         "Ghost follows recorded segments and never harvests a warp gap");
-      Check(UntitledGemGameGameScreen.DeliveredUncounted - before == 20 && ship.CarryingGemCount == 0,
-        "Ghost income is paid once without filling the real ship's cargo");
+      Check(UntitledGemGameGameScreen.DeliveredUncounted - before == 40 && ship.CarryingGemCount == 0,
+        "The ghost sends its gems home and delivers the last cargo again at double value");
       scene.Invoke("ApplyMythicModules", ship, 1f);
-      Check(UntitledGemGameGameScreen.DeliveredUncounted - before == 20, "Completed ghosts cannot pay twice");
+      Check(UntitledGemGameGameScreen.DeliveredUncounted - before == 40, "Completed ghosts cannot pay twice");
       ship.RecordHeistMovement(new Vector2(500, 500), new Vector2(800, 500));
       ship.CarryingGemCount = 1;
-      ship.StartHeistReplay();
+      ship.StartHeistReplay(50);
       ship.ClearCargoForPrestige();
-      Check(ship.GhostRoute == null, "Prestige clears ghost replay");
+      Check(ship.GhostRoute == null && ship.GhostPayout == 0, "Prestige clears ghost replay");
     }
     using (var scene = new Scene(ShipModule.WorldEater))
     {
       var ship = scene.Ship;
-      ship.CarryingGemCount = (uint)BaseStats.GetHarvesterCapacity(ship);
-      Check(!ship.ReturningToHomebase && ship.ModuleReturnCapacity == 80, "World Eater stays out beyond normal cargo capacity");
       var gems = Enumerable.Range(0, 30).Select(i => scene.AddGem(new Vector2(520 + i, 500))).ToArray();
       scene.Prepare();
+      ulong before = UntitledGemGameGameScreen.DeliveredUncounted;
       scene.Invoke("ApplyMythicModules", ship, 0f);
-      Check(gems.Count(g => g.PickedUp) == 16 && ship.WorldEaterRadius == 112, "Black hole swallows sixteen and grows");
-      scene.Invoke("ApplyMythicModules", ship, 0.1f);
-      Check(gems.Count(g => g.PickedUp) == 16, "Black hole collection has a cooldown");
-      scene.Invoke("ApplyMythicModules", ship, 0.15f);
-      Check(gems.All(g => g.PickedUp), "Black hole resumes collection after cooldown");
-      ship.CarryingGemCount = 80;
-      Check(ship.ReturningToHomebase, "World Eater returns at eight cargo loads");
-      var dockGems = Enumerable.Range(0, 110).Select(i => scene.AddGem(new Vector2(650 + i * 0.2f, 500))).ToArray();
-      scene.Prepare();
+      Check(gems.Count(g => g.PickedUp) == 1 && UntitledGemGameGameScreen.DeliveredUncounted - before == 30
+        && ship.CarryingGemCount == 0, "An idle black hole nibbles one gem and sends it home at triple value");
+      for (int i = 0; i < 5; i++) ship.RegisterModulePickup(true);
+      scene.Invoke("ApplyMythicModules", ship, 0.05f);
+      Check(gems.Count(g => g.PickedUp) == 1, "Black hole collection has a cooldown");
+      scene.Invoke("ApplyMythicModules", ship, 0.06f);
+      Check(gems.Count(g => g.PickedUp) == 6 && ship.WorldEaterRadius == 92 && ship.CarryingGemCount == 0,
+        "The black hole swallows one gem per gem the ship picked up, and grows");
+      ship.CarryingGemCount = (uint)BaseStats.GetHarvesterCapacity(ship);
+      Check(ship.ReturningToHomebase, "World Eater leaves the hold alone");
+      ship.CarryingGemBaseValue = 10;
       scene.Invoke("DeliverCargo", ship);
-      Check(dockGems.Count(g => g.PickedUp) == 96 && ship.CarryingGemCount == 0 && ship.WorldEaterRadius == 80,
-        "Dock implosion collects ninety-six into the delivery and resets growth");
+      Check(ship.WorldEaterRadius == 80 && ship.WorldEaterHunger == 0, "Docking resets the black hole");
     }
-    Console.WriteLine("Mythic modules passed: bounded branching storms, warp-safe ghost income, prestige cleanup, growing black holes and docking implosions.");
+    Console.WriteLine("Mythic modules passed: bounded branching storms, warp-safe ghost income, prestige cleanup, ghost deliveries and a feeding black hole.");
   }
 }
