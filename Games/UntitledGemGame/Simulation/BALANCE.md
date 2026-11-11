@@ -1,5 +1,26 @@
 # Regular upgrade progression
 
+## Late-game collection (2026-11-11)
+
+Weapons out-produced collection late: on the "Late game: fleet" preset about 5M gems a second came off the planet and a tenth of that was collected, with the field full and the rest lost. Three changes:
+
+- **Ships collect along their path.** A ship used to collect once per step at its position, so past about 600 units/s extra speed added nothing. It now sweeps the segment it flew (not warps). "Late game: fleet" income went from 3.3e15 to 4.4e16 a minute; slower fleets are unchanged. Update time on that preset rose from 0.54 to about 1.1 ms a step.
+- **Buried gems** (`BuriedGems`). Damage that finds no room on the field is buried in a per-run pool (capped at 20x the field size) instead of lost. Deep Scoops (fleet), Deep Grip (hand, Magnet Cursor, Tidal Pull) and Deep Rails (belt) dig up 1, 2, 4, 8 ... 512 buried gems beside every pickup, each worth what the pickup was worth, without using cargo. Collection therefore scales up to what the weapons produce and no further: Deep Scoops at rank 5 (x17) gave x1.9 on "Late game: fleet", at rank 10 (x513) x6.3; on "Mid game: logistics" rank 10 gave x40.
+- **New nodes.** Deep Scoops/Grip/Rails (10 ranks, 2e9 to 1.5e19 and 5e8 to 5e18), Fleet Afterburners (+25% fleet speed x8) and Bulk Holds (+50% fleet cargo x8) after Trove Hunter Count, Gem Link III, Pulse Frequency III, Belt Speed II and Cargo Pods II. Later ranks need Expand Space 1-5. The top prices sit just under the 1.8e19 ceiling of the gem counter.
+
+Core Shard picks for collection: **Twin Fleet** (every class fields twice the ships: x1.94 on "Developing fleet", nothing once the fleet already clears what the weapons produce), **Tidal Pull** (every 8 s the home base draws in a tenth of the field: x3.3 on "Developing fleet", x2.1 on "Mid game: logistics"), **Magnet Cursor** (the cursor collects up to 10 hovered gems every 0.1 s without clicking) and **Express Line** (belt speed and pod size x3). Magnet Cursor and Express Line need a pointer and were not measured.
+
+Not checked with a playthrough: how the prestige ladder and the Warp Drive price (1e15) hold up now that late income is 10-80x higher.
+
+### Drop Pods replaces Slipstream (tier 1 talent)
+
+Slipstream (+50% speed for ships passing each other) is removed. Drop Pods: once per trip a
+fleet ship with a full hold launches it home and keeps collecting. Measured with and without the
+talent (two runs each, no modules, 6 game minutes): gems collected ×1.71 on "Developing fleet"
+and ×1.70 on "Mid game: logistics". Income rose ×2.13 because learning any tier 1 talent also
+raises gem value ×1.25 through Gem Lore. Both presets sit on a full field, where holds fill at
+once and the return trip is most of a ship's time, so this is the talent's best case.
+
 ## Fleet consolidation (2026-10-05)
 
 The harvester side now mirrors the weapons side: fewer, stronger nodes on a clean layout. It supersedes the fleet prices in "Live calibration and fleet tiers" below.

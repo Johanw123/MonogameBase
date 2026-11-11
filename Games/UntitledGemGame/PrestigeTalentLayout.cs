@@ -20,7 +20,7 @@ public static class PrestigeTalentLayout
   // after Tier 3 opens, so its talents start there.
   public static readonly Tier[] Tiers =
   [
-    new(0, 320, ["TR1", "PRL1", "DEY1", "TT1", "SLP1", "CBK1", "BNW1"], ["XSP1", "GLO1"]),
+    new(0, 320, ["TR1", "PRL1", "DEY1", "TT1", "DPD1", "CBK1", "BNW1"], ["XSP1", "GLO1"]),
     new(3, 575, ["LR1", "BR1", "SYF1", "GVS1", "MCSN1", "HSK1", "FCL1"], [ShipSystems.UnlockTalent, "XSP2", "GLO2"]),
     new(5, 830, ["EP1", "MD1", "IOM1", "KNH1", "KNB1", "CRM1", "SCR1"], ["SYU1", "XSP3", "GLO3"]),
     new(10, 1085, ["MBR1", "DG1", "KD1", "FSD1", "AE1", "RCH1", "IFF1"], ["SGU1", "XSP4", "GLO4"]),

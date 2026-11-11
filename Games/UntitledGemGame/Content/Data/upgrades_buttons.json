@@ -2662,6 +2662,489 @@
       ],
       "tooltippercentage": "False",
       "buttonsizescale": "1"
+    },
+    {
+      "shortname": "FDG1",
+      "upgrade": "FDG",
+      "numlevels": "10",
+      "hiddenby": "UHC1",
+      "lockedby": "UHC1",
+      "blockedby": "UHC1",
+      "cost": [
+        "2000000000",
+        "20000000000",
+        "300000000000",
+        "5000000000000",
+        "100000000000000",
+        "2000000000000000",
+        "50000000000000000",
+        "1000000000000000000",
+        "5000000000000000000",
+        "15000000000000000000"
+      ],
+      "value": [
+        "1",
+        "1",
+        "2",
+        "4",
+        "8",
+        "16",
+        "32",
+        "64",
+        "128",
+        "256"
+      ],
+      "posx": "3785",
+      "posy": "1000",
+      "addmidpoint": "False",
+      "swapmidpointaxis": "False",
+      "lockedindemo": "False",
+      "requiredexpandspacelevels": [
+        "0",
+        "0",
+        "1",
+        "1",
+        "2",
+        "2",
+        "3",
+        "3",
+        "4",
+        "5"
+      ],
+      "tooltippercentage": "False",
+      "buttonsizescale": "1"
+    },
+    {
+      "shortname": "FAB1",
+      "upgrade": "FAB",
+      "numlevels": "8",
+      "hiddenby": "FDG1",
+      "lockedby": "FDG1",
+      "blockedby": "FDG1",
+      "cost": [
+        "5000000000",
+        "50000000000",
+        "600000000000",
+        "8000000000000",
+        "100000000000000",
+        "1500000000000000",
+        "20000000000000000",
+        "300000000000000000"
+      ],
+      "value": [
+        "0.25",
+        "0.25",
+        "0.25",
+        "0.25",
+        "0.25",
+        "0.25",
+        "0.25",
+        "0.25"
+      ],
+      "posx": "3915",
+      "posy": "1000",
+      "addmidpoint": "False",
+      "swapmidpointaxis": "False",
+      "lockedindemo": "False",
+      "requiredexpandspacelevels": [
+        "0",
+        "0",
+        "1",
+        "1",
+        "2",
+        "3",
+        "4",
+        "5"
+      ],
+      "tooltippercentage": "True",
+      "buttonsizescale": "1"
+    },
+    {
+      "shortname": "FBH1",
+      "upgrade": "FBH",
+      "numlevels": "8",
+      "hiddenby": "FDG1",
+      "lockedby": "FDG1",
+      "blockedby": "FDG1",
+      "cost": [
+        "6000000000",
+        "60000000000",
+        "700000000000",
+        "9000000000000",
+        "120000000000000",
+        "1800000000000000",
+        "24000000000000000",
+        "360000000000000000"
+      ],
+      "value": [
+        "0.5",
+        "0.5",
+        "0.5",
+        "0.5",
+        "0.5",
+        "0.5",
+        "0.5",
+        "0.5"
+      ],
+      "posx": "3915",
+      "posy": "870",
+      "addmidpoint": "False",
+      "swapmidpointaxis": "False",
+      "lockedindemo": "False",
+      "requiredexpandspacelevels": [
+        "0",
+        "0",
+        "1",
+        "1",
+        "2",
+        "3",
+        "4",
+        "5"
+      ],
+      "tooltippercentage": "True",
+      "buttonsizescale": "1"
+    },
+    {
+      "shortname": "TWF1",
+      "upgrade": "TWF",
+      "numlevels": "1",
+      "hiddenby": "HC1",
+      "lockedby": "HC1",
+      "blockedby": "HC1",
+      "cost": [
+        "1"
+      ],
+      "value": [
+        "true"
+      ],
+      "posx": "2290",
+      "posy": "1130",
+      "addmidpoint": "False",
+      "swapmidpointaxis": "False",
+      "lockedindemo": "False",
+      "requiredexpandspacelevels": [
+        "0"
+      ],
+      "tooltippercentage": "False",
+      "buttonsizescale": "1.4"
+    },
+    {
+      "shortname": "CLC3",
+      "upgrade": "CLC",
+      "numlevels": "5",
+      "hiddenby": "CLC2",
+      "lockedby": "CLC2",
+      "blockedby": "CLC2",
+      "cost": [
+        "30000000000",
+        "240000000000",
+        "1900000000000",
+        "15000000000000",
+        "120000000000000"
+      ],
+      "value": [
+        "6",
+        "6",
+        "6",
+        "6",
+        "6"
+      ],
+      "posx": "1180",
+      "posy": "1130",
+      "addmidpoint": "False",
+      "swapmidpointaxis": "False",
+      "lockedindemo": "False",
+      "requiredexpandspacelevels": [
+        "0",
+        "1",
+        "2",
+        "3",
+        "4"
+      ],
+      "tooltippercentage": "False",
+      "buttonsizescale": "1"
+    },
+    {
+      "shortname": "CDG1",
+      "upgrade": "CDG",
+      "numlevels": "10",
+      "hiddenby": "CLC3",
+      "lockedby": "CLC3",
+      "blockedby": "CLC3",
+      "cost": [
+        "500000000",
+        "5000000000",
+        "80000000000",
+        "1200000000000",
+        "25000000000000",
+        "500000000000000",
+        "12000000000000000",
+        "250000000000000000",
+        "1500000000000000000",
+        "5000000000000000000"
+      ],
+      "value": [
+        "1",
+        "1",
+        "2",
+        "4",
+        "8",
+        "16",
+        "32",
+        "64",
+        "128",
+        "256"
+      ],
+      "posx": "1050",
+      "posy": "1130",
+      "addmidpoint": "False",
+      "swapmidpointaxis": "False",
+      "lockedindemo": "False",
+      "requiredexpandspacelevels": [
+        "0",
+        "0",
+        "1",
+        "1",
+        "2",
+        "2",
+        "3",
+        "3",
+        "4",
+        "5"
+      ],
+      "tooltippercentage": "False",
+      "buttonsizescale": "1"
+    },
+    {
+      "shortname": "MGN1",
+      "upgrade": "MGN",
+      "numlevels": "1",
+      "hiddenby": "CLC2",
+      "lockedby": "CLC2",
+      "blockedby": "CLC2",
+      "cost": [
+        "1"
+      ],
+      "value": [
+        "true"
+      ],
+      "posx": "1310",
+      "posy": "1260",
+      "addmidpoint": "False",
+      "swapmidpointaxis": "False",
+      "lockedindemo": "False",
+      "requiredexpandspacelevels": [
+        "0"
+      ],
+      "tooltippercentage": "False",
+      "buttonsizescale": "1.4"
+    },
+    {
+      "shortname": "HCF3",
+      "upgrade": "HCF",
+      "numlevels": "5",
+      "hiddenby": "HCF2",
+      "lockedby": "HCF2",
+      "blockedby": "HCF2",
+      "cost": [
+        "200000000000",
+        "1600000000000",
+        "13000000000000",
+        "100000000000000",
+        "820000000000000"
+      ],
+      "value": [
+        "1.0",
+        "1.0",
+        "1.0",
+        "1.0",
+        "1.0"
+      ],
+      "posx": "1570",
+      "posy": "350",
+      "addmidpoint": "False",
+      "swapmidpointaxis": "False",
+      "lockedindemo": "False",
+      "requiredexpandspacelevels": [
+        "0",
+        "1",
+        "2",
+        "3",
+        "4"
+      ],
+      "tooltippercentage": "True",
+      "buttonsizescale": "1"
+    },
+    {
+      "shortname": "TDP1",
+      "upgrade": "TDP",
+      "numlevels": "1",
+      "hiddenby": "HBCR1",
+      "lockedby": "HBCR1",
+      "blockedby": "HBCR1",
+      "cost": [
+        "1"
+      ],
+      "value": [
+        "true"
+      ],
+      "posx": "1833",
+      "posy": "480",
+      "addmidpoint": "False",
+      "swapmidpointaxis": "False",
+      "lockedindemo": "False",
+      "requiredexpandspacelevels": [
+        "0"
+      ],
+      "tooltippercentage": "False",
+      "buttonsizescale": "1.4"
+    },
+    {
+      "shortname": "TBS2",
+      "upgrade": "TBS",
+      "numlevels": "5",
+      "hiddenby": "TBW1",
+      "lockedby": "TBW1",
+      "blockedby": "TBW1",
+      "cost": [
+        "10000000000",
+        "80000000000",
+        "640000000000",
+        "5100000000000",
+        "41000000000000"
+      ],
+      "value": [
+        "0.5",
+        "0.5",
+        "0.5",
+        "0.5",
+        "0.5"
+      ],
+      "posx": "1180",
+      "posy": "480",
+      "addmidpoint": "False",
+      "swapmidpointaxis": "False",
+      "lockedindemo": "False",
+      "requiredexpandspacelevels": [
+        "0",
+        "1",
+        "2",
+        "3",
+        "4"
+      ],
+      "tooltippercentage": "True",
+      "buttonsizescale": "1"
+    },
+    {
+      "shortname": "TBC2",
+      "upgrade": "TBC",
+      "numlevels": "5",
+      "hiddenby": "TBF1",
+      "lockedby": "TBF1",
+      "blockedby": "TBF1",
+      "cost": [
+        "10000000000",
+        "80000000000",
+        "640000000000",
+        "5100000000000",
+        "41000000000000"
+      ],
+      "value": [
+        "3",
+        "3",
+        "3",
+        "3",
+        "3"
+      ],
+      "posx": "920",
+      "posy": "740",
+      "addmidpoint": "False",
+      "swapmidpointaxis": "False",
+      "lockedindemo": "False",
+      "requiredexpandspacelevels": [
+        "0",
+        "1",
+        "2",
+        "3",
+        "4"
+      ],
+      "tooltippercentage": "False",
+      "buttonsizescale": "1"
+    },
+    {
+      "shortname": "BDG1",
+      "upgrade": "BDG",
+      "numlevels": "10",
+      "hiddenby": "TBB1",
+      "lockedby": "TBB1",
+      "blockedby": "TBB1",
+      "cost": [
+        "500000000",
+        "5000000000",
+        "80000000000",
+        "1200000000000",
+        "25000000000000",
+        "500000000000000",
+        "12000000000000000",
+        "250000000000000000",
+        "1500000000000000000",
+        "5000000000000000000"
+      ],
+      "value": [
+        "1",
+        "1",
+        "2",
+        "4",
+        "8",
+        "16",
+        "32",
+        "64",
+        "128",
+        "256"
+      ],
+      "posx": "920",
+      "posy": "610",
+      "addmidpoint": "False",
+      "swapmidpointaxis": "False",
+      "lockedindemo": "False",
+      "requiredexpandspacelevels": [
+        "0",
+        "0",
+        "1",
+        "1",
+        "2",
+        "2",
+        "3",
+        "3",
+        "4",
+        "5"
+      ],
+      "tooltippercentage": "False",
+      "buttonsizescale": "1"
+    },
+    {
+      "shortname": "XPL1",
+      "upgrade": "XPL",
+      "numlevels": "1",
+      "hiddenby": "BDG1",
+      "lockedby": "BDG1",
+      "blockedby": "BDG1",
+      "cost": [
+        "1"
+      ],
+      "value": [
+        "true"
+      ],
+      "posx": "790",
+      "posy": "610",
+      "addmidpoint": "False",
+      "swapmidpointaxis": "False",
+      "lockedindemo": "False",
+      "requiredexpandspacelevels": [
+        "0"
+      ],
+      "tooltippercentage": "False",
+      "buttonsizescale": "1.4"
     }
   ]
 }

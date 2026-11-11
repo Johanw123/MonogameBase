@@ -165,6 +165,7 @@ public static class BaseStats
     return System.Math.Max(1, (int)System.Math.Min(int.MaxValue, System.Math.Ceiling(
       (double)typeCapacity * UpgradeManager.Instance.UGM.AllHarvesterCapacity * UpgradeManager.Instance.Signals.Multiplier(SignalKind.Capacity)
       * (harvester.HasModule(ShipModule.CargoPod) ? 1f + harvester.Tuned(ModuleCatalog.CargoBonus) : 1f)
+      * UpgradeManager.Instance.UG.FleetCapacityBoost
       * harvester.AdditionalModuleCapacityMultiplier()
       * PrestigeTalentEffects.CargoCapacityMultiplier(harvester))));
   }
@@ -235,10 +236,7 @@ public static class BaseStats
     var speed = baseSpeed * typeMultiplier * globalMetaMultiplier * UpgradeManager.Instance.Signals.Multiplier(SignalKind.Speed);
 
     if (IsFleetHarvester(harvester))
-      speed *= HarvesterCollectionSystem.ResonanceSpeedMultiplier;
-    if (IsFleetHarvester(harvester) && UpgradeManager.Instance.UGM.Slipstream
-      && harvester.SlipstreamTimeRemaining > 0f)
-      speed *= PrestigeTalentEffects.SlipstreamSpeedMultiplier;
+      speed *= HarvesterCollectionSystem.ResonanceSpeedMultiplier * UpgradeManager.Instance.UG.FleetSpeedBoost;
 
     if (IsFleetHarvester(harvester) || harvester.Type == Harvester.HarvesterType.Drone)
       speed *= UntitledGemGame.Screens.UntitledGemGameGameScreen.Instance?.ManualAbilities.SpeedMultiplier ?? 1f;

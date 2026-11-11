@@ -28,7 +28,7 @@ internal static class PrestigeTalentChecks
 
     string[] activeTalents =
     [
-      "TR1", "PRL1", "DEY1", "TT1", "SLP1", "CBK1", "BNW1",
+      "TR1", "PRL1", "DEY1", "TT1", "DPD1", "CBK1", "BNW1",
       "LR1", "BR1", "SYF1", "GVS1", "MCSN1", "HSK1", "FCL1",
       "EP1", "MD1", "IOM1", "KNH1", "KNB1", "CRM1", "SCR1",
       "MBR1", "DG1", "KD1", "FSD1", "AE1", "RCH1", "IFF1",
@@ -234,20 +234,20 @@ internal static class PrestigeTalentChecks
     try
     {
       var manager = new UpgradeManager();
-      manager.RestoreProgress(new GameSave { Meta = new() { ["TT1"] = 1, ["SLP1"] = 1 } });
+      manager.RestoreProgress(new GameSave { Meta = new() { ["TT1"] = 1, ["DEY1"] = 1 } });
       var save = new GameSave();
       manager.CaptureProgress(save);
       var store = new GameSaveStore(path);
       if (!store.Save(save)) throw new Exception("Fleet talent save failed");
       manager = new UpgradeManager();
       manager.RestoreProgress(store.Load()!);
-      if (!manager.UGM.TractorTails || !manager.UGM.Slipstream
+      if (!manager.UGM.TractorTails || !manager.UGM.Deadeye
         || !manager.UnlearnPrestigeTalent(UpgradeManager.CurrentUpgrades.UpgradeButtonsMeta["TT1"])
-        || manager.UGM.TractorTails || !manager.UGM.Slipstream)
-        throw new Exception("Both fleet talents must survive a save and unlearn independently");
+        || manager.UGM.TractorTails || !manager.UGM.Deadeye)
+        throw new Exception("Two tier-one talents must survive a save and unlearn independently");
       manager.RespecPrestigeTalents();
-      if (manager.UGM.TractorTails || manager.UGM.Slipstream)
-        throw new Exception("Reset must clear both fleet talent effects");
+      if (manager.UGM.TractorTails || manager.UGM.Deadeye)
+        throw new Exception("Reset must clear both talent effects");
     }
     finally { File.Delete(path); }
   }

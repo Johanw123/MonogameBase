@@ -1442,6 +1442,97 @@
       "currency": "gold",
       "tooltip": "Doubles damage from harpoon pulses arcing to lodged conductor slugs. Requires Arc Harpoon.",
       "icon": "Textures/scifi_icons/icons_hexagon/12_hexagon.png"
+    },
+    {
+      "name": "Deep Scoops",
+      "propname": "FleetDig",
+      "shortname": "FDG",
+      "type": "int",
+      "base": "0",
+      "tooltip": "Fleet ships dig up buried gems with every gem they collect.",
+      "tooltip_extra": "When the field is full, the gems your weapons knock loose are buried instead of lost. Each rank digs up more per pickup.",
+      "currency": "red",
+      "icon": "Textures/scifi_icons/icon_power/10_power.png"
+    },
+    {
+      "name": "Deep Grip",
+      "propname": "ClickDig",
+      "shortname": "CDG",
+      "type": "int",
+      "base": "0",
+      "tooltip": "Gems you send home by hand bring buried gems with them.",
+      "tooltip_extra": "When the field is full, the gems your weapons knock loose are buried instead of lost. Each rank digs up more per gem.",
+      "currency": "red",
+      "icon": "Textures/scifi_icons/icon_power/4_power.png"
+    },
+    {
+      "name": "Deep Rails",
+      "propname": "BeltDig",
+      "shortname": "BDG",
+      "type": "int",
+      "base": "0",
+      "tooltip": "Gems on the tractor belt bring buried gems with them.",
+      "tooltip_extra": "When the field is full, the gems your weapons knock loose are buried instead of lost. Each rank digs up more per gem.",
+      "currency": "red",
+      "icon": "Textures/scifi_icons/icon_power/10_power.png"
+    },
+    {
+      "name": "Fleet Afterburners",
+      "propname": "FleetSpeedBoost",
+      "shortname": "FAB",
+      "type": "float",
+      "base": "1.0",
+      "tooltip": "Every fleet ship flies faster.",
+      "icon": "Textures/scifi_icons/icon_arrow/16_arrow.png"
+    },
+    {
+      "name": "Bulk Holds",
+      "propname": "FleetCapacityBoost",
+      "shortname": "FBH",
+      "type": "float",
+      "base": "1.0",
+      "tooltip": "Every fleet ship carries more gems.",
+      "icon": "Textures/scifi_icons/icon_shield/4_shield.png"
+    },
+    {
+      "name": "Twin Fleet",
+      "propname": "TwinFleet",
+      "shortname": "TWF",
+      "type": "bool",
+      "base": "false",
+      "currency": "gold",
+      "tooltip": "Every fleet ship you own flies with a twin.",
+      "icon": "Textures/scifi_icons/icon_arrow/16_arrow.png"
+    },
+    {
+      "name": "Magnet Cursor",
+      "propname": "MagnetCursor",
+      "shortname": "MGN",
+      "type": "bool",
+      "base": "false",
+      "currency": "gold",
+      "tooltip": "Your cursor collects the gems it passes over, without clicking.",
+      "icon": "Textures/scifi_icons/icon_accuracy/14_accuracy.png"
+    },
+    {
+      "name": "Tidal Pull",
+      "propname": "TidalPull",
+      "shortname": "TDP",
+      "type": "bool",
+      "base": "false",
+      "currency": "gold",
+      "tooltip": "Every 8 seconds the home base pulls in the gems around it.",
+      "icon": "Textures/scifi_icons/icon_misc/12_misc.png"
+    },
+    {
+      "name": "Express Line",
+      "propname": "ExpressLine",
+      "shortname": "XPL",
+      "type": "bool",
+      "base": "false",
+      "currency": "gold",
+      "tooltip": "The tractor belt runs three times as fast, with pods three times the size.",
+      "icon": "Textures/scifi_icons/icon_power/10_power.png"
     }
   ]
 }

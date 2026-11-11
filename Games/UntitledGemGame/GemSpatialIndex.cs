@@ -219,6 +219,8 @@ public sealed class GemSpatialIndex
     if (indexed) AddToQueries(index);
   }
 
+  public float CollectionRadius(int index) => _collectionRadii[index];
+
   public bool IsAvailable(int index) => Gems[index].IsActive && Gems[index].ClaimState == 0
     && (float)Entities.Gem.FlightClock >= _availableAt[index];
 

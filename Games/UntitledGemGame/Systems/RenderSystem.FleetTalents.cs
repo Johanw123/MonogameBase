@@ -10,6 +10,14 @@ public partial class RenderSystem
   private void DrawFleetTalentEffects(Harvester ship, Transform2 transform)
   {
     if (ship.MarkedForDestroy) return;
+    foreach (var pod in ship.DropPods)
+    {
+      var heading = pod.Velocity.LengthSquared() > 1f ? Vector2.Normalize(pod.Velocity) : Vector2.UnitY;
+      float trail = MathHelper.Clamp(pod.Velocity.Length() * 0.06f, 30f, 150f);
+      _shapeBatch.FillLine(pod.Position - heading * trail, pod.Position, 0.1f, Color.Cyan * 0.2f, 7f);
+      _shapeBatch.FillLine(pod.Position - heading * trail * 0.5f, pod.Position, 0.1f, Color.LightCyan * 0.55f, 3f);
+      _shapeBatch.FillLine(pod.Position - heading * 9f, pod.Position + heading * 9f, 0.1f, Color.White, 6f);
+    }
     foreach (var delivery in ship.DeliveredTails)
     {
       var anchor = delivery.Anchor;

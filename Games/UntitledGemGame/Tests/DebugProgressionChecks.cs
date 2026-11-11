@@ -129,6 +129,8 @@ static class DebugProgressionChecks
         }
       }
       int progressionStage = DebugProgressionPresets.ProgressionStage(stage);
+      if (save.CoreShards != (ulong)save.CoreFractures)
+        throw new Exception($"{DebugProgressionPresets.Names[stage]} is missing its fracture shards");
       if ((progressionStage == 0) != (save.ShellDamage == 0)
         || (progressionStage <= 1 ? save.CoreFractures != 0 : save.CoreFractures <= 0)
         || (progressionStage > 0 && save.CoreFractures < DebugProgressionPresets.Create(progressionStage - 1, upgrades).CoreFractures))
@@ -139,6 +141,7 @@ static class DebugProgressionChecks
         var store = new GameSaveStore(path);
         if (!store.Save(save) || store.Load() is not {} loaded
           || loaded.CoreFractures != save.CoreFractures
+          || loaded.CoreShards != save.CoreShards
           || loaded.Modules.Owned.Count != save.Modules.Owned.Count
           || !loaded.HarvesterUnlockAchievements.SetEquals(save.HarvesterUnlockAchievements)
           || loaded.AbilityPointsPurchased != save.AbilityPointsPurchased
@@ -152,6 +155,8 @@ static class DebugProgressionChecks
     for (int feature = 0; feature < DebugProgressionPresets.FeatureNames.Length; feature++)
     {
       var save = DebugProgressionPresets.CreateFeature(feature, upgrades);
+      if (save.CoreShards != (ulong)save.CoreFractures)
+        throw new Exception($"{DebugProgressionPresets.FeatureNames[feature]} has incorrect fracture shards");
       if (!save.HasOpenedUpgrades)
         throw new Exception($"{DebugProgressionPresets.FeatureNames[feature]} shows the upgrades introduction");
       save.Modules.Validate();

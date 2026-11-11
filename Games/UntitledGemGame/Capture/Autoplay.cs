@@ -42,7 +42,7 @@ public sealed class SceneAutoplay
 internal static class Autoplay
 {
   // Core Shard upgrades a player would grab first: the economy ones, then weapons.
-  private static readonly string[] ShardPriority = ["MDT1", "GLH1", "GTC1", "LZQ1", "RSW1", "THP1", "TC1", "IW1", "BDS1"];
+  private static readonly string[] ShardPriority = ["MDT1", "GLH1", "GTC1", "MGN1", "TWF1", "TDP1", "LZQ1", "RSW1", "THP1", "TC1", "IW1", "BDS1", "XPL1"];
   private const int SparseField = 150;
 
   private static double nextClick, nextShop, nextCommand, runStart, lastProgress;

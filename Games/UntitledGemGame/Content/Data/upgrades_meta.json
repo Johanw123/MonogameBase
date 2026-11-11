@@ -941,14 +941,14 @@
       "icon": "Textures/scifi_icons/icon_power/10_power.png"
     },
     {
-      "name": "Slipstream",
-      "propname": "Slipstream",
-      "shortname": "SLP",
+      "name": "Drop Pods",
+      "propname": "DropPods",
+      "shortname": "DPD",
       "type": "bool",
       "currency": "purple",
       "base": "false",
-      "tooltip": "Fleet ships passing close to each other both gain 50% speed for 3 seconds.",
-      "tooltip_extra": "Further encounters refresh the boost without stacking. Only moving fleet ships trigger it.",
+      "tooltip": "Once per trip, a fleet ship with a full hold launches it home as a pod and keeps collecting.",
+      "tooltip_extra": "The pod counts as a delivery. Shuttles do not launch pods.",
       "icon": "Textures/scifi_icons/icon_power/9_power.png"
     },
     {

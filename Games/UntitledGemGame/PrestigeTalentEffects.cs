@@ -19,14 +19,13 @@ public static class PrestigeTalentEffects
   public const int CargoCatapultPower = 5;
   public const float CargoCatapultInterval = 0.25f;
   public const int CargoCatapultMaxQueued = 40;
-  // Tier-one fleet talents. Tails use a separate allowance outside the hold;
-  // Slipstream refreshes one boost, regardless of how many ships pass nearby.
+  // Drop Pods: how fast the launched hold flies home (visual only).
+  public const float DropPodLaunchSpeed = 500f;
+  public const float DropPodAcceleration = 2600f;
+  // Tractor Tails use a separate allowance outside the hold.
   public const int TractorTailMinimum = 3;
   public const int TractorTailCapacityDivisor = 4;
   public const int TractorTailVisualLimit = 12;
-  public const float SlipstreamRadius = 85f;
-  public const float SlipstreamSeconds = 3f;
-  public const float SlipstreamSpeedMultiplier = 1.5f;
 
   public static int TractorTailCapacity(Harvester ship)
   {
@@ -280,6 +279,8 @@ public static class PrestigeTalentEffects
     purchased = Math.Max(0, purchased);
     if (Meta?.LoneOperator == true) return 0;
     long ships = purchased;
+    // Twin Fleet (a Core Shard upgrade) fields every purchased ship twice.
+    if (UpgradeManager.Instance?.UG.TwinFleet == true) ships *= 2;
     if (Meta?.FleetRequisition == true) ships += purchased / RequisitionInterval;
     if (Meta?.MothershipProtocol == true) ships *= ShuttlesPerShip;
     return (int)Math.Min(int.MaxValue, ships);

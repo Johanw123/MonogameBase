@@ -174,10 +174,60 @@ namespace UntitledGemGame.Systems
       ref var data = ref grid.Gems[index];
       var gem = _gemMapper.Get(data.EntityId);
       if (gem == null || !gem.UpdateRegistered || gem.PickedUp || gem.WasClicked || gem.ShouldDestroy) return false;
+      multiplier *= 1 + BuriedGems.Dig(UpgradeManager.Instance.UG.ClickDig);
       gem.ManualClickBonus = UntitledGemGameGameScreen.Instance.ClickUtility.BonusValue(gem.BaseValue, multiplier);
       gem.OnClicked(false);
       UntitledGemGameGameScreen.Instance.OnGemHandCollected();
       return true;
+    }
+
+    // Tidal Pull and Magnet Cursor send a gem home like a click does, without counting as one:
+    // no combo, no click talents.
+    private bool PullGemHome(int index)
+    {
+      var grid = HarvesterCollectionSystem.Instance.flatSpatialHash;
+      if (!grid.IsAvailable(index)) return false;
+      var gem = _gemMapper.Get(grid.Gems[index].EntityId);
+      if (gem == null || !gem.UpdateRegistered || gem.PickedUp || gem.WasClicked || gem.ShouldDestroy) return false;
+      gem.ManualClickBonus = UntitledGemGameGameScreen.Instance.ClickUtility.BonusValue(gem.BaseValue,
+        SignalStats.ClickValue * (1 + BuriedGems.Dig(UpgradeManager.Instance.UG.ClickDig)));
+      gem.OnClicked(false);
+      return true;
+    }
+
+    public const float MagnetCursorInterval = 0.1f;
+    public const int MagnetCursorGems = 10;
+    public const float TidalPullInterval = 8f;
+    public const float TidalPullRadius = 1000f;
+    // The tide reaches the whole field and takes this share of its loose gems.
+    public const float TidalPullReach = 6000f;
+    public const float TidalPullShare = 0.1f;
+    public const int TidalPullMinimumGems = 500;
+    public const float TidalPullFlash = 1.2f;
+    private float _magnetCursorTimer, _tidalPullTimer;
+    private readonly List<int> _pullTargets = new();
+    // Seconds left of the tide's ring, for RenderSystem.
+    public float TidalPullFlashRemaining { get; private set; }
+
+    // Tidal Pull: every few seconds the home base draws in the gems around it.
+    private void UpdateTidalPull(GemSpatialIndex grid, float dt)
+    {
+      TidalPullFlashRemaining = System.Math.Max(0f, TidalPullFlashRemaining - dt);
+      if (!UpgradeManager.Instance.UG.TidalPull || HomeBase.Instance?.Entity == null) { _tidalPullTimer = 0; return; }
+      _tidalPullTimer += dt;
+      if (_tidalPullTimer < TidalPullInterval) return;
+      _tidalPullTimer = 0;
+      var home = HomeBase.Instance.Entity.Get<Harvester>().BoundingCircle.Center;
+      _pullTargets.Clear();
+      int limit = System.Math.Max(TidalPullMinimumGems, (int)(grid.NumActiveGems * TidalPullShare));
+      foreach (int index in grid.QueryCollection(home.X, home.Y, TidalPullReach))
+      {
+        if (_pullTargets.Count >= limit) break;
+        if (grid.IsAvailable(index)) _pullTargets.Add(index);
+      }
+      // Finish the query before collecting: removal changes the index's linked lists.
+      foreach (int index in _pullTargets) PullGemHome(index);
+      TidalPullFlashRemaining = TidalPullFlash;
     }
 
     public Entity GetEntityP(int entityId) => GetEntity(entityId);
@@ -238,6 +288,19 @@ namespace UntitledGemGame.Systems
           if (clicked) _directClicks.Add(index);
         }
       }
+      // Magnet Cursor: the cursor keeps picking up what it hovers, without a click.
+      if (hovering && UpgradeManager.Instance.UG.MagnetCursor && !mouse.IsButtonDown(MouseButton.Right))
+      {
+        _magnetCursorTimer += dt;
+        if (_magnetCursorTimer >= MagnetCursorInterval)
+        {
+          _magnetCursorTimer = 0;
+          int pulled = 0;
+          foreach (var gem in _nextHovered)
+            if (pulled < MagnetCursorGems && PullGemHome(gem.GridIndex)) ++pulled;
+        }
+      }
+      UpdateTidalPull(grid, dt);
       if (clicked && UntitledGemGameGameScreen.Instance.ClickUtility.Activate(
         grid, _directClicks, mousePosition, UpgradeManager.Instance.UG, _collectManualGem, System.Random.Shared.NextDouble(),
         UpgradeManager.Instance.Signals, UpgradeManager.Instance.UGM,

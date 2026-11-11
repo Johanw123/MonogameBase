@@ -49,7 +49,8 @@ public static class DebugProgressionPresets
     // Every permanent point was earned on the prestige ladder, so the next one is as far off.
     var save = new GameSave { HasOpenedUpgrades = true, RedGems = total, RedGemsEarnedThisRun = total, PrestigePointsEarned = permanentBudgets[stage],
       CoreExtractions = permanentBudgets[stage] > 0 ? (ulong)stage - 1 : 0,
-      CoreFractures = fractures[stage], ShellDamage = stage > 0 ? PlanetShell.Health : 0 };
+      CoreFractures = fractures[stage], CoreShards = (ulong)fractures[stage],
+      ShellDamage = stage > 0 ? PlanetShell.Health : 0 };
     save.Upgrades["HB"] = 1;
     save.Upgrades["HU1"] = 1;
     if (stage == 0) { RecordHarvesterDiscoveries(save, upgrades); return save; }
@@ -140,7 +141,7 @@ public static class DebugProgressionPresets
   // Unlisted talents come last, in layout order.
   private static readonly string[] TalentPriority =
   [
-    "DEY1", "TR1", "TT1", "SLP1", "PRL1", "BNW1",
+    "DEY1", "TR1", "TT1", "DPD1", "PRL1", "BNW1",
     "HSK1", "BR1", "LR1", "SYF1", "GVS1", "MCSN1",
     "CRM1", "SCR1", "MD1", "EP1", "KNB1", "KNH1",
     "IFF1", "AE1", "DG1", "FSD1", "MBR1", "RCH1", "KD1",
@@ -244,6 +245,7 @@ public static class DebugProgressionPresets
     Buy(upgrades.UpgradeButtons, save.Upgrades, "CFP1", 3);
     save.CoreExtractions = 1;
     save.CoreFractures = feature is 1 or 10 ? 4 : 0;
+    save.CoreShards = (ulong)save.CoreFractures;
     if (feature is 0 or 1)
     {
       if (feature == 1)
@@ -387,7 +389,7 @@ public static class DebugProgressionPresets
       var next = buttons.Where(pair => allowed == null || allowed.Contains(pair.Key))
         .Where(pair => !ShipSystems.IsInTree(pair.Key)
           || ShipSystems.CanLearn(buttons, pair.Key, id => levels.GetValueOrDefault(id), kamikazeDrones))
-        // Core Shards come from run objectives, which the game pays out when the preset loads.
+        // Leave the shards granted for staged fractures available for the player to spend.
         .Where(pair => max || pair.Value.Data.UpgradeDefinition.Currency != CoreShards.Currency)
         .Where(pair => string.IsNullOrEmpty(pair.Value.Data.BlockedBy)
           || levels.ContainsKey(pair.Value.Data.BlockedBy))

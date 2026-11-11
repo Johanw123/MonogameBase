@@ -323,6 +323,12 @@ namespace UntitledGemGame.Systems
       _shapeBatch.End();
 
       // Over the hulls, like the shapes they replace.
+      // Tidal Pull: the home base's tide, a ring collapsing onto it.
+      var tide = UpdateSystem2.Instance;
+      if (tide != null && tide.TidalPullFlashRemaining > 0f)
+        _moduleEffects.Ring(UntitledGemGameGameScreen.HomeBasePos, UpdateSystem2.TidalPullRadius,
+          1f - tide.TidalPullFlashRemaining / UpdateSystem2.TidalPullFlash, new Color(90, 200, 255),
+          ModuleEffectBatch.RingStyle.Collapse, 0.37f, 0.6f);
       _moduleEffects.Draw(m_camera.ViewProjection(), (float)gameTime.TotalGameTime.TotalSeconds);
 
       DrawTractorTailGems();

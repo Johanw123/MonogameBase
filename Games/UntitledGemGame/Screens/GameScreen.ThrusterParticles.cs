@@ -54,7 +54,7 @@ public partial class UntitledGemGameGameScreen
       // Use the same smoothed collection scale as the hull renderer.
       float size = ship.VisualCollectionRangeMultiplier ?? BaseStats.GetHarvesterCollectionRangeMultiplier(ship);
       bool boosted = ship.LaunchThrusterTimeRemaining > 0 || ship.OverdriveTimeRemaining > 0
-        || ship.SlipstreamExhaustBoost > 1.05f || overdrive;
+        || overdrive;
       emitted += EmitThrusterParticles(ship.Type, transform.Position, transform.Rotation,
         transform.Scale * size, power, boosted, maxNozzlesTotal - emitted, overdrive, ship.Id);
     }

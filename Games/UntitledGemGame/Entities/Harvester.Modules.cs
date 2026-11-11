@@ -65,7 +65,7 @@ public partial class Harvester
     nextOverflowDriveStacks = 0;
     forgePickups = 0;
     relayCopies = 0;
-    eventHorizonConsumed = phoenixConsumed = false;
+    eventHorizonConsumed = phoenixConsumed = dropPodLaunched = false;
     ulong vaultMask = 1UL << (int)ShipModule.EchoVault;
     if ((previousLoadout & moduleLoadout & vaultMask) == 0) echoVaultDeliveries = 0;
   }

@@ -53,8 +53,8 @@ internal static class FleetTalentChecks
       CheckTowing();
       CheckTailReservations();
       CheckShuttleTransfer();
-      CheckSlipstream();
-      Console.WriteLine("Fleet talents passed: tow limits, swept pickups, reservations, bonuses, single delivery, shuttle transfer, prestige reset and Slipstream refresh/expiry.");
+      CheckDropPods();
+      Console.WriteLine("Fleet talents passed: tow limits, swept pickups, reservations, bonuses, single delivery, shuttle transfer, prestige reset and one Drop Pod per trip.");
     }
     finally
     {
@@ -143,11 +143,10 @@ internal static class FleetTalentChecks
     Tow(scene);
     Check(!reserved.PickedUp && scene.Ship.TowedGemCount == 5 && scene.Ship.CarryingGemBaseValue == 165,
       "Tails respect other reservations and run the ordinary Gem Polisher pickup bonus");
-    scene.Ship.SlipstreamTimeRemaining = 3;
     scene.Ship.ClearCargoForPrestige();
     Check(scene.Ship.TowedGemCount == 0 && scene.Ship.TailGems.Count == 0
-      && scene.Ship.CarryingGemBaseValue == 0 && scene.Ship.SlipstreamTimeRemaining == 0,
-      "Extraction clears both the tail and the speed buff");
+      && scene.Ship.CarryingGemBaseValue == 0,
+      "Extraction clears the tail");
 
     FillHold(scene);
     scene.Invoke("ClaimTractorTail", scene.Ship, new Vector2(500, 500), new Vector2(600, 500));
@@ -191,6 +190,65 @@ internal static class FleetTalentChecks
       "The carrier delivers shuttle tails once through the usual payout");
   }
 
+  private static void CheckDropPods()
+  {
+    using var scene = new Scene(ShipModule.None);
+    scene.Prepare();
+    FillHold(scene);
+    uint hold = scene.Ship.CarryingGemCount;
+    ulong before = UntitledGemGameGameScreen.DeliveredUncounted;
+    scene.Invoke("LaunchDropPod", scene.Ship);
+    Check(scene.Ship.CarryingGemCount == hold && UntitledGemGameGameScreen.DeliveredUncounted == before,
+      "Drop Pods require the talent");
+    scene.Manager.UGM.DropPods = true;
+    ulong pays = BaseStats.GetHarvesterDeliveryValue(scene.Ship, 100);
+    scene.Invoke("LaunchDropPod", scene.Ship);
+    Check(scene.Ship.CarryingGemCount == 0 && scene.Ship.CarryingGemBaseValue == 0
+      && !scene.Ship.ReturningToHomebase && scene.Ship.DropPods.Count == 1
+      && UntitledGemGameGameScreen.DeliveredUncounted - before == pays,
+      "A full hold is paid out as a pod and the ship keeps collecting");
+    FillHold(scene);
+    scene.Invoke("LaunchDropPod", scene.Ship);
+    Check(scene.Ship.CarryingGemCount == hold && scene.Ship.ReturningToHomebase
+      && UntitledGemGameGameScreen.DeliveredUncounted - before == pays,
+      "The second full hold of a trip flies home");
+    scene.Ship.CarryingGemCount = hold - 1;
+    scene.Ship.BeginModuleTrip();
+    scene.Invoke("LaunchDropPod", scene.Ship);
+    Check(scene.Ship.CarryingGemCount == hold - 1, "A hold that is not full launches nothing");
+    FillHold(scene);
+    scene.Invoke("LaunchDropPod", scene.Ship);
+    Check(scene.Ship.CarryingGemCount == 0 && UntitledGemGameGameScreen.DeliveredUncounted - before == pays * 2,
+      "A new trip launches a new pod");
+    for (int i = 0; i < 40 && scene.Ship.DropPods.Count > 0; i++)
+      scene.Invoke("ResolveTractorTail", scene.Ship, 0.1f);
+    Check(scene.Ship.DropPods.Count == 0, "Pods fly home and disappear");
+
+    var drone = AddShip(scene, new Vector2(520, 500), Harvester.HarvesterType.Drone);
+    drone.CarryingGemCount = (uint)BaseStats.GetHarvesterCapacity(drone);
+    var carrier = AddShip(scene, new Vector2(650, 500));
+    carrier.IsCarrier = true;
+    carrier.ShuttleCount = 3;
+    var shuttle = AddShip(scene, new Vector2(560, 500));
+    shuttle.JoinCarrier(carrier);
+    shuttle.CarryingGemCount = (uint)shuttle.ModuleReturnCapacity;
+    ulong paid = UntitledGemGameGameScreen.DeliveredUncounted;
+    scene.Invoke("LaunchDropPod", drone);
+    scene.Invoke("LaunchDropPod", shuttle);
+    Check(drone.CarryingGemCount > 0 && shuttle.CarryingGemCount > 0
+      && UntitledGemGameGameScreen.DeliveredUncounted == paid, "Drones and shuttles do not launch pods");
+
+    scene.Ship.BeginModuleTrip();
+    FillHold(scene);
+    scene.Invoke("LaunchDropPod", scene.Ship);
+    scene.Ship.ClearCargoForPrestige();
+    FillHold(scene);
+    paid = UntitledGemGameGameScreen.DeliveredUncounted;
+    scene.Invoke("LaunchDropPod", scene.Ship);
+    Check(scene.Ship.DropPods.Count == 1 && UntitledGemGameGameScreen.DeliveredUncounted > paid,
+      "Extraction clears pods in flight and re-arms the launch");
+  }
+
   private static Harvester AddShip(Scene scene, Vector2 position, Harvester.HarvesterType type = Harvester.HarvesterType.Harvester)
   {
     var entity = scene.World.CreateEntity();
@@ -200,42 +258,5 @@ internal static class FleetTalentChecks
     entity.Attach(ship);
     scene.World.Update(new GameTime());
     return ship;
-  }
-
-  private static void CheckSlipstream()
-  {
-    using var scene = new Scene(ShipModule.None);
-    scene.Ship.SetCollisionPosition(new Vector2(84, 84));
-    scene.Ship.PositionMoved = true;
-    var neighbour = AddShip(scene, new Vector2(86, 86));
-    var distant = AddShip(scene, new Vector2(400, 400));
-    var drone = AddShip(scene, new Vector2(85, 85), Harvester.HarvesterType.Drone);
-    var stopped = AddShip(scene, new Vector2(85, 85));
-    stopped.CurrentState = Harvester.HarvesterState.RequestingFuel;
-    float speed = BaseStats.GetHarvesterSpeed(scene.Ship);
-    scene.Invoke("UpdateSlipstreams", 0.1f);
-    Check(scene.Ship.SlipstreamTimeRemaining == 0, "Slipstream requires its talent");
-    scene.Manager.UGM.Slipstream = true;
-    scene.Invoke("UpdateSlipstreams", 0.1f);
-    Check(scene.Ship.SlipstreamTimeRemaining == 3 && neighbour.SlipstreamTimeRemaining == 3
-      && Math.Abs(BaseStats.GetHarvesterSpeed(scene.Ship) / speed - 1.5f) < 0.001f,
-      "Moving neighbours across cell boundaries both receive the speed bonus");
-    Check(distant.SlipstreamTimeRemaining == 0 && drone.SlipstreamTimeRemaining == 0
-      && stopped.SlipstreamTimeRemaining == 0, "Distant ships, drones and refueling ships cannot trigger Slipstream");
-    AddShip(scene, new Vector2(85, 84));
-    scene.Invoke("UpdateSlipstreams", 2f);
-    Check(scene.Ship.SlipstreamTimeRemaining == 3 && BaseStats.GetHarvesterSpeed(scene.Ship) == speed * 1.5f,
-      "Multiple encounters refresh three seconds without stacking speed");
-    scene.Ship.SetCollisionPosition(new Vector2(-500, -500));
-    scene.Invoke("UpdateSlipstreams", 2f);
-    Check(scene.Ship.SlipstreamTimeRemaining == 1, "A ship keeps its boost after leaving traffic");
-    scene.Invoke("UpdateSlipstreams", 1.1f);
-    Check(BaseStats.GetHarvesterSpeed(scene.Ship) == speed, "Slipstream expires after three seconds apart");
-    scene.Ship.SetCollisionPosition(neighbour.BoundingCircle.Center);
-    scene.Invoke("UpdateSlipstreams", 0.1f);
-    scene.Manager.UGM.Slipstream = false;
-    scene.Invoke("UpdateSlipstreams", 0.1f);
-    Check(scene.Ship.SlipstreamTimeRemaining == 0 && BaseStats.GetHarvesterSpeed(scene.Ship) == speed,
-      "Unlearning removes both the boost and its visual state");
   }
 }

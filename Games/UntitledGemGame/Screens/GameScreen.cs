@@ -585,6 +585,7 @@ namespace UntitledGemGame.Screens
       TractorBelt.Reset(Systems.UpdateSystem2.Instance);
       m_homeBaseEntity?.Get<HomeBase>()?.CancelAbilityEffects();
       m_entityFactory?.ClearPendingGemSpawns();
+      BuriedGems.Reset();
       ClearPlanetShots();
       ClearCoreDrills();
       Array.Clear(_jackpotPopups);
@@ -644,7 +645,10 @@ namespace UntitledGemGame.Screens
       int bonusPercent = 0, float? launchAngle = null)
     {
       if (fromPlanet)
+      {
         firePower = PrestigeTalentEffects.DeepCoreQualityPower(firePower);
+        BuriedGems.OnGemLoose();
+      }
       GemSpawnData gemSpawn = GemQualityTable.Roll(firePower, valueMultiplier);
       if (bonusPercent > 0)
         gemSpawn.BaseValue = AbilityGemValue.AddBonus(gemSpawn.BaseValue, bonusPercent);
@@ -844,6 +848,7 @@ namespace UntitledGemGame.Screens
           HarvesterCollectionSystem.Instance.ClearCargoForPrestige();
           m_homeBaseEntity?.Get<Harvester>()?.ClearCargoForPrestige();
           m_entityFactory.ClearPendingGemSpawns();
+          BuriedGems.Reset();
           ClearPlanetShots();
           spawnTimer = passiveIncomeTimer = 0f;
           passiveIncomeRemainder = 0;

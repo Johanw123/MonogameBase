@@ -3,66 +3,12 @@ using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 using MonoGame.Extended;
 using UntitledGemGame.Entities;
+using UntitledGemGame.Screens;
 
 namespace UntitledGemGame.Systems;
 
 public partial class HarvesterCollectionSystem
 {
-  private readonly Dictionary<(int X, int Y), List<Harvester>> slipstreamCells = new();
-  private readonly Stack<List<Harvester>> spareSlipstreamCells = new();
-
-  private static bool CanSlipstream(Harvester ship)
-    => ship != null && BaseStats.IsFleetHarvester(ship) && !ship.MarkedForDestroy
-      && ship.CurrentState == Harvester.HarvesterState.Collecting && ship.PositionMoved
-      && (ship.IsShuttle || ship.Fuel > 0f);
-
-  private static (int X, int Y) SlipstreamCell(Vector2 position)
-    => ((int)MathF.Floor(position.X / PrestigeTalentEffects.SlipstreamRadius),
-      (int)MathF.Floor(position.Y / PrestigeTalentEffects.SlipstreamRadius));
-
-  // Snapshot moving ships before the parallel movement pass. Nearby cells avoid an
-  // all-pairs fleet scan, and one neighbour is enough even in a crowded departure lane.
-  private void UpdateSlipstreams(float dt)
-  {
-    foreach (var cell in slipstreamCells.Values)
-    {
-      cell.Clear();
-      spareSlipstreamCells.Push(cell);
-    }
-    slipstreamCells.Clear();
-    bool enabled = UpgradeManager.Instance.UGM.Slipstream;
-    foreach (int id in _harvesters)
-    {
-      var ship = _harvesterMapper.Get(id);
-      if (ship == null) continue;
-      ship.SlipstreamTimeRemaining = enabled ? Math.Max(0f, ship.SlipstreamTimeRemaining - dt) : 0f;
-      if (!enabled || !CanSlipstream(ship)) continue;
-      var key = SlipstreamCell(ship.BoundingCircle.Center);
-      if (!slipstreamCells.TryGetValue(key, out var cell))
-        slipstreamCells.Add(key, cell = spareSlipstreamCells.TryPop(out var spare) ? spare : new());
-      cell.Add(ship);
-    }
-    float radiusSquared = PrestigeTalentEffects.SlipstreamRadius * PrestigeTalentEffects.SlipstreamRadius;
-    foreach (var (key, ships) in slipstreamCells)
-      foreach (var ship in ships)
-      {
-        bool found = false;
-        for (int x = key.X - 1; x <= key.X + 1 && !found; x++)
-          for (int y = key.Y - 1; y <= key.Y + 1 && !found; y++)
-          {
-            if (!slipstreamCells.TryGetValue((x, y), out var neighbours)) continue;
-            foreach (var other in neighbours)
-            {
-              if (other == ship || Vector2.DistanceSquared(ship.BoundingCircle.Center,
-                other.BoundingCircle.Center) > radiusSquared) continue;
-              ship.SlipstreamTimeRemaining = other.SlipstreamTimeRemaining = PrestigeTalentEffects.SlipstreamSeconds;
-              found = true;
-              break;
-            }
-          }
-      }
-  }
-
   // Reserve along the actual return movement, so fast ships don't skip gems. This
   // only runs on a return trip, including a shuttle's trip back to its carrier.
   private void ClaimTractorTail(Harvester ship, Vector2 start, Vector2 end)
@@ -103,5 +49,23 @@ public partial class HarvesterCollectionSystem
     ship.ClaimedTailGems.Clear();
     var transform = ship.Entity?.Get<Transform2>();
     if (transform != null) ship.UpdateTractorTail(transform.Position, transform.Rotation, dt);
+    if (ship.DropPods.Count > 0) ship.UpdateDropPods(UntitledGemGameGameScreen.HomeBasePos, dt);
+  }
+
+  // Before the ship turns home: its first full hold of the trip is delivered from
+  // where it is, with everything an ordinary fleet delivery sets off.
+  private void LaunchDropPod(Harvester ship)
+  {
+    if (!ship.TryLaunchDropPod()) return;
+    uint cargo = ship.CarryingGemCount;
+    ulong value = BaseStats.GetHarvesterDeliveryValue(ship, ship.CarryingGemBaseValue);
+    UntitledGemGameGameScreen.DeliveredUncounted = PrestigeProgression.AddSaturating(
+      UntitledGemGameGameScreen.DeliveredUncounted, value);
+    RecordDelivery(ship, value);
+    AudioManager.Instance?.PlaySound(SoundEvent.HarvesterDeliverCargo);
+    var from = ship.BoundingCircle.Center;
+    UntitledGemGameGameScreen.Instance?.ChargeWeaponsFromCargo(cargo);
+    UntitledGemGameGameScreen.Instance?.OnFleetDelivery(ship, from, cargo);
+    ship.FinishDropPod(UntitledGemGameGameScreen.HomeBasePos);
   }
 }

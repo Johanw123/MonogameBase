@@ -37,6 +37,7 @@ internal static class ModuleChecks
       TravelModuleChecks.Run();
       MythicModuleChecks.Run();
       ModuleBaysChecks.Run();
+      CollectionScalingChecks.Run();
       ModuleSalvageChecks.Run();
       Console.WriteLine("Module checks passed: shared inventory, saves, trip snapshots, sweep, tractor, prospecting, wake, jackpot and beacon.");
     }

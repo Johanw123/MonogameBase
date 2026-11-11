@@ -7,12 +7,60 @@ namespace UntitledGemGame.Entities;
 
 public partial class Harvester
 {
-  public float SlipstreamTimeRemaining;
-  // Keep the visual on the real engine nozzles and ease back to normal thrust as
-  // the boost expires. Stopped and refueling ships keep their usual engine state.
-  public float SlipstreamExhaustBoost => PositionMoved && CurrentState == HarvesterState.Collecting
-    ? 1f + 0.45f * MathHelper.SmoothStep(0f, 1f, Math.Clamp(SlipstreamTimeRemaining / 0.6f, 0f, 1f))
-    : 1f;
+  // Drop Pods: one full hold per trip is launched home and the ship keeps collecting.
+  private bool dropPodLaunched;
+  public struct DropPod
+  {
+    public Vector2 Position, Velocity;
+  }
+  public List<DropPod> DropPods { get; } = new();
+
+  public bool TryLaunchDropPod()
+  {
+    if (dropPodLaunched || MarkedForDestroy || IsShuttle || !BaseStats.IsFleetHarvester(this)
+      || !UpgradeManager.Instance.UGM.DropPods
+      || CarryingGemCount == 0 || CarryingGemCount < ModuleReturnCapacity) return false;
+    dropPodLaunched = true;
+    return true;
+  }
+
+  // The hold is already paid for; the pod itself is only the visual flying home.
+  public void FinishDropPod(Vector2 home)
+  {
+    CarryingGemCount = 0;
+    CarryingGemBaseValue = 0;
+    Credits.Clear();
+    relayCopies = 0;
+    forgePickups = 0;
+    // The trip goes on: where it ends is decided by the second hold.
+    CollectionEndpoint = null;
+    var start = BoundingCircle.Center;
+    var toHome = home - start;
+    var heading = toHome.LengthSquared() > 1f ? Vector2.Normalize(toHome) : Vector2.UnitY;
+    if (DropPods.Count < 4)
+      DropPods.Add(new DropPod { Position = start, Velocity = heading * PrestigeTalentEffects.DropPodLaunchSpeed });
+    ShowModulePulse(start, 60f, Color.Cyan);
+  }
+
+  internal void UpdateDropPods(Vector2 home, float dt)
+  {
+    for (int i = DropPods.Count - 1; i >= 0; i--)
+    {
+      var pod = DropPods[i];
+      var toHome = home - pod.Position;
+      float distance = toHome.Length();
+      float speed = pod.Velocity.Length() + PrestigeTalentEffects.DropPodAcceleration * Math.Max(0f, dt);
+      if (distance <= speed * dt + 12f)
+      {
+        DropPods.RemoveAt(i);
+        continue;
+      }
+      pod.Velocity = toHome / distance * speed;
+      pod.Position += pod.Velocity * dt;
+      DropPods[i] = pod;
+    }
+  }
+
   public uint TowedGemCount { get; private set; }
   internal readonly List<int> ClaimedTailGems = new();
 
@@ -114,6 +162,7 @@ public partial class Harvester
     tailGems?.Clear();
     DeliveredTails.Clear();
     ClaimedTailGems.Clear();
-    SlipstreamTimeRemaining = 0f;
+    DropPods.Clear();
+    dropPodLaunched = false;
   }
 }

@@ -64,6 +64,7 @@ namespace UntitledGemGame.Systems
       var gem = BeltGem(rider);
       if (gem == null) return;
       gem.LeaveTractorBelt();
+      valueMultiplier *= 1 + BuriedGems.Dig(UpgradeManager.Instance.UG.BeltDig);
       gem.ManualClickBonus = UntitledGemGameGameScreen.Instance.ClickUtility.BonusValue(gem.BaseValue, valueMultiplier);
       HarvesterCollectionSystem.Instance.CollectGem(gem, HomeBase.Instance.Entity.Get<Harvester>(),
         GemCollectionMethod.TractorBelt);

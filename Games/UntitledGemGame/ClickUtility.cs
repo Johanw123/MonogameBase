@@ -216,7 +216,7 @@ public sealed class ClickUtility
       AddFlash(origin, new Vector2(grid.Gems[target].X, grid.Gems[target].Y), color);
     }
     Vector2 previous = origin;
-    for (int i = 0; i < Math.Clamp(upgrades.ClickChainCount, 0, 64); ++i)
+    for (int i = 0; i < Math.Clamp(upgrades.ClickChainCount, 0, 96); ++i)
     {
       int target = FindNearest(grid, previous, Math.Max(0, SignalStats.Scale(SignalKind.ClickChainRange, upgrades.ClickChainRange, signals)));
       if (target < 0) break;

@@ -964,6 +964,7 @@ namespace UntitledGemGame.Systems
       if (quantumDelivered)
       {
         ulong value = BaseStats.GetHarvesterDeliveryValue(harvester, gem.BaseValue);
+        value = MultiplySaturating(value, 1UL + (ulong)DigBuriedGems(harvester));
         UntitledGemGameGameScreen.DeliveredUncounted = PrestigeProgression.AddSaturating(
           UntitledGemGameGameScreen.DeliveredUncounted, value);
         RecordCollection(harvester, method, value);
@@ -974,6 +975,11 @@ namespace UntitledGemGame.Systems
         if (towing) harvester.AddTowedGem(gem, gemEntity.Get<Sprite>(), pickupPosition);
         else harvester.PickedUpGem(gem);
         harvester.AddModuleGemBonus(method, gem.BaseValue);
+        // Buried gems come up beside the pickup, worth what it was worth, and take no cargo space.
+        int dug = DigBuriedGems(harvester);
+        if (dug > 0)
+          harvester.CarryingGemBaseValue = PrestigeProgression.AddSaturating(harvester.CarryingGemBaseValue,
+            MultiplySaturating(harvester.CarryingGemBaseValue - held, (ulong)dug));
         harvester.Credits.Add(method, harvester.CarryingGemBaseValue - held);
       }
 
@@ -1005,6 +1011,13 @@ namespace UntitledGemGame.Systems
       // m_gems2.Remove(gem.Id);
       // spatialTest.Remove(gem);
     }
+
+    // Deep Scoops: fleet ships dig up buried gems with every gem they collect.
+    private static int DigBuriedGems(Harvester harvester)
+      => BaseStats.IsFleetHarvester(harvester) ? BuriedGems.Dig(UpgradeManager.Instance.UG.FleetDig) : 0;
+
+    private static ulong MultiplySaturating(ulong value, ulong factor)
+      => factor != 0 && value > ulong.MaxValue / factor ? ulong.MaxValue : value * factor;
 
     private static void RecordCollection(Harvester collector, GemCollectionMethod method, ulong amount)
     {
@@ -1300,6 +1313,29 @@ namespace UntitledGemGame.Systems
       Vector2 center = harvester.BoundingCircle.Center;
       long remaining = harvester.ForceInstantCollection ? int.MaxValue
         : Math.Max(0L, (long)harvester.ModuleReturnCapacity - harvester.CarryingGemCount);
+      // A fast ship covers more than its own reach in one step. Collect along the path it
+      // flew, or speed past a certain point would stop adding pickups. A warp is not a path.
+      Vector2 flown = transform.Position - previousPosition;
+      float flownLength = flown.Length();
+      float step = BaseStats.GetHarvesterSpeed(harvester) * (float)gameTime.ElapsedGameTime.TotalSeconds;
+      if (!harvester.ForceInstantCollection && flownLength > range && flownLength <= step * 1.5f + 1f)
+      {
+        Vector2 start = center - flown;
+        Vector2 middle = center - flown * 0.5f;
+        foreach (int gemIndex in flatSpatialHash.QueryCollection(middle.X, middle.Y, flownLength * 0.5f + range))
+        {
+          if (remaining == 0) break;
+          ref var swept = ref flatSpatialHash.Gems[gemIndex];
+          var position = new Vector2(swept.X, swept.Y);
+          float t = Math.Clamp(Vector2.Dot(position - start, flown) / (flownLength * flownLength), 0f, 1f);
+          float reach = range + flatSpatialHash.CollectionRadius(gemIndex);
+          if (Vector2.DistanceSquared(position, start + flown * t) > reach * reach
+            || !flatSpatialHash.TryClaim(gemIndex)) continue;
+          harvester.ClaimedGems.Add(swept.EntityId);
+          --remaining;
+        }
+        return;
+      }
       foreach (int gemIndex in flatSpatialHash.QueryCollection(center.X, center.Y, range))
       {
         if (remaining == 0) break;
@@ -1435,7 +1471,6 @@ namespace UntitledGemGame.Systems
       RefreshTreasureScannerCache(gameTime);
       UpdateMetaFleetEffects(gameTime);
       RefreshQuantumEntanglement(gameTime);
-      UpdateSlipstreams((float)gameTime.ElapsedGameTime.TotalSeconds);
       MagnetizerCache.Refresh();
 
       if (GameMain.MultiThreadingEnabled && _harvesters.Count >= 64)
@@ -1468,6 +1503,7 @@ namespace UntitledGemGame.Systems
         ApplyTravelModules(harvester, (float)gameTime.ElapsedGameTime.TotalSeconds);
         ApplyMythicModules(harvester, (float)gameTime.ElapsedGameTime.TotalSeconds);
         IgnitePhoenix(harvester);
+        LaunchDropPod(harvester);
         // Capacity can be reached during pickup resolution. Sweep before Return Gate
         // can deliver this load, and remember the collection endpoint before any warp.
         if (!harvester.ForceInstantCollection && harvester.ReturningToHomebase)

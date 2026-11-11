@@ -148,7 +148,6 @@ public static class PrerenderedShips
       if (power <= 0.02f) return;
     }
     float boost = (harvester.LaunchThrusterTimeRemaining > 0f || harvester.OverdriveTimeRemaining > 0f) ? 1.32f : 1f;
-    boost = Math.Max(boost, harvester.SlipstreamExhaustBoost);
     DrawEngine(spriteBatch, harvester.Type, harvester.Id, drawTransform, drawRotation,
       prerenderedScale, depth, totalTime, frontPass, power, boost, alpha: 1f, shaderAlphaEncoding: true);
   }

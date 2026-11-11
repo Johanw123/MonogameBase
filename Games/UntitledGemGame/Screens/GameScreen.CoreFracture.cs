@@ -106,6 +106,7 @@ public partial class UntitledGemGameGameScreen
   {
     if (m_prestiging || m_postPrestige) return;
     m_gameState.Damage.Record(source, damage);
+    BuriedGems.OnDamage(damage);
     if (PlanetShelled) DamageShell(damage);
     else planetDamage.Record(damage);
   }

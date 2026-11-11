@@ -27,14 +27,17 @@ public readonly record struct TractorBeltStats(bool Enabled, float Radius, float
 
   // Belt Network (a prestige talent) doubles how many intakes run at once.
   public const int NetworkIntakeMultiplier = 2;
+  // Express Line (a Core Shard upgrade): the belt runs this much faster with pods this much bigger.
+  public const int ExpressMultiplier = 3;
 
   public static TractorBeltStats From(UpgradesGeneratorUpgrades upgrades, float clickRadius,
     SignalProgression signals = null, UpgradesGeneratorUpgrades_meta talents = null) => new(
     upgrades.TractorBeltEnabled,
     clickRadius * SignalStats.Scale(SignalKind.TractorBeltRadius, upgrades.TractorBeltRadiusMultiplier, signals),
-    TractorBelt.BaseSpeed * SignalStats.Scale(SignalKind.TractorBeltSpeed, upgrades.TractorBeltSpeedMultiplier, signals),
+    TractorBelt.BaseSpeed * SignalStats.Scale(SignalKind.TractorBeltSpeed, upgrades.TractorBeltSpeedMultiplier, signals)
+      * (upgrades.ExpressLine ? ExpressMultiplier : 1),
     Math.Max(1, signals?.ScaleCount(SignalKind.TractorBeltCapacity, upgrades.TractorBeltCapacity)
-      ?? upgrades.TractorBeltCapacity),
+      ?? upgrades.TractorBeltCapacity) * (upgrades.ExpressLine ? ExpressMultiplier : 1),
     upgrades.TractorBeltPermanent ? float.PositiveInfinity
       : SignalStats.Scale(SignalKind.TractorBeltDuration, upgrades.TractorBeltDuration, signals),
     1 + Math.Max(0, upgrades.TractorBeltValue),
