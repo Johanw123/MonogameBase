@@ -27,6 +27,9 @@ public class SdfLineRenderer
     public float PulseGlowSpread { get; set; } = 20f;
     public float BaseGlowPadding { get; set; } = 45f;
     public float PulseExtraPadding { get; set; } = 30f;
+    // Fit each quad along its line instead of around its bounding box. A long diagonal
+    // line then shades its own strip rather than a square as wide as it is long.
+    public bool Oriented { get; set; }
 
     // 10,000 lines per draw call by default. If you draw more, it will automatically flush and start a new batch.
     private const int MAX_LINES = 10000;
@@ -106,6 +109,16 @@ public class SdfLineRenderer
             corner1 = end - endJoin.Value;
             corner2 = start + startJoin.Value;
             corner3 = end + endJoin.Value;
+            min = Vector2.Min(Vector2.Min(corner0, corner1), Vector2.Min(corner2, corner3));
+        }
+        else if (Oriented && Vector2.DistanceSquared(start, end) > 1e-6f)
+        {
+            Vector2 along = Vector2.Normalize(end - start) * padding;
+            Vector2 across = new(-along.Y, along.X);
+            corner0 = start - along - across;
+            corner1 = end + along - across;
+            corner2 = start - along + across;
+            corner3 = end + along + across;
             min = Vector2.Min(Vector2.Min(corner0, corner1), Vector2.Min(corner2, corner3));
         }
 

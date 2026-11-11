@@ -42,7 +42,6 @@ public partial class UntitledGemGameGameScreen
   private const float RocketScale = 0.38f, MiniRocketScale = 0.34f;
   private static readonly Color RocketWarheadGlow = new(255, 135, 30);
   private static readonly Color RocketExhaustCyan = new(35, 200, 255);
-  private static readonly Color RocketExhaustCore = new(175, 248, 255);
 
   // The cannon's incendiary rounds (IncendiaryRound.fx): the starting weapon stays warm and quiet.
   private static readonly Color CannonGlow = new(255, 120, 45);
@@ -65,7 +64,6 @@ public partial class UntitledGemGameGameScreen
   private const float HarpoonShotSpeed = 900f;
   private const float FlakShotSpeed = 2200f;
   private static readonly Color FlakAmber = new(255, 160, 40);
-  private static readonly Color FlakCore = new(255, 230, 160);
 
   private sealed class PlanetShot
   {
@@ -108,6 +106,10 @@ public partial class UntitledGemGameGameScreen
   private int flakBarrageRemaining;
   private float flakBarrageDelay;
   private SdfLineRenderer laserRenderer;
+  // The weapons' lighter effects, shaded by ModuleEffects.fx: projectile trails, lightning,
+  // the Core Drill's cracks and geyser, and the warp jump.
+  private ModuleEffectBatch weaponEffects;
+  private ModuleEffectBatch WeaponEffects => weaponEffects ??= new ModuleEffectBatch(GraphicsDevice);
   private float crackerCarry;
   private Vector2 paintedPlanetTarget;
   private float paintedTargetRemaining;
@@ -802,7 +804,8 @@ public partial class UntitledGemGameGameScreen
     DrawMagmaScars();
     DrawCraters();
     DrawTurrets();
-    // Glows and trails first (additive shapes), sprites on top.
+    // Glows and trails first (additive shapes and the shaded effects queued with them), sprites on top.
+    var effects = WeaponEffects;
     m_shapeBatch.Begin(m_camera.GetViewMatrix(), blendState: BlendState.Additive);
     DrawWeaponSpecialGlows(feather, laserMounted);
     if (laser)
@@ -822,14 +825,12 @@ public partial class UntitledGemGameGameScreen
         float nozzleOffset = shot.Mini ? 8.16f : 12.16f;
         float warheadOffset = shot.Mini ? 3.2f : 5.8f;
         var nozzle = head - direction * nozzleOffset;
-        var midWake = Bezier(shot, Math.Max(0f, t - 0.055f * overdriveScale)) - direction * (nozzleOffset * 0.6f);
         var tail = Bezier(shot, Math.Max(0f, t - 0.14f * overdriveScale));
         float wakeWidth = (shot.Mini ? 2.2f : 3.2f) * overdriveScale;
         float pulse = 0.88f + 0.12f * MathF.Sin(shot.Age * 42f);
 
-        // Cyan thruster wake & nozzle flare behind the moving rocket.
-        m_shapeBatch.FillLine(tail, nozzle, wakeWidth, RocketExhaustCyan * (0.46f * pulse * overdriveScale), Math.Max(feather, wakeWidth * 1.6f));
-        m_shapeBatch.FillLine(midWake, nozzle, wakeWidth * 0.62f, RocketExhaustCore * (0.68f * pulse * overdriveScale), Math.Max(feather, wakeWidth));
+        // Cyan exhaust streaming back from the nozzle, and a flare where it leaves.
+        effects.Plume(nozzle, tail, RocketExhaustCyan, wakeWidth, ShotSeed(shot), pulse);
         float flareR = (shot.Mini ? 2.4f : 3.5f) * pulse * overdriveScale;
         m_shapeBatch.FillCircle(nozzle - direction * (shot.Mini ? 1.5f : 2.2f), flareR, RocketExhaustCyan * (0.55f * overdriveScale), Math.Max(feather, flareR * 1.4f));
 
@@ -843,8 +844,8 @@ public partial class UntitledGemGameGameScreen
         float overdriveScale = weaponOverdriveMultiplier > 1.001f ? 1.55f : 1f;
         var pelletTail = Bezier(shot, Math.Max(0f, t - 0.24f));
         float flakWidth = (shot.Critical ? 3.2f : 1.8f) * overdriveScale;
-        m_shapeBatch.FillLine(pelletTail, head, flakWidth, (shot.Critical ? Color.Gold : FlakAmber) * 0.85f, Math.Max(feather, flakWidth * 1.5f));
-        m_shapeBatch.FillCircle(head, flakWidth * 0.9f, (shot.Critical ? Color.White : FlakCore) * 0.95f, Math.Max(feather, flakWidth * 1.2f));
+        // A tracer: white-hot at the pellet, burning out behind it.
+        effects.Plume(head, pelletTail, shot.Critical ? Color.Gold : FlakAmber, flakWidth * 0.6f, ShotSeed(shot));
         continue;
       }
       var droneTail = Bezier(shot, Math.Max(0f, t - 0.12f));
@@ -854,7 +855,9 @@ public partial class UntitledGemGameGameScreen
         PlanetShotKind.Drone => shot.Doomsday ? (DoomsdayGlow, 8f) : shot.Mini ? (KamikazeGlow, 2.5f) : (KamikazeGlow, 4.5f),
         _ => (new Color(255, 140, 60), shot.Mini ? 1.8f : 2.5f),
       };
-      m_shapeBatch.FillLine(droneTail, head, width, color * 0.45f, Math.Max(feather, width * 1.5f));
+      // The burn it leaves behind, starting at a drone's stern.
+      var stern = shot.Kind == PlanetShotKind.Drone && !shot.Mini ? head - BezierDirection(shot, t) * (width * 1.2f) : head;
+      effects.Plume(stern, droneTail, color, width * 0.7f, ShotSeed(shot), 0.8f);
       if (shot.Kind == PlanetShotKind.Drone)
       {
         // The armed warhead blinks faster as the drone closes in.
@@ -873,6 +876,7 @@ public partial class UntitledGemGameGameScreen
     if (constellationRockets > 0)
       DrawConstellation(feather);
     m_shapeBatch.End();
+    effects.Draw(m_camera.ViewProjection(), planetAge);
 
     bool cracker = ManualAbilities.ActivePlanetCrackerMultiplier > 0f && GameStarted && !m_prestiging && !m_postPrestige
       && !FracturePaused;
@@ -890,11 +894,14 @@ public partial class UntitledGemGameGameScreen
     m_spriteBatch.End();
     DrawIncendiaryRounds();
     DrawRailgun(feather);
-    DrawConductorSlugs(feather);
+    DrawConductorSlugs();
     DrawArcHarpoon(feather);
     DrawShardPickups();
     DrawFaultCells();
   }
+
+  // A seed that stays with a shot, so its trail keeps its own flicker.
+  private static float ShotSeed(PlanetShot shot) => (shot.GetHashCode() & 1023) / 1024f;
 
   // How far along its path a shot is. Kamikaze drones accelerate into their dive.
   private static float ShotProgress(PlanetShot shot)

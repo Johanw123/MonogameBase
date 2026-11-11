@@ -305,11 +305,9 @@ namespace UntitledGemGame.Systems
         var line = entry.Value;
         if (line != null)
         {
-          // _shapeBatch.FillLine(line.Start, line.End,
-          //   Math.Max(line.Thickness, 0.5f), line.ColorStart, 0.5f);
-          _shapeBatch.FillLine(line.Start, line.End, line.Thickness, line.ColorStart, 1.5f);
+          // A lean beam from the gem to where it is pulled: hundreds of them meet at the ship.
+          _moduleEffects.Beam(line.Start, line.End, 0f, line.ColorStart, 0.7f, entry.Key * 0.137f, 0.9f, lean: 1f);
           renderedChainLines++;
-          // _shapeBatch.FillLine(harvester.BoundingCircle.Center, UntitledGemGameGameScreen.HomeBasePos, 0.1f, new Color(0.2f, 0.1f, 0.9f, 0.4f), 3.0f);
         }
       }
 
@@ -399,9 +397,11 @@ namespace UntitledGemGame.Systems
       }
       float charge = Math.Clamp(net.Age / ConstellationNet.Windup, 0f, 1f);
       float pull = net.PullProgress;
-      float shimmer = 0.8f + 0.2f * MathF.Sin(net.Age * 35f);
-      var glow = new Color(90, 110, 255) * (0.65f * shimmer);
-      var core = Color.Lerp(Color.Cyan, Color.White, charge) * 0.95f;
+      // The outline is stitched star to star, brightening from indigo to white as it charges.
+      var thread = Color.Lerp(new Color(90, 130, 255), new Color(150, 225, 255), charge);
+      var star = Color.Lerp(Color.Cyan, Color.White, charge);
+      // As the net collapses its stars land on one spot, so they shrink and dim on the way in.
+      float spread = 1f - pull;
       int count = net.Hull.Length;
       for (int i = 0; i < count; ++i)
       {
@@ -409,15 +409,10 @@ namespace UntitledGemGame.Systems
         var end = Vector2.Lerp(net.Hull[(i + 1) % count], net.Destination, pull);
         float stitch = Math.Clamp(charge * count - i, 0f, 1f);
         if (stitch <= 0f) continue;
-        var stitchedEnd = Vector2.Lerp(start, end, stitch);
-        _shapeBatch.FillLine(start, stitchedEnd, 3f, glow, 5f);
-        _shapeBatch.FillLine(start, stitchedEnd, 0.9f, core, 1.5f);
-        float starSize = 3f + 3f * charge;
-        _shapeBatch.FillLine(start - Vector2.UnitX * starSize, start + Vector2.UnitX * starSize, 1f, core, 2f);
-        _shapeBatch.FillLine(start - Vector2.UnitY * starSize, start + Vector2.UnitY * starSize, 1f, core, 2f);
+        _moduleEffects.Beam(start, Vector2.Lerp(start, end, stitch), 0f, thread, 1.8f, i * 0.31f, 0.3f + 0.7f * spread, lean: 0.5f);
+        _moduleEffects.Glint(start, (22f + 16f * charge) * (0.4f + 0.6f * spread), star, i * 0.17f, 0.25f + 0.75f * spread);
       }
-      // Three bright pulses race around the completed outline. Captures use a
-      // bounded set of flickering sparks, not hundreds of extra chain lines.
+      // Three bright pulses race around the completed outline.
       if (charge >= 1f)
       {
         for (int pulse = 0; pulse < 3; ++pulse)
@@ -426,16 +421,14 @@ namespace UntitledGemGame.Systems
           int edge = (int)along;
           var point = Vector2.Lerp(net.Hull[edge], net.Hull[(edge + 1) % count], along - edge);
           point = Vector2.Lerp(point, net.Destination, pull);
-          _shapeBatch.FillLine(point - Vector2.One * 3f, point + Vector2.One * 3f, 2f, Color.White, 3f);
+          _moduleEffects.Glint(point, 26f * (0.4f + 0.6f * spread), Color.White, pulse * 0.33f, 0.25f + 0.75f * spread, 0f, new Vector2(1f, 1f));
         }
       }
+      // The gems it has caught twinkle inside it.
       for (int i = 0; i < net.Sparks.Length; ++i)
       {
         var point = Vector2.Lerp(net.Sparks[i], net.Destination, pull);
-        float twinkle = 0.5f + 0.5f * MathF.Sin(net.Age * 24f + i * 2.4f);
-        var color = Color.Cyan * (twinkle * charge);
-        _shapeBatch.FillLine(point - Vector2.UnitX * 2f, point + Vector2.UnitX * 2f, 0.8f, color, 2f);
-        _shapeBatch.FillLine(point - Vector2.UnitY * 2f, point + Vector2.UnitY * 2f, 0.8f, color, 2f);
+        _moduleEffects.Glint(point, 12f, Color.Cyan, i * 0.21f, charge * spread, 1f);
       }
     }
 

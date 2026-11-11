@@ -322,8 +322,6 @@ public partial class UntitledGemGameGameScreen
   private readonly Vector2[] harpoonCable = new Vector2[HarpoonCableSegments + 2];
   private readonly float[] harpoonCableLength = new float[HarpoonCableSegments + 2];
   private int harpoonCableCount;
-  private readonly Vector2[] boltPoints = new Vector2[17];
-  private readonly Vector2[] boltBranch = new Vector2[9];
 
   // How long ago the volley's anchors let go; they fade out together.
   private float harpoonReleaseAge = -1f;
@@ -469,31 +467,28 @@ public partial class UntitledGemGameGameScreen
       }
       m_shapeBatch.End();
       DrawHarpoonAnchors(poses, view);
-    }
 
-    // Twin harpoons each get their own lightning shapes.
-    m_shapeBatch.Begin(view, blendState: MaxBlend);
-    for (int i = 0; i < poses; i++)
-    {
-      BuildHarpoonCable(harpoonPoses[i]);
-      DrawHarpoonElectricity(harpoonPoses[i], flicker + i * 1013, glow: true, feather);
+      // Twin harpoons each get their own lightning. The glow and core passes draw the cable's
+      // current and the collars; the bolts themselves are queued once and shaded on top.
+      m_shapeBatch.Begin(view, blendState: MaxBlend);
+      for (int i = 0; i < poses; i++)
+      {
+        BuildHarpoonCable(harpoonPoses[i]);
+        DrawHarpoonElectricity(harpoonPoses[i], flicker + i * 1013, i, glow: true, feather);
+      }
+      m_shapeBatch.End();
+      m_shapeBatch.Begin(view, blendState: BlendState.Additive);
+      for (int i = 0; i < poses; i++)
+      {
+        BuildHarpoonCable(harpoonPoses[i]);
+        DrawHarpoonElectricity(harpoonPoses[i], flicker + i * 1013, i, glow: false, feather);
+      }
+      m_shapeBatch.End();
     }
-    DrawTalentArcs(flicker, glow: true, feather);
-    m_shapeBatch.End();
-    m_shapeBatch.Begin(view, blendState: BlendState.Additive);
-    for (int i = 0; i < poses; i++)
-    {
-      BuildHarpoonCable(harpoonPoses[i]);
-      DrawHarpoonElectricity(harpoonPoses[i], flicker + i * 1013, glow: false, feather);
-    }
-    DrawTalentArcs(flicker, glow: false, feather);
-    m_shapeBatch.End();
-  }
-
-  private void DrawTalentArcs(int flicker, bool glow, float feather)
-  {
+    // Lightning Rod, Tesla Coil and Ionized Magma arcs.
     foreach (var arc in arcs)
-      DrawLightning(arc.From, arc.To, arc.Seed * 97 + flicker, 1f - arc.Age / ArcSeconds, glow, feather);
+      DrawLightning(arc.From, arc.To, arc.Seed, arc.Age / ArcSeconds);
+    WeaponEffects.Draw(m_camera.ViewProjection(), planetAge);
   }
 
   // How far the next pulse has charged: the packet's way down the cable.
@@ -560,9 +555,9 @@ public partial class UntitledGemGameGameScreen
     => new((byte)MathF.Round(Math.Clamp(charge, 0f, 1f) * 255f), (byte)MathF.Round(Math.Clamp(flash, 0f, 1f) * 255f),
       (byte)MathF.Round(Math.Clamp(squash, 0f, 1f) * 255f), (byte)MathF.Round(Math.Clamp(fade, 0f, 1f) * 255f));
 
-  // Each piece of electricity is drawn twice: a soft glow (max blending) and a bright
-  // core (additive) from the same bolt geometry.
-  private void DrawHarpoonElectricity(in HarpoonPose pose, int flicker, bool glow, float feather)
+  // The cable's current and the collars are drawn twice: a soft glow (max blending) and a
+  // bright core (additive). The lightning is queued with the core pass.
+  private void DrawHarpoonElectricity(in HarpoonPose pose, int flicker, int harpoon, bool glow, float feather)
   {
     // A faint live current along the cable.
     if (glow)
@@ -614,24 +609,24 @@ public partial class UntitledGemGameGameScreen
       }
       // Cable crackles change at half the lightning's flicker rate.
       int crackle = flicker / 2;
-      if (FlickerNoise(crackle, 11) < 0.45f)
+      if (!glow && FlickerNoise(crackle, 11) < 0.45f)
       {
         float angle = FlickerNoise(crackle, 12) * MathHelper.TwoPi;
         var spark = at + PlanetDirection(angle) * (4f + 4f * FlickerNoise(crackle, 21));
-        DrawLightning(at, spark, crackle * 13, 0.45f, glow, feather, size: 0.5f, branches: 0);
+        DrawLightning(at, spark, crackle * 13, 0.3f, strength: 0.7f, size: 0.5f, forks: 0);
       }
-      DrawHarpoonDischarge(pose.Anchor, flash, flicker, glow, feather);
+      DrawHarpoonDischarge(pose.Anchor, flash, harpoon, glow, feather);
     }
     else if (pose.Release > 0f)
     {
       // Letting go: one last burst across the surface around the anchor.
       float burst = MathF.Pow(1f - pose.Release, 1.5f);
       float anchorAngle = MathF.Atan2(pose.Anchor.Y - PlanetPos.Y, pose.Anchor.X - PlanetPos.X);
-      for (int i = 0; i < 5; i++)
+      for (int i = 0; i < 5 && !glow; i++)
       {
         float angle = anchorAngle + (i - 2f) * 0.32f + (FlickerNoise(flicker, 40 + i) - 0.5f) * 0.2f;
         var end = PlanetPos + PlanetDirection(angle) * PlanetRadius * (0.62f + 0.25f * FlickerNoise(flicker, 50 + i));
-        DrawLightning(pose.Anchor, end, flicker * 7 + i, burst, glow, feather, branches: 1);
+        DrawLightning(pose.Anchor, end, harpoon * 31 + i, pose.Release);
       }
       if (!glow)
         m_shapeBatch.FillCircle(pose.Anchor, 3.5f * burst, ArcHarpoonCore * burst, Math.Max(feather, 2f));
@@ -640,77 +635,32 @@ public partial class UntitledGemGameGameScreen
 
   // Every pulse forks lightning from the anchor across the planet's surface (twice as
   // many forks with Forked Current) and one bolt down into the crust.
-  private void DrawHarpoonDischarge(Vector2 anchor, float flash, int flicker, bool glow, float feather)
+  private void DrawHarpoonDischarge(Vector2 anchor, float flash, int harpoon, bool glow, float feather)
   {
-    if (flash <= 0f) return;
-    float intensity = MathF.Pow(flash, 0.7f);
+    if (flash <= 0f || glow) return;
     int forks = UpgradeManager.Instance.UG.HarpoonForkedCurrent ? 6 : 3;
     float anchorAngle = MathF.Atan2(anchor.Y - PlanetPos.Y, anchor.X - PlanetPos.X);
+    int pulse = harpoonPulses * 31 + harpoon * 53;
     for (int fork = 0; fork < forks; fork++)
     {
       float side = fork % 2 == 0 ? 1f : -1f;
       float sweep = side * (0.22f + 0.17f * (fork / 2) + 0.12f * FlickerNoise(harpoonPulses, 60 + fork));
       var end = PlanetPos + PlanetDirection(anchorAngle + sweep)
         * PlanetRadius * (0.8f - 0.12f * FlickerNoise(harpoonPulses, 70 + fork));
-      DrawLightning(anchor, end, harpoonPulses * 31 + fork * 5 + flicker, intensity, glow, feather);
+      DrawLightning(anchor, end, pulse + fork * 5, 1f - flash);
     }
     var down = PlanetPos + PlanetDirection(anchorAngle) * PlanetRadius * 0.5f;
-    DrawLightning(anchor, down, harpoonPulses * 31 + flicker + 99, intensity * 0.8f, glow, feather, size: 1.2f);
-    if (!glow)
-      m_shapeBatch.FillCircle(anchor, 1.5f + 1.5f * flash, ArcHarpoonCore * flash, Math.Max(feather, 2f));
+    DrawLightning(anchor, down, pulse + 99, 1f - flash, strength: 0.8f, size: 1.2f);
+    m_shapeBatch.FillCircle(anchor, 1.5f + 1.5f * flash, ArcHarpoonCore * flash, Math.Max(feather, 2f));
   }
 
-  // A jagged bolt from a to b by midpoint displacement, stable within one flicker step.
-  private static int BuildBolt(Vector2 a, Vector2 b, int seed, float roughness, Vector2[] points, int levels)
+  // Lightning from one point to another (ModuleEffects.fx): it strikes outward, jumps to a
+  // new jagged shape many times a second and burns out over its life. Age runs from 0 to 1.
+  private void DrawLightning(Vector2 from, Vector2 to, int seed, float age, float strength = 1f, float size = 1f,
+    int forks = 1)
   {
-    points[0] = a;
-    points[1] = b;
-    int count = 2;
-    for (int level = 0; level < levels; level++)
-    {
-      for (int i = count - 1; i > 0; i--)
-        points[i * 2] = points[i];
-      for (int i = 1; i < count * 2 - 1; i += 2)
-      {
-        var span = points[i + 1] - points[i - 1];
-        float offset = (FlickerNoise(seed + level * 131, i) - 0.5f) * roughness;
-        points[i] = (points[i - 1] + points[i + 1]) * 0.5f + new Vector2(-span.Y, span.X) * offset;
-      }
-      count = count * 2 - 1;
-    }
-    return count;
-  }
-
-  private void DrawBoltPoints(Vector2[] points, int count, float width, Color color, float feather)
-  {
-    for (int i = 1; i < count; i++)
-      m_shapeBatch.FillLine(points[i - 1], points[i], width, color, feather);
-  }
-
-  private void DrawLightning(Vector2 from, Vector2 to, int seed, float intensity, bool glow, float feather,
-    float size = 1f, int branches = 1)
-  {
-    if (intensity <= 0.01f) return;
-    var core = Color.Lerp(ArcHarpoonGlow, Color.White, 0.75f);
-    int count = BuildBolt(from, to, seed, 0.5f, boltPoints, 4);
-    if (glow)
-      DrawBoltPoints(boltPoints, count, 2.4f * size, ArcHarpoonGlow * (0.75f * intensity), Math.Max(feather, 4f * size));
-    else
-      DrawBoltPoints(boltPoints, count, 0.6f * size, core * intensity, feather);
-    // Branches split off partway along and reach a little way to one side.
-    float length = Vector2.Distance(from, to);
-    float heading = MathF.Atan2(to.Y - from.Y, to.X - from.X);
-    for (int k = 0; k < branches; k++)
-    {
-      var start = boltPoints[3 + (int)(FlickerNoise(seed, 80 + k) * (count - 7))];
-      float turn = (k % 2 == 0 ? 1f : -1f) * (0.45f + 0.5f * FlickerNoise(seed, 90 + k));
-      var end = start + PlanetDirection(heading + turn) * length * (0.2f + 0.2f * FlickerNoise(seed, 100 + k));
-      int branchCount = BuildBolt(start, end, seed * 7 + k + 1, 0.55f, boltBranch, 3);
-      if (glow)
-        DrawBoltPoints(boltBranch, branchCount, 1.6f * size, ArcHarpoonGlow * (0.5f * intensity),
-          Math.Max(feather, 3f * size));
-      else
-        DrawBoltPoints(boltBranch, branchCount, 0.45f * size, core * (0.7f * intensity), feather);
-    }
+    if (age >= 1f) return;
+    WeaponEffects.Bolt(from, to, Math.Max(0f, age), seed * 0.61803f, ArcHarpoonGlow, 0.12f * size, strength, forks,
+      scale: Math.Min(1f, size));
   }
 }

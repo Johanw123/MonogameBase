@@ -1753,13 +1753,8 @@ namespace UntitledGemGame.Screens
       DrawMiningFragments();
       gpuParticles?.Draw(m_camera.ViewProjection());
       DrawTractorBelt();
-      // Shapes render into the virtual-sized target, before it is scaled to the window.
-      m_shapeBatch.Begin(UntitledGemGame.ClickUtility.RenderView(m_camera.GetViewMatrix(),
-          BaseGame.BoxingViewportAdapter.GetScaleMatrix()),
-        Matrix.CreateOrthographicOffCenter(0, BaseGame.BoxingViewportAdapter.VirtualWidth,
-          BaseGame.BoxingViewportAdapter.VirtualHeight, 0, 0, 1), blendState: BlendState.Additive);
-      ClickUtility.Draw(m_shapeBatch, m_camera.Zoom);
-      m_shapeBatch.End();
+      ClickUtility.Draw(WeaponEffects, m_camera.Zoom);
+      WeaponEffects.Draw(m_camera.ViewProjection(), planetAge);
       DrawGemClickRadius();
       ApplyWorldLens();
       DrawWarpEscapeEffects();
