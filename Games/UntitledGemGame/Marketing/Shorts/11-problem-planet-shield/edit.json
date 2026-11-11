@@ -1,5 +1,5 @@
 {
-  "output": "renders/btb_11_problem-planet-shield_v3.mp4",
+  "output": "renders/btb_11_problem-planet-shield_v4.mp4",
   "layout": "fullscreen",
   "size": [
     1080,
@@ -17,47 +17,27 @@
   },
   "shots": [
     {
-      "take": "takes/shell_break_v2.mp4",
+      "take": "takes/shell_break_v3.mp4",
       "in": 0.2,
-      "dur": 3.5,
-      "zoom": 1.3,
-      "focus": [
-        0.58,
-        0.5
-      ]
+      "dur": 3.5
     },
     {
-      "take": "takes/magma_v2.mp4",
+      "take": "takes/magma_v3.mp4",
       "in": 0.3,
-      "dur": 4.5,
-      "zoom": 1.18,
-      "focus": [
-        0.65,
-        0.5
-      ]
+      "dur": 4.5
     },
     {
-      "take": "takes/magma_v2.mp4",
+      "take": "takes/magma_v3.mp4",
       "in": 5.3,
-      "dur": 4.5,
-      "zoom": 1.25,
-      "focus": [
-        0.68,
-        0.5
-      ]
+      "dur": 4.5
     },
     {
-      "take": "takes/harpoon_railgun_v2.mp4",
+      "take": "takes/harpoon_railgun_v3.mp4",
       "in": 2.1,
-      "dur": 2.5,
-      "zoom": 1.25,
-      "focus": [
-        0.54,
-        0.5
-      ]
+      "dur": 2.5
     },
     {
-      "take": "takes/full_barrage_v2.mp4",
+      "take": "takes/full_barrage_v3.mp4",
       "in": 2.5,
       "dur": 2.5
     }

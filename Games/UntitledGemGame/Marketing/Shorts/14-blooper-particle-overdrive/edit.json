@@ -1,5 +1,5 @@
 {
-  "output": "renders/btb_14_blooper-particle-overdrive.mp4",
+  "output": "renders/btb_14_blooper-particle-overdrive_v2.mp4",
   "layout": "fullscreen",
   "size": [
     1080,
@@ -13,38 +13,23 @@
     "fade_out": 0.7
   },
   "game_audio": {
-    "gain_db": 2
+    "gain_db": -2
   },
   "shots": [
     {
-      "take": "takes/railgun_overdrive_v1.mp4",
+      "take": "takes/railgun_overdrive_v2.mp4",
       "in": 0.2,
-      "dur": 3.0,
-      "zoom": 1.15,
-      "focus": [
-        0.52,
-        0.5
-      ]
+      "dur": 3.0
     },
     {
-      "take": "takes/railgun_overdrive_v1.mp4",
+      "take": "takes/railgun_overdrive_v2.mp4",
       "in": 3.2,
-      "dur": 6.4,
-      "zoom": 1.0,
-      "focus": [
-        0.5,
-        0.5
-      ]
+      "dur": 6.4
     },
     {
-      "take": "takes/railgun_overdrive_v1.mp4",
+      "take": "takes/railgun_overdrive_v2.mp4",
       "in": 9.8,
-      "dur": 7.6,
-      "zoom": 1.0,
-      "focus": [
-        0.5,
-        0.5
-      ]
+      "dur": 7.6
     }
   ],
   "texts": [

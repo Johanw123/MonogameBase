@@ -1021,37 +1021,16 @@ namespace UntitledGemGame.Systems
     }
 
     private void CollectSingularityGems(Vector2 origin, Harvester harvester)
-    {
-      harvester.ShowModulePulse(origin, ModuleCatalog.SingularityRadius, Color.MediumPurple);
-      int collected = 0;
-      foreach (int index in flatSpatialHash.QueryCollection(origin.X, origin.Y, ModuleCatalog.SingularityRadius))
-      {
-        if (collected >= ModuleCatalog.SingularityGemLimit) break;
-        ref var candidate = ref flatSpatialHash.Gems[index];
-        if (!candidate.IsActive || candidate.ClaimState != 0) continue;
-        var gem = GetEntity(candidate.EntityId)?.Get<Gem>();
-        if (gem == null || !gem.IsLive || !flatSpatialHash.TryClaim(index)) continue;
-        CollectGemCore(gem, harvester, allowChainCollection: false, GemCollectionMethod.SingularityEngine);
-        if (!gem.PickedUp && !gem.WasClicked && !gem.ShouldDestroy) flatSpatialHash.ReleaseClaim(index);
-        else ++collected;
-      }
-    }
+      => CollectModuleArea(harvester, origin, ModuleCatalog.SingularityRadius, ModuleCatalog.SingularityGemLimit,
+        Color.MediumPurple, GemCollectionMethod.SingularityEngine);
 
     private void CollectTractorGem(Vector2 origin, Harvester harvester)
     {
-      foreach (int index in flatSpatialHash.QueryCollection(origin.X, origin.Y, ModuleCatalog.TractorRadius))
-      {
-        ref var candidate = ref flatSpatialHash.Gems[index];
-        if (!candidate.IsActive || candidate.ClaimState != 0) continue;
-        var gem = GetEntity(candidate.EntityId)?.Get<Gem>();
-        if (gem == null || !gem.IsLive || !flatSpatialHash.TryClaim(index)) continue;
-        harvester.TractorOrigin = origin;
-        harvester.TractorTarget = gem.BoundingCircle.Center;
-        harvester.TractorFlashRemaining = 0.25f;
-        CollectGemCore(gem, harvester, allowChainCollection: false, GemCollectionMethod.TractorLink);
-        if (!gem.PickedUp && !gem.WasClicked && !gem.ShouldDestroy) flatSpatialHash.ReleaseClaim(index);
-        return;
-      }
+      if (!TryCollectNearbyModuleGem(harvester, origin, ModuleCatalog.TractorRadius,
+        GemCollectionMethod.TractorLink, out var target)) return;
+      harvester.TractorOrigin = origin;
+      harvester.TractorTarget = target;
+      harvester.TractorFlashRemaining = 0.25f;
     }
 
     private void CollectChainedGems(Vector2 origin, Harvester harvester)
@@ -1371,6 +1350,17 @@ namespace UntitledGemGame.Systems
       if (!harvester.TryBeginSupernova()) return;
       harvester.ShowModulePulse(position, ModuleCatalog.SupernovaRadius, Color.Gold);
       int claimed = 0;
+      // Spread the claims around the blast before falling back to the grid's own order.
+      for (int misses = 0; claimed < ModuleCatalog.SupernovaGemLimit && misses < 4;)
+      {
+        int index = FindModuleGem(position, ModuleCatalog.SupernovaRadius);
+        if (index >= 0 && flatSpatialHash.TryClaim(index))
+        {
+          harvester.ClaimedGems.Add(flatSpatialHash.Gems[index].EntityId);
+          ++claimed;
+        }
+        else ++misses;
+      }
       foreach (int index in flatSpatialHash.QueryCollection(position.X, position.Y, ModuleCatalog.SupernovaRadius))
       {
         if (claimed >= ModuleCatalog.SupernovaGemLimit) break;

@@ -1,5 +1,5 @@
 {
-  "output": "renders/btb_12_problem-broken-planet_v3.mp4",
+  "output": "renders/btb_12_problem-broken-planet_v4.mp4",
   "layout": "fullscreen",
   "size": [
     1080,
@@ -17,34 +17,19 @@
   },
   "shots": [
     {
-      "take": "takes/core_breaker_v2.mp4",
+      "take": "takes/core_breaker_v3.mp4",
       "in": 0.2,
-      "dur": 3.6,
-      "zoom": 1.3,
-      "focus": [
-        0.62,
-        0.5
-      ]
+      "dur": 3.6
     },
     {
-      "take": "takes/fracture_v2.mp4",
+      "take": "takes/fracture_v3.mp4",
       "in": 2.2,
-      "dur": 4.0,
-      "zoom": 1.6,
-      "focus": [
-        0.75,
-        0.45
-      ]
+      "dur": 4.0
     },
     {
-      "take": "takes/core_breaker_v2.mp4",
+      "take": "takes/core_breaker_v3.mp4",
       "in": 6.0,
-      "dur": 4.4,
-      "zoom": 1.4,
-      "focus": [
-        0.65,
-        0.5
-      ]
+      "dur": 4.4
     },
     {
       "take": "takes/extract_orb_v2.mp4",

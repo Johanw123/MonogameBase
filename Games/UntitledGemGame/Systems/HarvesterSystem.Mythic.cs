@@ -18,13 +18,11 @@ public partial class HarvesterCollectionSystem
     while (thunderFrontier.Count > 0 && ship.ThunderArcs.Count < 40)
     {
       var (origin, depth) = thunderFrontier.Dequeue();
-      int forks = 0;
-      foreach (int index in flatSpatialHash.QueryCollection(origin.X, origin.Y, 110f))
+      for (int forks = 0; forks < 3 && ship.ThunderArcs.Count < 40; forks++)
       {
-        if (!TryCollectModuleGem(ship, index, GemCollectionMethod.ThunderGod, out var target)) continue;
+        if (!TryCollectNearbyModuleGem(ship, origin, 110f, GemCollectionMethod.ThunderGod, out var target)) break;
         ship.ThunderArcs.Add((origin, target));
         if (depth < 3) thunderFrontier.Enqueue((target, depth + 1));
-        if (++forks == 3 || ship.ThunderArcs.Count == 40) break;
       }
     }
     ship.ThunderFlashRemaining = ModuleCatalog.PulseDuration;
@@ -44,16 +42,9 @@ public partial class HarvesterCollectionSystem
       ship.EaterCooldown = Math.Max(0f, ship.EaterCooldown - dt);
       if (ship.EaterCooldown == 0f && !ship.ReachedHome)
       {
-        int swallowed = 0;
-        foreach (int index in flatSpatialHash.QueryCollection(ship.BoundingCircle.Center.X,
-          ship.BoundingCircle.Center.Y, ship.WorldEaterRadius))
-        {
-          if (TryCollectModuleGem(ship, index, GemCollectionMethod.WorldEater, out _))
-          {
-            ship.WorldEaterPickups = Math.Min(80, ship.WorldEaterPickups + 1);
-            if (++swallowed == 16) break;
-          }
-        }
+        int swallowed = CollectModuleGems(ship, ship.BoundingCircle.Center, ship.WorldEaterRadius, 16,
+          GemCollectionMethod.WorldEater);
+        ship.WorldEaterPickups = Math.Min(80, ship.WorldEaterPickups + swallowed);
         ship.EaterCooldown = 0.25f;
       }
     }

@@ -26,11 +26,13 @@
     "RailgunShockwave": false,
     "RailgunCapacitor": false,
     "RailgunDoomsday": false,
-    "CursorGravityRadiusMultiplier": 3.5,
-    "CursorGravityStrengthMultiplier": 3.5,
-    "CursorGravityDuration": 6.0,
     "MaxGemCount": 42000,
-    "AllHarvesterCollectionRange": 0.45
+    "AllHarvesterCollectionRange": 0.45,
+    "TractorBeltEnabled": true,
+    "TractorBeltRadiusMultiplier": 10.5,
+    "TractorBeltSpeedMultiplier": 3.5,
+    "TractorBeltDuration": 6.0,
+    "TractorBeltCapacity": 8
   },
   "save": {
     "gems": 1000000000000.0,

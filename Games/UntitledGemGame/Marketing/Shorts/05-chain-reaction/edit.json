@@ -1,5 +1,5 @@
 {
-  "output": "renders/btb_05_chain-reaction_v2.mp4",
+  "output": "renders/btb_05_chain-reaction_v3.mp4",
   "layout": "fullscreen",
   "size": [
     1080,
@@ -17,37 +17,22 @@
   },
   "shots": [
     {
-      "take": "takes/magma_v2.mp4",
+      "take": "takes/magma_v3.mp4",
       "in": 6,
-      "dur": 2.5,
-      "zoom": 1.25,
-      "focus": [
-        0.68,
-        0.5
-      ]
+      "dur": 2.5
     },
     {
-      "take": "takes/magma_v2.mp4",
+      "take": "takes/magma_v3.mp4",
       "in": 0.3,
-      "dur": 5,
-      "zoom": 1.18,
-      "focus": [
-        0.65,
-        0.5
-      ]
+      "dur": 5
     },
     {
-      "take": "takes/magma_v2.mp4",
+      "take": "takes/magma_v3.mp4",
       "in": 5.3,
-      "dur": 4.5,
-      "zoom": 1.25,
-      "focus": [
-        0.68,
-        0.5
-      ]
+      "dur": 4.5
     },
     {
-      "take": "takes/magma_v2.mp4",
+      "take": "takes/magma_v3.mp4",
       "in": 10,
       "dur": 5.5
     }

@@ -147,6 +147,11 @@ public sealed class CaptureReport
   public CaptureScene Scene { get; set; }
   public List<CaptureEvent> Events { get; set; } = new();
   public List<CaptureSample> Samples { get; set; } = new();
+  // Gems collected while recording, by the Collection panel's rows (GemCollectionMeter):
+  // ship classes, clicks and the talents, upgrades and modules with rows of their own.
+  // CollectionLate counts the second half of the take only, after a staged field settles.
+  public Dictionary<string, double> Collection { get; set; }
+  public Dictionary<string, double> CollectionLate { get; set; }
   public BenchmarkReport Benchmark { get; set; }
 }
 

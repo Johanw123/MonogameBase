@@ -1,5 +1,5 @@
 {
-  "output": "renders/btb_06_ship-systems_v2.mp4",
+  "output": "renders/btb_06_ship-systems_v3.mp4",
   "layout": "fullscreen",
   "size": [
     1080,
@@ -17,12 +17,12 @@
   },
   "shots": [
     {
-      "take": "takes/upgraded_v2.mp4",
+      "take": "takes/upgraded_v3.mp4",
       "in": 0.5,
       "dur": 2.25
     },
     {
-      "take": "takes/basic_v2.mp4",
+      "take": "takes/basic_v3.mp4",
       "in": 0.45,
       "dur": 1.5
     },
@@ -57,7 +57,7 @@
       "zoom": 1
     },
     {
-      "take": "takes/upgraded_v2.mp4",
+      "take": "takes/upgraded_v3.mp4",
       "in": 3,
       "dur": 8.25
     }

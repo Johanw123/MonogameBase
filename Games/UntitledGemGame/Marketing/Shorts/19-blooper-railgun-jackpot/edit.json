@@ -1,5 +1,5 @@
 {
-  "output": "renders/btb_19_blooper-railgun-jackpot.mp4",
+  "output": "renders/btb_19_blooper-railgun-jackpot_v2.mp4",
   "layout": "fullscreen",
   "size": [
     1080,
@@ -9,52 +9,32 @@
   "music": {
     "file": "../../../Content/Music/Synthwave/04_OldStarship_100bpm/OldStarship_FULL_100bpm.wav",
     "in": 20.0,
-    "gain_db": -6,
+    "gain_db": -4,
     "fade_out": 0.7
   },
   "game_audio": {
-    "gain_db": 2
+    "gain_db": -7
   },
   "shots": [
     {
-      "take": "takes/railgun_jackpot_v1.mp4",
+      "take": "takes/railgun_jackpot_v2.mp4",
       "in": 0.1,
-      "dur": 2.9,
-      "zoom": 1.15,
-      "focus": [
-        0.52,
-        0.5
-      ]
+      "dur": 2.9
     },
     {
-      "take": "takes/railgun_jackpot_v1.mp4",
+      "take": "takes/railgun_jackpot_v2.mp4",
       "in": 3.0,
-      "dur": 4.8,
-      "zoom": 1.0,
-      "focus": [
-        0.5,
-        0.5
-      ]
+      "dur": 4.8
     },
     {
-      "take": "takes/railgun_jackpot_v1.mp4",
+      "take": "takes/railgun_jackpot_v2.mp4",
       "in": 7.8,
-      "dur": 4.3,
-      "zoom": 1.0,
-      "focus": [
-        0.5,
-        0.5
-      ]
+      "dur": 4.3
     },
     {
-      "take": "takes/railgun_jackpot_v1.mp4",
+      "take": "takes/railgun_jackpot_v2.mp4",
       "in": 12.1,
-      "dur": 5.5,
-      "zoom": 1.0,
-      "focus": [
-        0.5,
-        0.5
-      ]
+      "dur": 5.5
     }
   ],
   "texts": [
@@ -82,7 +62,7 @@
     {
       "at": 12.0,
       "dur": 5.6,
-      "text": "Dropping a Gravity Well in the\nmiddle to vacuum it all home",
+      "text": "Dropping a Tractor Belt in the\nmiddle to haul it all home",
       "size": 64,
       "pos": 0.15
     }

@@ -21,6 +21,13 @@ if (args.Length == 2 && args[0] == "--world-polish-check")
   return;
 }
 
+if (args.Length >= 2 && args[0] == "--module-effects-check")
+{
+  using var check = new ModuleEffectsChecks(args[1], args.Length > 2 ? args[2] : null);
+  check.Run();
+  return;
+}
+
 if (args.Length == 2 && args[0] == "--visual-effects-check")
 {
   using var check = new VisualEffectsChecks(args[1]);

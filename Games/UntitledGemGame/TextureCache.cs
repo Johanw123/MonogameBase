@@ -150,6 +150,7 @@ namespace UntitledGemGame
     public static AsyncAsset<Effect> IncendiaryRoundFx;
     public static AsyncAsset<Effect> ArcAnchorFx;
     public static AsyncAsset<Effect> RailgunBoltFx;
+    public static AsyncAsset<Effect> ModuleEffectsFx;
     public static AsyncAsset<Effect> GpuParticlesFx;
     public static AsyncAsset<Effect> RectangleSdfFx;
     // public static AsyncAsset<Effect> BlurFx;
@@ -184,6 +185,7 @@ namespace UntitledGemGame
       GameplayPreloader.Queue<Effect>("Shaders/IncendiaryRound.fx", asset => IncendiaryRoundFx = asset);
       GameplayPreloader.Queue<Effect>("Shaders/ArcAnchor.fx", asset => ArcAnchorFx = asset);
       GameplayPreloader.Queue<Effect>("Shaders/RailgunBolt.fx", asset => RailgunBoltFx = asset);
+      GameplayPreloader.Queue<Effect>("Shaders/ModuleEffects.fx", asset => ModuleEffectsFx = asset, optional: true);
       GpuParticlesFx = GameplayPreloader.LoadMenu<Effect>("Shaders/GpuParticles.fx");
       GameplayPreloader.Queue<Effect>("Shaders/JuicySDFRect.fx", asset => RectangleSdfFx = asset);
       // BlurFx = AssetManager.LoadAsync<Effect>("Shaders/BlurShader.fx");

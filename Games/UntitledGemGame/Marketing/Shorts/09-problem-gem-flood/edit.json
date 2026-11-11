@@ -1,5 +1,5 @@
 {
-  "output": "renders/btb_09_problem-gem-flood_v3.mp4",
+  "output": "renders/btb_09_problem-gem-flood_v4.mp4",
   "layout": "fullscreen",
   "size": [
     1080,
@@ -13,36 +13,26 @@
     "fade_out": 0.7
   },
   "game_audio": {
-    "gain_db": 0
+    "gain_db": -3
   },
   "shots": [
     {
-      "take": "takes/full_barrage_v2.mp4",
+      "take": "takes/full_barrage_v3.mp4",
       "in": 0.2,
       "dur": 3.0
     },
     {
-      "take": "takes/harpoon_railgun_v2.mp4",
+      "take": "takes/harpoon_railgun_v3.mp4",
       "in": 2.1,
-      "dur": 3.5,
-      "zoom": 1.25,
-      "focus": [
-        0.54,
-        0.5
-      ]
+      "dur": 3.5
     },
     {
-      "take": "takes/prospectors_v2.mp4",
+      "take": "takes/prospectors_v3.mp4",
       "in": 0.5,
-      "dur": 5.5,
-      "zoom": 1.25,
-      "focus": [
-        0.5,
-        0.5
-      ]
+      "dur": 5.5
     },
     {
-      "take": "takes/upgraded_v2.mp4",
+      "take": "takes/upgraded_v3.mp4",
       "in": 3.0,
       "dur": 6.0
     }

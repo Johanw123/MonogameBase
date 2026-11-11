@@ -896,17 +896,15 @@
     {
       "shortname": "MS1",
       "upgrade": "MS",
-      "numlevels": "2",
-      "hiddenby": "SYU1",
-      "lockedby": "SYU1",
-      "blockedby": "SYU1",
+      "numlevels": "1",
+      "hiddenby": "",
+      "lockedby": "",
+      "blockedby": "",
       "cost": [
-        "5",
-        "15"
+        "1"
       ],
       "value": [
-        "1",
-        "1"
+        "2"
       ],
       "posx": "2526",
       "posy": "730",
@@ -914,7 +912,6 @@
       "swapmidpointaxis": "False",
       "lockedindemo": "False",
       "requiredexpandspacelevels": [
-        "0",
         "0"
       ],
       "tooltippercentage": "False",

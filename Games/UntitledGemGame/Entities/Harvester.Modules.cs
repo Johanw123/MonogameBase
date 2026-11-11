@@ -14,6 +14,8 @@ public partial class Harvester
   public Vector2[] StormArcPoints;
   public int StormArcCount;
   public float StormArcRemaining, RelayFlashRemaining;
+  // Picks the shape of this strike's bolts (ModuleEffects.fx).
+  public float StormArcSeed;
   public Vector2 RelayOrigin;
   public float ArcTravelCharge, BuoyTravelCharge, RecallTravelCharge;
   public float BuoyRemaining;

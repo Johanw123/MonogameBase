@@ -22,7 +22,7 @@ internal static class ModuleBaysChecks
       CheckCascadeBuild();
       CheckOverflowBuild();
       CheckKineticBuild();
-      Console.WriteLine("Module Bays passed: prerequisite, two ranks, locked bays, four-module loadouts, saves, trip snapshots and three combo builds.");
+      Console.WriteLine("Module Bays passed: talent, locked bays, four-module loadouts, saves, trip snapshots and three combo builds.");
     }
     finally
     {
@@ -39,35 +39,35 @@ internal static class ModuleBaysChecks
       File.ReadAllText(Path.Combine(root, "Content/Data/upgrades_meta_buttons.json")),
       definitions.UpgradeButtonsMeta, definitions.UpgradeDefinitionsMeta);
     var button = definitions.UpgradeButtonsMeta["MS1"];
-    Check(button.Data.HiddenBy == "SYU1" && button.Data.LockedBy == "SYU1" && button.Data.BlockedBy == "SYU1"
-      && button.Data.NumLevels == 2, "Module Bays is a two-rank child of Shipyard");
+    Check(button.Data.NumLevels == 1 && button.Data.LevelInfo[0].Cost == 1
+      && PrestigeTalentLayout.IsInTree("MS1")
+      && PrestigeTalentLayout.TierIndex("MS1") > PrestigeTalentLayout.TierIndex("SYU1"),
+      "Module Bays is a one-point talent in a tier after the Shipyard unlock");
     var manager = new UpgradeManager();
     ModuleChecks.GrantAll(manager.Modules);
     manager.RestoreProgress(new GameSave());
-    Check(ModuleCatalog.UnlockedSlots == 2 && button.State == UpgradeButton.UnlockState.Invisible,
-      "Start with two bays and keep the retired prestige expansion hidden");
+    Check(ModuleCatalog.UnlockedSlots == 2 && button.State != UpgradeButton.UnlockState.Invisible,
+      "Start with two bays and show the talent that adds more");
     var slots = manager.Modules;
     Check(!slots.TryEquip(0, 2, ShipModule.FinalSweep) && !slots.TryEquip(0, 3, ShipModule.FinalSweep), "Extra bays start locked");
     slots.TryEquip(0, 0, ShipModule.FinalSweep);
     Check(!slots.TryMoveSlot(0, 2) && !slots.TryMoveSlot(0, 3), "Dragging cannot bypass locked bays");
-    for (int rank = 0; rank <= 2; rank++)
+    for (int rank = 0; rank <= 1; rank++)
     {
       manager = new UpgradeManager();
       ModuleChecks.GrantAll(manager.Modules);
       manager.RestoreProgress(new GameSave { Meta = new() { ["SYU1"] = 1, ["MS1"] = rank } });
-      Check(ModuleCatalog.UnlockedSlots == 2 + rank && manager.UGM.ShipyardUnlocked, "Each rank adds exactly one bay");
-      Check(rank == 2 ? button.IsMaxLevel : button.GetNextLevelCost() == (rank == 0 ? 5UL : 15UL), "Costs are 5 then 15 purple gems, capped at two ranks");
-      if (rank == 0) Check(button.State == UpgradeButton.UnlockState.Invisible,
-        "Retired module-bay prestige nodes remain hidden");
+      Check(ModuleCatalog.UnlockedSlots == 2 + rank * 2 && manager.UGM.ShipyardUnlocked, "The talent adds both extra bays");
+      Check(button.IsMaxLevel == (rank == 1), "Module Bays is learned once");
       for (int slot = 0; slot < 4; slot++)
-        Check(manager.Modules.TryEquip(0, slot, (ShipModule)(slot + 1)) == (slot < 2 + rank), "Only unlocked bays accept equipment");
+        Check(manager.Modules.TryEquip(0, slot, (ShipModule)(slot + 1)) == (slot < 2 + rank * 2), "Only unlocked bays accept equipment");
       Check(!manager.Modules.TryEquip(0, 4, ShipModule.ProspectorLens), "No fifth bay");
     }
 
     // All five ship types have an independent four-slot row.
     manager = new UpgradeManager();
     ModuleChecks.GrantAll(manager.Modules);
-    manager.RestoreProgress(new GameSave { Meta = new() { ["SYU1"] = 1, ["MS1"] = 2 } });
+    manager.RestoreProgress(new GameSave { Meta = new() { ["SYU1"] = 1, ["MS1"] = 1 } });
     for (int type = 0; type < ModuleCatalog.Types.Length; type++)
       for (int slot = 0; slot < 4; slot++)
       {
@@ -84,7 +84,7 @@ internal static class ModuleBaysChecks
       var store = new GameSaveStore(path);
       Check(store.Save(save), "Save upgraded bays and all twenty assigned modules");
       var loaded = store.Load();
-      Check(loaded != null && loaded.Meta["MS1"] == 2 && loaded.Modules.Slots.SequenceEqual(save.Modules.Slots), "Round-trip current slot format and meta ranks");
+      Check(loaded != null && loaded.Meta["MS1"] == 1 && loaded.Modules.Slots.SequenceEqual(save.Modules.Slots), "Round-trip current slot format and meta ranks");
       manager = new UpgradeManager();
       ModuleChecks.GrantAll(manager.Modules);
       manager.RestoreProgress(loaded);

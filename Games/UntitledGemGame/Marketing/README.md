@@ -17,7 +17,7 @@ Platform guidance checked **27 September 2026**. Hashtag counts below are practi
 | --- | --- | --- | --- | --- |
 | Instagram Reels | Vertical 9:16 | Hook, a little context, one next step | “Link in bio” when the profile link is set | 3–5 relevant tags |
 | TikTok | Vertical 9:16 | Short hook tied to the action on screen | “Link in bio” only if a working website link is available; otherwise “Follow for development updates” | 3–5 relevant tags |
-| YouTube Shorts | Vertical 9:16 | Clear title; short description naming the game and feature | “Game page linked on our channel profile” | 2–3 in the description |
+| YouTube Shorts | Vertical 9:16 | Clear title; short description naming the game and feature | “Game page linked on my channel profile” | 2–3 in the description |
 | Facebook Reels / Page | Vertical 9:16 for Reels | Explain the game for someone seeing it for the first time | Reels: Page website link; regular Page posts: direct URL where supported | 0–3 relevant tags |
 | X/Twitter | Square 1:1 | One concise observation, feature, or development update | Direct URL in the post | 0–2 relevant tags |
 
@@ -45,7 +45,7 @@ Keep the set at five tags or fewer; Instagram announced a rollout limiting post 
 ```text
 One harvester. Then the fleet takes over. 🚀
 
-A look at progression in Beyond the Belt, our incremental space game in development at Team Jape.
+A look at progression in Beyond the Belt, my incremental space game, in development at Team Jape.
 
 Explore the game — link in bio.
 
@@ -57,7 +57,7 @@ Explore the game — link in bio.
 ```text
 Can you follow the action when the whole fleet gets busy?
 
-A look at the collection effects in Beyond the Belt. We want those big hauls to feel satisfying while keeping the gameplay readable.
+A look at the collection effects in Beyond the Belt. I want those big hauls to feel satisfying while keeping the gameplay readable.
 
 What catches your eye first?
 
@@ -113,7 +113,7 @@ Description:
 ```text
 One harvester becomes a busy fleet in Beyond the Belt, an incremental space game in development by Team Jape.
 
-Explore the game through the link on our channel profile.
+Explore the game through the link on my channel profile.
 
 #IndieGame #IncrementalGame #BeyondTheBelt
 ```
@@ -129,7 +129,7 @@ Making a Busy Fleet Readable | Beyond the Belt Devlog
 Description:
 
 ```text
-A look at collection effects and ability combinations in Beyond the Belt. We're working on making a busy screen satisfying to watch and easy to follow.
+A look at collection effects and ability combinations in Beyond the Belt. I'm working on making a busy screen satisfying to watch and easy to follow.
 
 Which effect stands out to you?
 
@@ -147,9 +147,9 @@ Give viewers a little context about the game and Team Jape. Use 0–3 relevant h
 ```text
 From a single harvester to a whole fleet. 🚀
 
-This is Beyond the Belt, an incremental space game we're developing at Team Jape. This clip shows how the fleet grows across different stages of the game.
+This is Beyond the Belt, an incremental space game I'm developing at Team Jape. This clip shows how the fleet grows across different stages of the game.
 
-Find the game through the website link on our Page.
+Find the game through the website link on my Page.
 
 #IndieGame #IncrementalGame #BeyondTheBelt
 ```
@@ -159,7 +159,7 @@ Find the game through the website link on our Page.
 ```text
 A look behind the scenes at Beyond the Belt.
 
-We're exploring how different abilities work together as the fleet grows. Here's one combination in action.
+I'm exploring how different abilities work together as the fleet grows. Here's one combination in action.
 
 Explore the game: [GAME_URL]
 
@@ -179,7 +179,7 @@ Put a direct game URL in the post when visiting the game page is the goal. You d
 ```text
 One harvester to a whole fleet. 🚀
 
-A look at progression in Beyond the Belt, our incremental space game.
+A look at progression in Beyond the Belt, my incremental space game.
 
 Explore the game: [GAME_URL]
 

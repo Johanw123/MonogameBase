@@ -359,7 +359,7 @@
       "shortname": "MS",
       "type": "int",
       "base": "2",
-      "tooltip": "One more module slot for every ship type, up to 4.",
+      "tooltip": "Two more module slots for every ship type.",
       "currency": "purple",
       "icon": "Textures/scifi_icons/icon_shield/4_shield.png"
     },

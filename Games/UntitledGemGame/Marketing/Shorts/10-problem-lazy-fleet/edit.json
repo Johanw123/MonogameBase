@@ -1,5 +1,5 @@
 {
-  "output": "renders/btb_10_problem-lazy-fleet_v3.mp4",
+  "output": "renders/btb_10_problem-lazy-fleet_v4.mp4",
   "layout": "fullscreen",
   "size": [
     1080,
@@ -17,64 +17,34 @@
   },
   "shots": [
     {
-      "take": "takes/automated_v2.mp4",
+      "take": "takes/automated_v3.mp4",
       "in": 2.0,
-      "dur": 3.0,
-      "zoom": 1.25,
-      "focus": [
-        0.55,
-        0.5
-      ]
+      "dur": 3.0
     },
     {
-      "take": "takes/drifters_v2.mp4",
+      "take": "takes/drifters_v3.mp4",
       "in": 0.5,
-      "dur": 3.0,
-      "zoom": 1.35,
-      "focus": [
-        0.48,
-        0.5
-      ]
+      "dur": 3.0
     },
     {
-      "take": "takes/rimrunners_v2.mp4",
+      "take": "takes/rimrunners_v3.mp4",
       "in": 0.5,
-      "dur": 3.0,
-      "zoom": 1.0,
-      "focus": [
-        0.5,
-        0.5
-      ]
+      "dur": 3.0
     },
     {
-      "take": "takes/seekers_v2.mp4",
+      "take": "takes/seekers_v3.mp4",
       "in": 0.5,
-      "dur": 3.0,
-      "zoom": 1.3,
-      "focus": [
-        0.5,
-        0.5
-      ]
+      "dur": 3.0
     },
     {
-      "take": "takes/prospectors_v2.mp4",
+      "take": "takes/prospectors_v3.mp4",
       "in": 1.5,
-      "dur": 3.0,
-      "zoom": 1.25,
-      "focus": [
-        0.5,
-        0.5
-      ]
+      "dur": 3.0
     },
     {
-      "take": "takes/trove_hunters_v2.mp4",
+      "take": "takes/trove_hunters_v3.mp4",
       "in": 1.5,
-      "dur": 3.0,
-      "zoom": 1.25,
-      "focus": [
-        0.45,
-        0.5
-      ]
+      "dur": 3.0
     }
   ],
   "texts": [

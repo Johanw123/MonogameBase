@@ -5,7 +5,9 @@ using Microsoft.Xna.Framework.Graphics;
 public class SdfLineRenderer
 {
     private Matrix _viewProjection;
-    private readonly BlendState _blendState = RenderBlendFunctions.CreateGlowState();
+    private BlendState _blendState = RenderBlendFunctions.CreateGlowState();
+    // Additive glow by default; effects that also darken what is behind them set their own.
+    public BlendState BlendState { get => _blendState; set => _blendState = value; }
     private Effect _effect;
     private GraphicsDevice _graphicsDevice;
 

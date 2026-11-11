@@ -56,16 +56,68 @@ public partial class HarvesterCollectionSystem
     return true;
   }
 
+  // The grid hands back gems cell by cell from one corner, so taking the first few always
+  // pulls from the same side. Module effects pick around their origin instead: each probe
+  // looks near a random point inside the radius.
+  private int FindModuleGem(Vector2 origin, float radius)
+  {
+    float probeRadius = System.Math.Max(12f, radius * 0.3f);
+    for (int probe = 0; probe < 3; probe++)
+    {
+      float angle = moduleRandom.NextSingle() * MathHelper.TwoPi;
+      float distance = radius * System.MathF.Sqrt(moduleRandom.NextSingle());
+      var point = origin + new Vector2(System.MathF.Cos(angle), System.MathF.Sin(angle)) * distance;
+      foreach (int index in flatSpatialHash.QueryCollection(point.X, point.Y, probeRadius))
+      {
+        ref var candidate = ref flatSpatialHash.Gems[index];
+        if (!candidate.IsActive || candidate.ClaimState != 0) continue;
+        float dx = candidate.X - origin.X, dy = candidate.Y - origin.Y;
+        if (dx * dx + dy * dy <= radius * radius) return index;
+      }
+    }
+    return -1;
+  }
+
+  // Up to limit gems spread around the origin. Probes that miss or find a gem that cannot be
+  // taken stop early, and a plain pass over the area then takes whatever is still in reach.
+  private int CollectModuleGems(Harvester harvester, Vector2 origin, float radius, int limit,
+    GemCollectionMethod method)
+  {
+    int collected = 0;
+    for (int misses = 0; collected < limit && misses < 4;)
+    {
+      int index = FindModuleGem(origin, radius);
+      if (index >= 0 && TryCollectModuleGem(harvester, index, method, out _)) ++collected;
+      else ++misses;
+    }
+    if (collected >= limit) return collected;
+    foreach (int index in flatSpatialHash.QueryCollection(origin.X, origin.Y, radius))
+    {
+      if (TryCollectModuleGem(harvester, index, method, out _) && ++collected >= limit) break;
+    }
+    return collected;
+  }
+
   private void CollectModuleArea(Harvester harvester, Vector2 origin, float radius, int limit, Color color,
     GemCollectionMethod method)
   {
     harvester.ShowModulePulse(origin, radius, color);
-    int collected = 0;
-    foreach (int index in flatSpatialHash.QueryCollection(origin.X, origin.Y, radius))
+    CollectModuleGems(harvester, origin, radius, limit, method);
+  }
+
+  // One gem near the origin, in a random direction.
+  private bool TryCollectNearbyModuleGem(Harvester harvester, Vector2 origin, float radius,
+    GemCollectionMethod method, out Vector2 position)
+  {
+    for (int attempt = 0; attempt < 2; attempt++)
     {
-      if (collected >= limit) break;
-      if (TryCollectModuleGem(harvester, index, method, out _)) ++collected;
+      int index = FindModuleGem(origin, radius);
+      if (index >= 0 && TryCollectModuleGem(harvester, index, method, out position)) return true;
     }
+    foreach (int index in flatSpatialHash.QueryCollection(origin.X, origin.Y, radius))
+      if (TryCollectModuleGem(harvester, index, method, out position)) return true;
+    position = default;
+    return false;
   }
 
   private void CollectStormChain(Harvester harvester, Vector2 origin, GemCollectionMethod method,
@@ -77,18 +129,12 @@ public partial class HarvesterCollectionSystem
     harvester.StormArcCount = 1;
     for (int hop = 0; hop < limit; hop++)
     {
-      bool found = false;
-      foreach (int index in flatSpatialHash.QueryCollection(origin.X, origin.Y, radius))
-      {
-        if (!TryCollectModuleGem(harvester, index, method, out var target)) continue;
-        harvester.StormArcPoints[harvester.StormArcCount++] = target;
-        origin = target;
-        found = true;
-        break;
-      }
-      if (!found) break;
+      if (!TryCollectNearbyModuleGem(harvester, origin, radius, method, out var target)) break;
+      harvester.StormArcPoints[harvester.StormArcCount++] = target;
+      origin = target;
     }
     harvester.StormArcRemaining = ModuleCatalog.PulseDuration;
+    harvester.StormArcSeed = moduleRandom.NextSingle();
   }
 
   private void ApplyDroneLightning(Harvester drone, float dt)

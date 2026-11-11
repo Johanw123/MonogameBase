@@ -44,6 +44,16 @@
       "at": 6.5,
       "do": "ability",
       "id": "chain"
+    },
+    {
+      "at": 7.2,
+      "do": "ability",
+      "id": "genesis"
+    },
+    {
+      "at": 9.9,
+      "do": "ability",
+      "id": "chain"
     }
   ],
   "encoder": "x264",

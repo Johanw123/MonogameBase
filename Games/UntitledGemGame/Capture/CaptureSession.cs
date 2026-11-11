@@ -227,6 +227,29 @@ public static class CaptureSession
     for (int generation = 0; generation < collectionsAtStart.Length; generation++)
       collectionsAtStart[generation] = GC.CollectionCount(generation);
     pauseAtStart = GC.GetTotalPauseDuration();
+    collectionAtStart = CollectionTotals();
+  }
+
+  private static double[] collectionAtStart, collectionAtHalf;
+
+  private static double[] CollectionTotals()
+  {
+    var meter = UpgradeManager.Instance?.Collection;
+    var totals = new double[GemCollectionMeter.RowCount];
+    if (meter != null)
+      for (int row = 0; row < totals.Length; row++) totals[row] = meter.ThisRun(row);
+    return totals;
+  }
+
+  private static Dictionary<string, double> CollectionSince(double[] start)
+  {
+    if (start == null) return null;
+    var now = CollectionTotals();
+    var rows = new Dictionary<string, double>();
+    for (int row = 0; row < now.Length; row++)
+      if (GemCollectionMeter.IsRow(row) && now[row] - start[row] > 0)
+        rows[GemCollectionMeter.RowName(row)] = Math.Round(now[row] - start[row]);
+    return rows;
   }
 
   // Called at the start of GameMain.Draw.
@@ -278,6 +301,7 @@ public static class CaptureSession
       }
       if (recorded % Math.Max(1, Scene.Fps / 4) == 0) Sample();
       recorded++;
+      if (recorded == recordFrames / 2) collectionAtHalf = CollectionTotals();
       if (recorded >= recordFrames) Finish(game);
       else if (checkpointDue)
       {
@@ -595,6 +619,8 @@ public static class CaptureSession
     report.Completed = completed;
     report.RenderSeconds = Math.Round(clock.Elapsed.TotalSeconds, 1);
     if (Scene.Benchmark) report.Benchmark = MeasuredBenchmark();
+    report.Collection = CollectionSince(collectionAtStart);
+    report.CollectionLate = CollectionSince(collectionAtHalf);
     string path = Path.ChangeExtension(Scene.Output, ".capture.json");
     File.WriteAllText(path + ".tmp", JsonSerializer.Serialize(report, CaptureJsonContext.Default.CaptureReport));
     File.Move(path + ".tmp", path, overwrite: true);

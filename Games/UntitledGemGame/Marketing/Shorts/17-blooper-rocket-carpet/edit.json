@@ -1,5 +1,5 @@
 {
-  "output": "renders/btb_17_blooper-rocket-carpet.mp4",
+  "output": "renders/btb_17_blooper-rocket-carpet_v2.mp4",
   "layout": "fullscreen",
   "size": [
     1080,
@@ -17,44 +17,24 @@
   },
   "shots": [
     {
-      "take": "takes/rocket_carpet_v1.mp4",
+      "take": "takes/rocket_carpet_v2.mp4",
       "in": 0.1,
-      "dur": 2.9,
-      "zoom": 1.15,
-      "focus": [
-        0.52,
-        0.5
-      ]
+      "dur": 2.9
     },
     {
-      "take": "takes/rocket_carpet_v1.mp4",
+      "take": "takes/rocket_carpet_v2.mp4",
       "in": 3.0,
-      "dur": 4.8,
-      "zoom": 1.0,
-      "focus": [
-        0.5,
-        0.5
-      ]
+      "dur": 4.8
     },
     {
-      "take": "takes/rocket_carpet_v1.mp4",
+      "take": "takes/rocket_carpet_v2.mp4",
       "in": 7.8,
-      "dur": 4.8,
-      "zoom": 1.0,
-      "focus": [
-        0.5,
-        0.5
-      ]
+      "dur": 4.8
     },
     {
-      "take": "takes/rocket_carpet_v1.mp4",
+      "take": "takes/rocket_carpet_v2.mp4",
       "in": 12.6,
-      "dur": 5.0,
-      "zoom": 1.0,
-      "focus": [
-        0.5,
-        0.5
-      ]
+      "dur": 5.0
     }
   ],
   "texts": [

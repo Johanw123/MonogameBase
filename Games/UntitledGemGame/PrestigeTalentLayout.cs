@@ -24,7 +24,7 @@ public static class PrestigeTalentLayout
     new(3, 575, ["LR1", "BR1", "SYF1", "GVS1", "MCSN1", "HSK1", "FCL1"], [ShipSystems.UnlockTalent, "XSP2", "GLO2"]),
     new(5, 830, ["EP1", "MD1", "IOM1", "KNH1", "KNB1", "CRM1", "SCR1"], ["SYU1", "XSP3", "GLO3"]),
     new(10, 1085, ["MBR1", "DG1", "KD1", "FSD1", "AE1", "RCH1", "IFF1"], ["SGU1", "XSP4", "GLO4"]),
-    new(16, 1340, ["CHR1", "SR1", "MRS1", "EXE1", "CHT1", "CAT1"], ["XSP5", "GLO5"]),
+    new(16, 1340, ["CHR1", "SR1", "MRS1", "EXE1", "CHT1", "CAT1", "MS1"], ["XSP5", "GLO5"]),
     new(20, 1595, ["SGR1", "OVC1", "HVO1", "RCO1", "LOP1", "MSP1", "OUR1"], ["CMY1", "GLO6"]),
   ];
 
