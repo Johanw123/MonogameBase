@@ -279,8 +279,6 @@ public static class PrestigeTalentEffects
     purchased = Math.Max(0, purchased);
     if (Meta?.LoneOperator == true) return 0;
     long ships = purchased;
-    // Twin Fleet (a Core Shard upgrade) fields every purchased ship twice.
-    if (UpgradeManager.Instance?.UG.TwinFleet == true) ships *= 2;
     if (Meta?.FleetRequisition == true) ships += purchased / RequisitionInterval;
     if (Meta?.MothershipProtocol == true) ships *= ShuttlesPerShip;
     return (int)Math.Min(int.MaxValue, ships);

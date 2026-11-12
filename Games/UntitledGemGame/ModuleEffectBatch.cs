@@ -83,13 +83,16 @@ public sealed class ModuleEffectBatch
 
   private static float Fraction(float value) => value - MathF.Floor(value);
 
+  // Width (0..1) thins the fronts and their glow; 1 is the full ring.
   public void Ring(Vector2 center, float radius, float progress, Color tint, RingStyle style, float seed = 0f,
-    float intensity = 1f)
+    float intensity = 1f, float width = 1f)
   {
     // The front's glow and the burst's rays run a little past the radius.
     float reach = radius * 1.2f + 14f;
+    // The tint's alpha carries the width.
+    var sized = new Color(tint.R, tint.G, tint.B, Unit(width));
     Add(Kind.Ring, center, center + Vector2.UnitX, reach, progress,
-      new Color(Unit((int)style * 0.5f), Unit(Fraction(seed)), Unit(radius / reach), Unit(intensity)), tint);
+      new Color(Unit((int)style * 0.5f), Unit(Fraction(seed)), Unit(radius / reach), Unit(intensity)), sized);
   }
 
   // Energy flowing from one point to another, fading over its life. A lean beam (0..1) carries

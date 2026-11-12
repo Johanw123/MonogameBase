@@ -1495,16 +1495,6 @@
       "icon": "Textures/scifi_icons/icon_shield/4_shield.png"
     },
     {
-      "name": "Twin Fleet",
-      "propname": "TwinFleet",
-      "shortname": "TWF",
-      "type": "bool",
-      "base": "false",
-      "currency": "gold",
-      "tooltip": "Every fleet ship you own flies with a twin.",
-      "icon": "Textures/scifi_icons/icon_arrow/16_arrow.png"
-    },
-    {
       "name": "Magnet Cursor",
       "propname": "MagnetCursor",
       "shortname": "MGN",

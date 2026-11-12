@@ -15,6 +15,8 @@ public sealed class ClickUtility
   private const int MaxEffects = 128;
   private const int MaxCandidatesPerSearch = 4096;
   private const float PulseSeconds = 0.4f, LinkSeconds = 0.5f;
+  // Clicks come several times a second, so their rings stay thinner and dimmer than a module's.
+  public const float PulseWidth = 0.6f, PulseIntensity = 0.65f;
   // The part of a link's life its spark takes to cross it (LinkPS in ModuleEffects.fx).
   private const float LinkCrossing = 0.22f;
   private float flashSeed;
@@ -292,7 +294,8 @@ public sealed class ClickUtility
       if (flash.Radius > 0)
       {
         effects.Ring(flash.Start, flash.Radius, progress, flash.Color,
-          flash.Burst ? ModuleEffectBatch.RingStyle.Burst : ModuleEffectBatch.RingStyle.Shock, flash.Seed);
+          flash.Burst ? ModuleEffectBatch.RingStyle.Burst : ModuleEffectBatch.RingStyle.Shock, flash.Seed,
+          PulseIntensity, PulseWidth);
         continue;
       }
       effects.Link(flash.Start, flash.End, progress, flash.Color, halfWidth, flash.Seed);

@@ -263,6 +263,8 @@ float4 RingPS(VertexShaderOutput input) : COLOR
     float radius = input.CoreColor.b * reach;
     float fade = 1.0 - age;
     float3 tint = input.GlowColor.rgb;
+    // The tint's alpha is the ring's width: 1 as designed, lower for thinner fronts.
+    float width = max(input.GlowColor.a, 0.2);
     float3 white = float3(1.0, 1.0, 1.0);
     float energy = 0.0;
     float hot = 0.0;
@@ -273,11 +275,11 @@ float4 RingPS(VertexShaderOutput input) : COLOR
         float eased = 1.0 - fade * fade * fade;
         float front = radius * lerp(0.1, 1.0, eased);
         float ripple = 0.6 + 0.4 * Noise(float2(angle * 4.0 + seed, Time * 3.0 + r * 0.04));
-        float edge = Gauss(r - front, 1.2 + 2.2 * age);
-        float bloom = Gauss(r - front, 5.0 + 9.0 * age) * 0.35;
+        float edge = Gauss(r - front, (1.2 + 2.2 * age) * width);
+        float bloom = Gauss(r - front, (5.0 + 9.0 * age) * width) * 0.35;
         // The disturbed space it leaves behind, and a fainter second front inside.
         float wake = smoothstep(front * 0.45, front, r) * step(r, front) * 0.22 * ripple;
-        float echo = Gauss(r - front * 0.68, 1.5 + 2.0 * age) * 0.3;
+        float echo = Gauss(r - front * 0.68, (1.5 + 2.0 * age) * width) * 0.3;
         float flash = Gauss(r, radius * 0.22) * exp(-age * 9.0);
         energy = (edge * ripple + bloom + wake + echo) * pow(fade, 1.4) + flash * 0.8;
         hot = edge * fade * 0.7 + flash * 0.5;
@@ -286,7 +288,7 @@ float4 RingPS(VertexShaderOutput input) : COLOR
     {
         // A field collapsing onto its centre, dragging spiral streaks with it.
         float front = radius * (1.0 - age * age);
-        float edge = Gauss(r - front, 2.5 + 4.0 * fade) * (0.35 + 0.65 * age);
+        float edge = Gauss(r - front, (2.5 + 4.0 * fade) * width) * (0.35 + 0.65 * age);
         float inside = smoothstep(front + 4.0, front - 10.0, r);
         float arms = 0.5 + 0.5 * sin(angle * 5.0 + log(r + 2.0) * 7.0 + Time * 9.0 + seed);
         arms = arms * arms * arms * inside * smoothstep(0.0, radius * 0.25, r);
@@ -301,8 +303,8 @@ float4 RingPS(VertexShaderOutput input) : COLOR
         // A burst: a ring thrown outward with rays behind it.
         float eased = 1.0 - fade * fade;
         float front = radius * lerp(0.15, 1.0, eased);
-        float edge = Gauss(r - front, 1.4 + 2.5 * age);
-        float bloom = Gauss(r - front, 6.0 + 8.0 * age) * 0.3;
+        float edge = Gauss(r - front, (1.4 + 2.5 * age) * width);
+        float bloom = Gauss(r - front, (6.0 + 8.0 * age) * width) * 0.3;
         float ray = Noise(float2(angle * 7.0 + seed, 3.0 + seed));
         ray = pow(ray, 3.0) * smoothstep(front + 2.0, front * 0.3, r) * smoothstep(0.0, radius * 0.12, r);
         float flash = Gauss(r, radius * 0.3) * exp(-age * 7.0);

@@ -71,7 +71,17 @@ public partial class UntitledGemGameGameScreen
   private readonly List<MagmaScar> magmaScars = new();
   private readonly List<MagmaTrailPoint> magmaTrail = new();
   private readonly MagmaTrailPoint[] scarPrevious = new MagmaTrailPoint[MaxScarBeams];
+  private readonly Vector2[] scarPreviousDrawn = new Vector2[MaxScarBeams];
   private readonly bool[] scarHasPrevious = new bool[MaxScarBeams];
+
+  // One spot of a magma scar, worked out once a frame and drawn by each of the three passes.
+  private struct ScarSpot
+  {
+    public Vector2 Position;
+    public byte Life, Seed;
+  }
+
+  private readonly List<ScarSpot> scarSpots = new();
   private readonly List<Shockwave> shockwaves = new();
   private float magmaTimer, magmaTrailTimer;
   private bool magmaTrailBroken = true;
@@ -421,39 +431,57 @@ public partial class UntitledGemGameGameScreen
   private void DrawMagmaScars()
   {
     if (magmaTrail.Count == 0 || !BeginMoltenSpots(out var center, out float texel)) return;
-    // Looked up once: it multiplies signal and talent bonuses, and every spot needs it.
-    float scarSeconds = MagmaScarSeconds;
-    DrawMagmaScarPass(center, texel, ScarSoot, scarSeconds);
-    DrawMagmaScarPass(center, texel, CraterBedPass, scarSeconds);
-    DrawMagmaScarPass(center, texel, soot: 0f, scarSeconds);
+    CollectScarSpots(center, texel);
+    float quad = MoltenQuadSize(ScarSpotTexels, texel, out byte radiusByte);
+    DrawScarSpots(quad, radiusByte, ScarSoot);
+    DrawScarSpots(quad, radiusByte, CraterBedPass);
+    DrawScarSpots(quad, radiusByte, soot: 0f);
     m_spriteBatch.End();
   }
 
-  private void DrawMagmaScarPass(Vector2 center, float texel, float soot, float scarSeconds)
+  // Walks the trail once a frame: the spots along each beam's cut that face the camera and
+  // are still alive, in drawing order. The three passes differ only in soot.
+  private void CollectScarSpots(Vector2 center, float texel)
   {
+    scarSpots.Clear();
     Array.Clear(scarHasPrevious);
+    // Looked up once: it multiplies signal and talent bonuses, and every spot needs it.
+    float scarSeconds = MagmaScarSeconds;
     float spacing = ScarSpotSpacing * texel;
     foreach (var point in magmaTrail)
     {
       int beam = point.Beam % MaxScarBeams;
+      var drawn = PlanetNormalToDrawn(center, texel, point.Normal);
       if (scarHasPrevious[beam] && !point.Starts)
       {
         var previous = scarPrevious[beam];
-        var prevDrawn = PlanetNormalToDrawn(center, texel, previous.Normal);
-        var currDrawn = PlanetNormalToDrawn(center, texel, point.Normal);
-        int steps = Math.Max(1, (int)MathF.Ceiling(Vector2.Distance(prevDrawn, currDrawn) / spacing));
+        int steps = Math.Max(1, (int)MathF.Ceiling(Vector2.Distance(scarPreviousDrawn[beam], drawn) / spacing));
         for (int step = 1; step < steps; step++)
         {
           float t = step / (float)steps;
           var normal = Vector3.Normalize(Vector3.Lerp(previous.Normal, point.Normal, t));
-          DrawMoltenSpot(center, texel, normal, ScarSpotTexels,
-            ScarLife(MathHelper.Lerp(previous.Age, point.Age, t), scarSeconds), (byte)(point.Seed + step * 37), soot);
+          float life = ScarLife(MathHelper.Lerp(previous.Age, point.Age, t), scarSeconds);
+          if (MoltenSpotVisible(normal, life))
+            scarSpots.Add(new ScarSpot { Position = PlanetNormalToDrawn(center, texel, normal), Life = MoltenLife(life),
+              Seed = (byte)(point.Seed + step * 37) });
         }
       }
-      DrawMoltenSpot(center, texel, point.Normal, ScarSpotTexels, ScarLife(point.Age, scarSeconds), point.Seed, soot);
+      float pointLife = ScarLife(point.Age, scarSeconds);
+      if (MoltenSpotVisible(point.Normal, pointLife))
+        scarSpots.Add(new ScarSpot { Position = drawn, Life = MoltenLife(pointLife), Seed = point.Seed });
       scarPrevious[beam] = point;
+      scarPreviousDrawn[beam] = drawn;
       scarHasPrevious[beam] = true;
     }
+  }
+
+  private void DrawScarSpots(float quad, byte radiusByte, float soot)
+  {
+    byte sootByte = MoltenSoot(soot);
+    var texture = AsyncContent.AssetManager.DefaultTexture;
+    foreach (var spot in scarSpots)
+      m_spriteBatch.Draw(texture, spot.Position, null, new Color(spot.Life, spot.Seed, radiusByte, sootByte),
+        0f, new Vector2(0.5f), quad, SpriteEffects.None, 0f);
   }
 
   // A cut stays molten most of its life, then cools and crumbles near the end.

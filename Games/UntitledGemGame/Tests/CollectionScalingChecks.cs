@@ -21,7 +21,7 @@ internal static class CollectionScalingChecks
       CheckFleetDig();
       CheckBoosts();
       CheckTree();
-      Console.WriteLine("Collection scaling passed: buried gem pool, fleet digging, fleet boosts, Twin Fleet, Express Line and the new nodes' prices and gates.");
+      Console.WriteLine("Collection scaling passed: buried gem pool, fleet digging, fleet boosts, Express Line and the new nodes' prices and gates.");
     }
     finally { BuriedGems.Reset(); }
   }
@@ -78,9 +78,6 @@ internal static class CollectionScalingChecks
     ug.FleetSpeedBoost = 1f;
     Check(MathF.Abs(BaseStats.GetHarvesterSpeed(drone) - droneSpeed) < 0.01f, "Drones are not fleet ships");
     Check(PrestigeTalentEffects.FleetCount(7) == 7, "An ordinary fleet fields what was bought");
-    ug.TwinFleet = true;
-    Check(PrestigeTalentEffects.FleetCount(7) == 14 && PrestigeTalentEffects.FleetCount(0) == 0, "Twin Fleet doubles every class");
-    ug.TwinFleet = false;
     ug.TractorBeltEnabled = true;
     var plain = TractorBeltStats.From(ug, 10f);
     ug.ExpressLine = true;
@@ -106,7 +103,7 @@ internal static class CollectionScalingChecks
           $"{id}: each rank costs at least three times the last and never needs less Expand Space");
       Check(levels[^1].Cost >= 10_000_000_000_000 && levels[^1].RequiredExpandSpaceLevel >= 4, $"{id} ends in the late loops");
     }
-    foreach (string id in new[] { "TWF1", "MGN1", "TDP1", "XPL1" })
+    foreach (string id in new[] { "MGN1", "TDP1", "XPL1" })
     {
       var data = upgrades.UpgradeButtons[id].Data;
       Check(data.UpgradeDefinition.Currency == CoreShards.Currency && data.LevelInfo.Count == 1 && data.LevelInfo[0].Cost == 1,
@@ -114,7 +111,7 @@ internal static class CollectionScalingChecks
     }
     var positions = upgrades.UpgradeButtons.Values.Where(b => b.Data.PosX > 0)
       .GroupBy(b => (b.Data.PosX, b.Data.PosY)).Where(g => g.Count() > 1 && g.Any(b => b.Data.ShortName is
-        "FDG1" or "CDG1" or "BDG1" or "FAB1" or "FBH1" or "CLC3" or "HCF3" or "TBS2" or "TBC2" or "TWF1" or "MGN1" or "TDP1" or "XPL1"));
+        "FDG1" or "CDG1" or "BDG1" or "FAB1" or "FBH1" or "CLC3" or "HCF3" or "TBS2" or "TBC2" or "MGN1" or "TDP1" or "XPL1"));
     Check(!positions.Any(), "No new node sits on top of another");
   }
 }

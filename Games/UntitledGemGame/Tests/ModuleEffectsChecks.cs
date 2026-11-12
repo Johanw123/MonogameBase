@@ -401,8 +401,11 @@ internal sealed class ModuleEffectsChecks : Game
         point = next;
       }
     }
-    effects.Ring(new Vector2(880, 900), 18f, 0.3f, Color.Aquamarine, ModuleEffectBatch.RingStyle.Shock, 0.3f);
-    effects.Ring(new Vector2(880, 965), 90f, 0.4f, Color.Aquamarine, ModuleEffectBatch.RingStyle.Shock, 0.3f);
+    // A click's pulse, and the Click Shockwave's wider one, as ClickUtility draws them.
+    effects.Ring(new Vector2(880, 900), 18f, 0.3f, Color.Aquamarine, ModuleEffectBatch.RingStyle.Shock, 0.3f,
+      ClickUtility.PulseIntensity, ClickUtility.PulseWidth);
+    effects.Ring(new Vector2(880, 965), 90f, 0.4f, Color.Aquamarine, ModuleEffectBatch.RingStyle.Shock, 0.3f,
+      ClickUtility.PulseIntensity, ClickUtility.PulseWidth);
     effects.Draw(effect, view, 3.37f);
     GraphicsDevice.SetRenderTarget(null);
     using var file = File.Create(path);
