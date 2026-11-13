@@ -116,8 +116,7 @@ public static class BaseStats
   public static float GetHarvesterCollectionRange(Harvester harvester)
   {
     if (harvester.IsCommandDrone) return harvester.CommandDroneRange;
-    return GetHarvesterBaseCollectionRange(harvester) * GetHarvesterCollectionRangeMultiplier(harvester)
-      + (harvester.HasModule(ShipModule.VacuumNozzle) ? ModuleCatalog.VacuumReachBonus : 0f);
+    return GetHarvesterBaseCollectionRange(harvester) * GetHarvesterCollectionRangeMultiplier(harvester);
   }
 
   public static float GetHarvesterCollectionRangeMultiplier(Harvester harvester)
@@ -165,7 +164,8 @@ public static class BaseStats
 
     return System.Math.Max(1, (int)System.Math.Min(int.MaxValue, System.Math.Ceiling(
       (double)typeCapacity * UpgradeManager.Instance.UGM.AllHarvesterCapacity * UpgradeManager.Instance.Signals.Multiplier(SignalKind.Capacity)
-      * (harvester.HasModule(ShipModule.CargoPod) ? ModuleCatalog.CargoMultiplier : 1f)
+      * (harvester.HasModule(ShipModule.CargoPod) ? 1f + harvester.Tuned(ModuleCatalog.CargoBonus) : 1f)
+      * UpgradeManager.Instance.UG.FleetCapacityBoost
       * harvester.AdditionalModuleCapacityMultiplier()
       * PrestigeTalentEffects.CargoCapacityMultiplier(harvester))));
   }
@@ -176,19 +176,18 @@ public static class BaseStats
     float tanks = UpgradeManager.Instance.UG.FleetMaxFuel;
     return IsFleetHarvester(harvester)
       ? tanks * UpgradeManager.Instance.UGM.AllHarvesterMaxFuel * UpgradeManager.Instance.Signals.Multiplier(SignalKind.Fuel)
-        * (harvester.HasModule(ShipModule.AuxiliaryTank) ? 1.75f : 1f)
+        * (harvester.HasModule(ShipModule.AuxiliaryTank) ? 1f + harvester.Tuned(1f) : 1f)
       : tanks;
   }
 
   // The tree no longer upgrades refuel speed or fuel efficiency: signals and modules still do.
   public static float GetHarvesterRefuelSpeedMultiplier(Harvester harvester)
     => (IsFleetHarvester(harvester) ? UpgradeManager.Instance.Signals.Multiplier(SignalKind.Refuel) : 1f)
-      * (harvester.HasModule(ShipModule.QuickCoupler) ? 1.6f : 1f);
+      * (harvester.HasModule(ShipModule.AuxiliaryTank) ? 1f + harvester.Tuned(0.6f) : 1f);
 
   public static float GetHarvesterFuelEfficiency(Harvester harvester)
     => IsFleetHarvester(harvester)
       ? UpgradeManager.Instance.UGM.AllHarvesterFuelEfficiency
-        * (harvester.HasModule(ShipModule.FuelRecycler) ? ModuleCatalog.FuelEfficiencyMultiplier : 1f)
         * (harvester.HasModule(ShipModule.StellarEngine) ? 0.5f : 1f)
       : 1f;
 
@@ -237,7 +236,7 @@ public static class BaseStats
     var speed = baseSpeed * typeMultiplier * globalMetaMultiplier * UpgradeManager.Instance.Signals.Multiplier(SignalKind.Speed);
 
     if (IsFleetHarvester(harvester))
-      speed *= HarvesterCollectionSystem.ResonanceSpeedMultiplier;
+      speed *= HarvesterCollectionSystem.ResonanceSpeedMultiplier * UpgradeManager.Instance.UG.FleetSpeedBoost;
 
     if (IsFleetHarvester(harvester) || harvester.Type == Harvester.HarvesterType.Drone)
       speed *= UntitledGemGame.Screens.UntitledGemGameGameScreen.Instance?.ManualAbilities.SpeedMultiplier ?? 1f;
@@ -252,13 +251,10 @@ public static class BaseStats
       speed *= LaunchThrusterSpeedMultiplier;
     }
 
-    if (harvester.HasModule(ShipModule.IonBooster)) speed *= ModuleCatalog.IonSpeedMultiplier;
-    if (harvester.HasModule(ShipModule.OverdriveCoil) && harvester.OverdriveTimeRemaining > 0f)
-      speed *= ModuleCatalog.OverdriveSpeedMultiplier;
     if (harvester.IsCommandDrone)
       return harvester.CommandDroneSpeed * (UntitledGemGame.Screens.UntitledGemGameGameScreen.Instance?.ManualAbilities.SpeedMultiplier ?? 1f)
         * (harvester.ReturningToHomebase ? DroneAfterburnerSpeedMultiplier : 1f);
-    return speed * harvester.AdditionalModuleSpeedMultiplier();
+    return speed * harvester.ModuleSpeedMultiplier() * harvester.RoleSpeedMultiplier;
   }
 
   public static ulong GetHarvesterDeliveryValue(Harvester harvester, ulong baseValue)

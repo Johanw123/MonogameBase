@@ -136,9 +136,12 @@ namespace BloomPostprocess
             // Look up how many samples our gaussian blur effect supports.
             int sampleCount = weightsParameter.Elements.Count;
 
-            // Create temporary arrays for computing our filter settings.
-            float[] sampleWeights = new float[sampleCount];
-            Vector2[] sampleOffsets = new Vector2[sampleCount];
+            // Reused every frame (this runs twice per frame); sized to the effect's sample count.
+            if (sampleWeights.Length != sampleCount)
+            {
+                sampleWeights = new float[sampleCount];
+                sampleOffsets = new Vector2[sampleCount];
+            }
 
             // The first sample always has a zero offset.
             sampleWeights[0] = ComputeGaussian(0);
@@ -181,6 +184,9 @@ namespace BloomPostprocess
             offsetsParameter.SetValue(sampleOffsets);
         }
 
+
+        private float[] sampleWeights = Array.Empty<float>();
+        private Vector2[] sampleOffsets = Array.Empty<Vector2>();
 
         // C O M P U T E   G A U S S I A N 
         float ComputeGaussian(float n)

@@ -4,8 +4,9 @@
   render_short.py edit.json            # final MP4 + review sheet
   render_short.py edit.json --fast     # NVENC, for quick looks
   render_short.py edit.json --resolve  # also write a Resolve plan (resolve-game-video skill)
+  render_short.py edit.json --check    # only measure the existing render again
 
-Shots are cut back to back from capture takes (punch-in, slow push, slow motion),
+Shots are cut back to back from capture takes (punch-in, slow push, slow motion, speed ramps),
 text is drawn in the chosen layout ("fullscreen": over the gameplay; "banners":
 the branded top/bottom bands of Shorts 01-04), music and the takes' rebuilt game
 audio are mixed and normalised to -14 LUFS, and the result is checked.
@@ -20,11 +21,14 @@ import shutil
 import subprocess
 import sys
 import tempfile
+from fractions import Fraction
 from pathlib import Path
 
+import numpy as np
 from PIL import Image, ImageDraw, ImageFilter, ImageFont
 
 import cta
+import video_qc
 from common import FONT_BOLD, LOGO, contact_sheet, duration, game_number, load_jsonc, probe, word_number
 
 ACCENT = (255, 255, 255)
@@ -165,6 +169,29 @@ def banner_card(headline: str, caption: str, closing: bool, sequence: int, total
 
 # ---------------------------------------------------------------- edit
 
+def speed_curve(points: list, dur: float) -> tuple[np.ndarray, np.ndarray]:
+    """A shot's `ramp`: seconds of the shot, and the source seconds played by then, easing between points."""
+    at, speed = np.array(points, dtype=float).T
+    if len(at) < 2 or (np.diff(at) <= 0).any() or at[0] < 0 or at[-1] > dur or (speed <= 0).any():
+        raise ValueError(f'ramp {points}: needs two or more [time, speed] points, times rising within the shot, speeds above 0')
+    times = np.linspace(0, dur, round(dur * 240) + 1)
+    segment = np.clip(np.searchsorted(at, times, side='right') - 1, 0, len(at) - 2)
+    x = np.clip((times - at[segment]) / np.diff(at)[segment], 0, 1)
+    speeds = speed[segment] + (speed[segment + 1] - speed[segment]) * x * x * (3 - 2 * x)
+    return times, np.concatenate(([0], np.cumsum((speeds[1:] + speeds[:-1]) / 2 * np.diff(times))))
+
+
+def ramp_pts(curve: tuple[np.ndarray, np.ndarray]) -> str:
+    """setpts for a ramp: straight segments, 1/30 s or longer, map source time back to the shot's time."""
+    times, source = (np.append(values[:-1:8], values[-1]) for values in curve)
+    slopes = np.diff(times) / np.diff(source)
+    keep = np.concatenate(([True], ~np.isclose(slopes[1:], slopes[:-1]), [True]))
+    times, source = times[keep], source[keep]
+    terms = [f"{(t1 - t0) / (s1 - s0):.6f}*clip(T-STARTT-{s0:.6f},0,{s1 - s0:.6f})"
+             for t0, t1, s0, s1 in zip(times, times[1:], source, source[1:])]
+    return f"setpts='({'+'.join(terms)})/TB'"
+
+
 class Edit:
     def __init__(self, path: Path):
         self.path = path
@@ -181,8 +208,11 @@ class Edit:
         self.shots = []
         at = 0.0
         for i, shot in enumerate(self.spec['shots']):
+            if 'ramp' in shot and 'speed' in shot:
+                raise ValueError(f'shot {i}: use speed or ramp, not both')
             speed = shot.get('speed', 1.0)
-            span = shot['dur'] * speed
+            curve = speed_curve(shot['ramp'], shot['dur']) if 'ramp' in shot else None
+            span = float(curve[1][-1]) if curve else shot['dur'] * speed
             parts = []
             # A "split" shot stacks two takes (top and bottom halves); otherwise the shot is one part.
             for part in shot.get('split', [shot]):
@@ -195,8 +225,9 @@ class Edit:
                 if part['in'] + span > duration(take) + 1e-3:
                     raise ValueError(f'shot {i}: {take.name} is only {duration(take):.2f}s, needs {part["in"] + span:.2f}s')
                 parts.append(dict(part, take=take, report=report, tw=int(info['width']), th=int(info['height']),
-                                  dur=shot['dur'], speed=speed, span=span))
-            self.shots.append(dict(shot, parts=parts, at=at, span=span, speed=speed, take=parts[0]['take'],
+                                  take_fps=float(Fraction(info['r_frame_rate'])), dur=shot['dur'], speed=speed,
+                                  span=span, curve=curve))
+            self.shots.append(dict(shot, parts=parts, at=at, span=span, speed=speed, curve=curve, take=parts[0]['take'],
                                    report=parts[0]['report'], tw=parts[0]['tw'], th=parts[0]['th'],
                                    **{'in': parts[0]['in']}))
             at += shot['dur']
@@ -211,7 +242,8 @@ class Edit:
         part = shot['parts'][min(source, len(shot['parts']) - 1)]
         if not part['report'] or not part['report']['samples']:
             return None
-        source_t = part['in'] + (t - shot['at']) * shot['speed']
+        played = t - shot['at']
+        source_t = part['in'] + (float(np.interp(played, *shot['curve'])) if shot['curve'] else played * shot['speed'])
         samples = part['report']['samples']
         # Interpolate between the 0.25 s samples so live counters tick smoothly.
         after = next((i for i, s in enumerate(samples) if s['t'] >= source_t), len(samples) - 1)
@@ -240,7 +272,8 @@ def frame_filter(shot: dict, w: int, h: int, fps: int) -> str:
     px = (fx * tw - cx) / cw
     py = (fy * th - cy) / ch
     zoom = f"{z0}+({z1 - z0})*(on/{frames})*(on/{frames})*(3-2*on/{frames})" if z1 != z0 else str(z0)
-    head = f"setpts=(PTS-STARTPTS)/{shot['speed']},fps={fps},"
+    pts = ramp_pts(shot['curve']) if shot['curve'] else f"setpts=(PTS-STARTPTS)/{shot['speed']}"
+    head = f"{pts},fps={fps},"
     if 'focus_end' not in shot:
         return (f"{head}crop={cw}:{ch}:{cx}:{cy},"
                 f"zoompan=z='{zoom}':x='max(0,min(iw-iw/zoom,{px}*iw-iw/zoom/2))':"
@@ -326,6 +359,19 @@ def build_overlays(edit: Edit, tmp: Path) -> list[dict]:
     return overlays
 
 
+def warp_audio(wav: Path, part: dict, out: Path) -> Path:
+    """A take's audio along its speed ramp. Pitch follows the speed, like slowed tape."""
+    raw = subprocess.run(['ffmpeg', '-v', 'error', '-ss', f"{part['in']:.3f}", '-t', f"{part['span']:.3f}", '-i', str(wav),
+                          '-ac', '2', '-ar', '48000', '-f', 'f32le', '-'], capture_output=True, check=True).stdout
+    audio = np.frombuffer(raw, '<f4').reshape(-1, 2)
+    position = np.interp(np.arange(round(part['dur'] * 48000)) / 48000, *part['curve']) * 48000
+    samples = np.arange(len(audio))
+    warped = np.stack([np.interp(position, samples, audio[:, c], right=0) for c in (0, 1)], axis=1)
+    subprocess.run(['ffmpeg', '-v', 'error', '-y', '-f', 'f32le', '-ar', '48000', '-ac', '2', '-i', '-', '-c:a', 'pcm_f32le',
+                    str(out)], input=warped.astype('<f4').tobytes(), check=True)
+    return out
+
+
 def render_audio(edit: Edit, tmp: Path) -> Path:
     """Music + game audio, normalised to about -14 LUFS with peaks under -1.5 dBFS."""
     inputs, graph, mix = [], [], []
@@ -348,7 +394,10 @@ def render_audio(edit: Edit, tmp: Path) -> Path:
                 if not wav.is_file():
                     raise FileNotFoundError(f'{wav} missing (capture.py writes it)')
                 index = sum(1 for a in inputs if a == '-i')
-                inputs += ['-ss', f"{part['in']:.3f}", '-t', f"{shot['span']:.3f}", '-i', str(wav)]
+                if part['curve']:
+                    inputs += ['-i', str(warp_audio(wav, part, tmp / f'ramp_{k}_{j}.wav'))]
+                else:
+                    inputs += ['-ss', f"{part['in']:.3f}", '-t', f"{shot['span']:.3f}", '-i', str(wav)]
                 graph.append(f"[{index}:a]aresample=48000,aformat=channel_layouts=stereo{tempo},"
                              f"apad=whole_dur={shot['dur']:.3f},atrim=0:{shot['dur']:.3f},asetpts=PTS-STARTPTS[g{k}_{j}]")
                 streams.append(f'[g{k}_{j}]')
@@ -443,7 +492,8 @@ def render(edit: Edit, fast: bool, tmp: Path) -> None:
     subprocess.run(command, check=True)
 
 
-def check(edit: Edit) -> list[str]:
+def check(edit: Edit) -> tuple[list[str], list[str]]:
+    """Problems that fail the render, and notes worth a look."""
     info = probe(edit.output)
     video = next(s for s in info['streams'] if s['codec_type'] == 'video')
     audio = [s for s in info['streams'] if s['codec_type'] == 'audio']
@@ -455,7 +505,14 @@ def check(edit: Edit) -> list[str]:
     if edit.spec.get('music') or edit.spec.get('game_audio', True):
         if not audio:
             problems.append('no audio stream')
-    return problems
+    for number, shot in enumerate(edit.shots, 1):
+        slowest = min(speed for _, speed in shot['ramp']) if shot['curve'] else shot['speed']
+        for part in shot['parts']:
+            if slowest < 1 and part['take_fps'] * slowest < edit.fps - 0.5:
+                problems.append(f"shot {number}: speed {slowest:g} needs a {edit.fps / slowest:.0f} fps take, "
+                                f"{part['take'].name} is {part['take_fps']:.0f} fps")
+    measured, notes = video_qc.check(edit, bool(audio))
+    return problems + measured, notes
 
 
 def review_sheet(edit: Edit) -> Path:
@@ -488,8 +545,8 @@ def resolve_plan(edit: Edit, tmp: Path, audio: Path | None) -> Path:
         overlays.append({'file': str(mov), 'in_s': 0, 'dur_s': o['dur'], 'at_s': o['at'], 'track': 2})
     shots = []
     for shot in edit.shots:
-        if shot.get('focus', [0.5, 0.5]) != [0.5, 0.5] or shot.get('zoom_end') or shot['speed'] != 1:
-            print(f"note: shot at {shot['at']:.1f}s uses focus/push-in/speed; set those by hand in Resolve", file=sys.stderr)
+        if shot.get('focus', [0.5, 0.5]) != [0.5, 0.5] or shot.get('zoom_end') or shot['speed'] != 1 or shot['curve']:
+            print(f"note: shot at {shot['at']:.1f}s uses focus/push-in/speed/ramp; set those by hand in Resolve", file=sys.stderr)
         shots.append({'file': str(shot['take']), 'in_s': shot['in'], 'out_s': shot['in'] + shot['span'], 'at_s': shot['at'],
                       'audio': False, 'track': 1, 'zoom': shot.get('zoom', 1.0)})
     plan = {'timeline': edit.output.stem, 'fps': edit.fps, 'width': edit.w, 'height': edit.h,
@@ -508,19 +565,26 @@ def main() -> None:
     parser.add_argument('edit', type=Path)
     parser.add_argument('--fast', action='store_true', help='NVENC encode for quick reviews')
     parser.add_argument('--resolve', action='store_true', help='also write a Resolve plan (fullscreen layout)')
+    parser.add_argument('--check', action='store_true', help='only measure the existing render again')
     args = parser.parse_args()
     edit = Edit(args.edit.resolve())
-    if edit.output.exists():
-        sys.exit(f'{edit.output} exists; bump the version in "output"')
-    with tempfile.TemporaryDirectory(prefix='btb-render-') as tmp:
-        render(edit, args.fast, Path(tmp))
-        if args.resolve:
-            audio = Path(tmp) / 'audio.wav'
-            print(f'resolve plan: {resolve_plan(edit, Path(tmp), audio if audio.is_file() else None)}')
-    problems = check(edit)
-    sheet = review_sheet(edit)
+    if args.check:
+        if not edit.output.exists():
+            sys.exit(f'{edit.output} does not exist')
+    else:
+        if edit.output.exists():
+            sys.exit(f'{edit.output} exists; bump the version in "output"')
+        with tempfile.TemporaryDirectory(prefix='btb-render-') as tmp:
+            render(edit, args.fast, Path(tmp))
+            if args.resolve:
+                audio = Path(tmp) / 'audio.wav'
+                print(f'resolve plan: {resolve_plan(edit, Path(tmp), audio if audio.is_file() else None)}')
+    problems, notes = check(edit)
     print(f'{edit.output}: {edit.total:.2f}s {edit.w}x{edit.h} {edit.fps} fps, {len(edit.shots)} shots, layout {edit.layout}')
-    print(f'review sheet: {sheet}')
+    if not args.check:
+        print(f'review sheet: {review_sheet(edit)}')
+    for note in notes:
+        print(f'note: {note}')
     if problems:
         sys.exit('PROBLEMS: ' + '; '.join(problems))
 

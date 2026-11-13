@@ -151,6 +151,15 @@ namespace UntitledGemGame.Screens
         (isMegaJackpot ? Loc.T("MEGA JACKPOT!") : Loc.T("JACKPOT!")) + " +" + NumberFormatter.AbbreviateBigNumber(value), isMegaJackpot);
     }
 
+    // Mothership Protocol's payoff: a whole hold lands at once.
+    public void ShowCarrierDelivery(Vector2 worldPosition, ulong value)
+    {
+      AudioManager.Instance.PlaySound(SoundEvent.CarrierDelivery);
+      ShowWorldPopup(worldPosition, Loc.T("CARRIER DELIVERY!") + " +" + NumberFormatter.AbbreviateBigNumber(value), true);
+      SpawnerEffects.Add(null, worldPosition, Color.Gold, 10f, 180f, 0.7f);
+      ScaleVelocity += 6f;
+    }
+
     // Gold text that pops up from a point in the world and drifts up.
     public void ShowWorldPopup(Vector2 worldPosition, string text, bool large)
     {
@@ -326,6 +335,7 @@ namespace UntitledGemGame.Screens
       RenderGuiSystem.Instance.SetUpgradeType(RenderGuiSystem.UpgradeTypes.None);
       var save = startNewGame ? null : saveStore.Load();
       hasOpenedUpgrades = save?.HasOpenedUpgrades ?? false;
+      extractionGuide = new ExtractionGuide();
       if (save != null)
       {
         m_gameState.Signals = save.Signals;
@@ -341,6 +351,7 @@ namespace UntitledGemGame.Screens
           save.PrestigeEcho, save.BestPrestigeProgress);
         m_gameState.RestoreCoreShards(save.CoreShards, save.CoreFractures, save.ShellDamage);
         m_gameState.Damage.RestoreRunTotals(save.DamageThisRun);
+        m_gameState.Collection.RestoreRunTotals(save.CollectionThisRun, save.CollectionMethodsThisRun);
         ManualAbilities.UpdateUnlocks(m_gameState.RedGemsEarnedThisRun);
         m_createdInitialGems = save.CreatedInitialGems;
         gemsPendingRestore = Math.Clamp(save.ActiveGemCount ?? 0, 0,
@@ -460,7 +471,8 @@ namespace UntitledGemGame.Screens
         RedGems = PrestigeProgression.AddSaturating(m_gameState.CurrentRedGemCount, DeliveredUncounted),
         Signals = m_gameState.Signals,
         Modules = m_gameState.Modules,
-        BlueGems = m_gameState.CurrentBlueGemCount,
+        // Fault Cells still flying to the Systems tab are already earned.
+        BlueGems = PrestigeProgression.AddSaturating(m_gameState.CurrentBlueGemCount, OwedPowerCells),
         AbilityPointsPurchased = m_gameState.AbilityPointsPurchased,
         PurpleGems = m_gameState.CurrentPurpleGemCount,
         // A shard still hovering (or about to fly out) is already earned.
@@ -468,6 +480,8 @@ namespace UntitledGemGame.Screens
         CoreFractures = m_gameState.CoreFractures,
         ShellDamage = m_gameState.ShellDamage,
         DamageThisRun = m_gameState.Damage.RunTotals(),
+        CollectionThisRun = m_gameState.Collection.RunTotals(),
+        CollectionMethodsThisRun = m_gameState.Collection.MethodRunTotals(),
         CoreExtractions = m_gameState.CoreExtractions,
         EscapedThisRun = m_gameState.EscapedThisRun,
         PrestigePointsEarned = m_gameState.PrestigePointsEarned,
@@ -497,6 +511,8 @@ namespace UntitledGemGame.Screens
         save.CoreFractures = 0;
         save.ShellDamage = 0;
         save.DamageThisRun = new();
+        save.CollectionThisRun = new();
+        save.CollectionMethodsThisRun = new();
         // Power cells and Hollow World tunnels last one run (GameState.CompletePrestige).
         save.BlueGems = save.AbilityPointsPurchased = 0;
         save.CoreDrillTunnels = 0;
@@ -546,7 +562,7 @@ namespace UntitledGemGame.Screens
     // private int time;
     private float spawnTimer;
     public ClickUtility ClickUtility { get; } = new();
-    public CursorGravityWell CursorGravity { get; } = new();
+    public TractorBelt TractorBelt { get; } = new();
     private float passiveIncomeTimer = 0;
     private string previousButtonName = "null";
     public bool m_prestiging = false;
@@ -566,9 +582,10 @@ namespace UntitledGemGame.Screens
       worldPolish.Clear();
       ManualAbilities.Reset();
       ClickUtility.Reset();
-      CursorGravity.Reset();
+      TractorBelt.Reset(Systems.UpdateSystem2.Instance);
       m_homeBaseEntity?.Get<HomeBase>()?.CancelAbilityEffects();
       m_entityFactory?.ClearPendingGemSpawns();
+      BuriedGems.Reset();
       ClearPlanetShots();
       ClearCoreDrills();
       Array.Clear(_jackpotPopups);
@@ -628,7 +645,10 @@ namespace UntitledGemGame.Screens
       int bonusPercent = 0, float? launchAngle = null)
     {
       if (fromPlanet)
+      {
         firePower = PrestigeTalentEffects.DeepCoreQualityPower(firePower);
+        BuriedGems.OnGemLoose();
+      }
       GemSpawnData gemSpawn = GemQualityTable.Roll(firePower, valueMultiplier);
       if (bonusPercent > 0)
         gemSpawn.BaseValue = AbilityGemValue.AddBonus(gemSpawn.BaseValue, bonusPercent);
@@ -828,6 +848,7 @@ namespace UntitledGemGame.Screens
           HarvesterCollectionSystem.Instance.ClearCargoForPrestige();
           m_homeBaseEntity?.Get<Harvester>()?.ClearCargoForPrestige();
           m_entityFactory.ClearPendingGemSpawns();
+          BuriedGems.Reset();
           ClearPlanetShots();
           spawnTimer = passiveIncomeTimer = 0f;
           passiveIncomeRemainder = 0;
@@ -950,6 +971,7 @@ namespace UntitledGemGame.Screens
           ulong earned = income >= ulong.MaxValue ? ulong.MaxValue : (ulong)income;
           passiveIncomeRemainder = income >= ulong.MaxValue ? 0 : income - earned;
           DeliveredUncounted = PrestigeProgression.AddSaturating(DeliveredUncounted, earned);
+          m_gameState.Collection.Record(GemCollectionSource.PassiveIncome, earned);
           passiveIncomeTimer -= ticks * currentInterval;
         }
       }
@@ -1192,7 +1214,7 @@ namespace UntitledGemGame.Screens
         Console.WriteLine("Removed excess advanced harvester due to downgrade.");
       }
 
-
+      m_entityFactory.SyncCarriers();
     }
 
     private void DrawHudContent()
@@ -1229,6 +1251,8 @@ namespace UntitledGemGame.Screens
 
       if (ExtractControlVisible && !ExtractInUpgrades) DrawExtractPanel(ExtractControlBounds);
       DrawPrestigePoints();
+      DrawFaultCellPopup();
+      DrawWakeProgress();
       if (HudLayout.BottomBarVisible)
       {
         DrawMetaUpgradeNotifications();
@@ -1236,7 +1260,6 @@ namespace UntitledGemGame.Screens
       }
       DrawCoreFractureHud();
       DrawDamagePanel();
-      DrawExtractionCaptions();
       if (!ExtractInUpgrades) DrawExtractTooltip();
       DrawShipTerminalTooltip();
       if (HudLayout.BottomBarVisible) DrawManualAbilities();
@@ -1569,6 +1592,11 @@ namespace UntitledGemGame.Screens
         + $"x{SignalStats.CritMultiplier:0.##} per crit");
       ImGui.Text($"Railgun: charge {railgunCharge * 100f:0}%, bank {railgunBank} / {MainShipWeapons.CapacitorRounds - 1}, "
         + $"battery +{kineticBattery * 100f:0}%, recoil harvest {recoilHarvest:0.0}s");
+      ImGui.Text($"Ouroboros: +{PrestigeTalentEffects.OuroborosBonus(m_gameState.PrestigePointsEarned) * 100f:0}% "
+        + $"from {m_gameState.PrestigePointsEarned} points earned");
+      ImGui.Text(chaosRemaining > 0f
+        ? $"Chaos Theory: {chaosWeapon} as {chaosBorrowed}, {chaosRemaining:0.0}s left, {chaosCharge:0} damage waiting"
+        : $"Chaos Theory: next spell in {chaosTimer:0}s");
     }
 
     private void DrawImGUIContent()
@@ -1603,11 +1631,12 @@ namespace UntitledGemGame.Screens
         DrawWorldPolishPreview();
         DrawBloomDebug();
         DrawPlanetDebuffsDebug();
+        GemSpreadTuning.DrawDebug();
         DrawGpuParticleDebug();
         RenderGuiSystem.DrawSignalHoverDebug();
         RenderGuiSystem.DrawSignalSelectionDebug();
 #if !KNI_WEB
-        if (Demo.IsDev && ImGui.Button("Sound effects lab (F8)")) GameMain.OpenSoundEffectsLab();
+        if (ImGui.Button("Sound effects lab (F8)")) GameMain.OpenSoundEffectsLab();
         if (Demo.IsDev)
         {
           ImGui.SameLine();
@@ -1723,13 +1752,9 @@ namespace UntitledGemGame.Screens
       DrawWeapons();
       DrawMiningFragments();
       gpuParticles?.Draw(m_camera.ViewProjection());
-      // Shapes render into the virtual-sized target, before it is scaled to the window.
-      m_shapeBatch.Begin(UntitledGemGame.ClickUtility.RenderView(m_camera.GetViewMatrix(),
-          BaseGame.BoxingViewportAdapter.GetScaleMatrix()),
-        Matrix.CreateOrthographicOffCenter(0, BaseGame.BoxingViewportAdapter.VirtualWidth,
-          BaseGame.BoxingViewportAdapter.VirtualHeight, 0, 0, 1), blendState: BlendState.Additive);
-      ClickUtility.Draw(m_shapeBatch, m_camera.Zoom);
-      m_shapeBatch.End();
+      DrawTractorBelt();
+      ClickUtility.Draw(WeaponEffects, m_camera.Zoom);
+      WeaponEffects.Draw(m_camera.ViewProjection(), planetAge);
       DrawGemClickRadius();
       ApplyWorldLens();
       DrawWarpEscapeEffects();

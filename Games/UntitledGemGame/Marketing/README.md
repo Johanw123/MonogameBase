@@ -17,7 +17,7 @@ Platform guidance checked **27 September 2026**. Hashtag counts below are practi
 | --- | --- | --- | --- | --- |
 | Instagram Reels | Vertical 9:16 | Hook, a little context, one next step | “Link in bio” when the profile link is set | 3–5 relevant tags |
 | TikTok | Vertical 9:16 | Short hook tied to the action on screen | “Link in bio” only if a working website link is available; otherwise “Follow for development updates” | 3–5 relevant tags |
-| YouTube Shorts | Vertical 9:16 | Clear title; short description naming the game and feature | “Game page linked on our channel profile” | 2–3 in the description |
+| YouTube Shorts | Vertical 9:16 | Clear title; short description naming the game and feature | “Game page linked on my channel profile” | 2–3 in the description |
 | Facebook Reels / Page | Vertical 9:16 for Reels | Explain the game for someone seeing it for the first time | Reels: Page website link; regular Page posts: direct URL where supported | 0–3 relevant tags |
 | X/Twitter | Square 1:1 | One concise observation, feature, or development update | Direct URL in the post | 0–2 relevant tags |
 
@@ -45,7 +45,7 @@ Keep the set at five tags or fewer; Instagram announced a rollout limiting post 
 ```text
 One harvester. Then the fleet takes over. 🚀
 
-A look at progression in Beyond the Belt, our incremental space game in development at Team Jape.
+A look at progression in Beyond the Belt, my incremental space game, in development at Team Jape.
 
 Explore the game — link in bio.
 
@@ -57,7 +57,7 @@ Explore the game — link in bio.
 ```text
 Can you follow the action when the whole fleet gets busy?
 
-A look at the collection effects in Beyond the Belt. We want those big hauls to feel satisfying while keeping the gameplay readable.
+A look at the collection effects in Beyond the Belt. I want those big hauls to feel satisfying while keeping the gameplay readable.
 
 What catches your eye first?
 
@@ -113,7 +113,7 @@ Description:
 ```text
 One harvester becomes a busy fleet in Beyond the Belt, an incremental space game in development by Team Jape.
 
-Explore the game through the link on our channel profile.
+Explore the game through the link on my channel profile.
 
 #IndieGame #IncrementalGame #BeyondTheBelt
 ```
@@ -129,7 +129,7 @@ Making a Busy Fleet Readable | Beyond the Belt Devlog
 Description:
 
 ```text
-A look at collection effects and ability combinations in Beyond the Belt. We're working on making a busy screen satisfying to watch and easy to follow.
+A look at collection effects and ability combinations in Beyond the Belt. I'm working on making a busy screen satisfying to watch and easy to follow.
 
 Which effect stands out to you?
 
@@ -147,9 +147,9 @@ Give viewers a little context about the game and Team Jape. Use 0–3 relevant h
 ```text
 From a single harvester to a whole fleet. 🚀
 
-This is Beyond the Belt, an incremental space game we're developing at Team Jape. This clip shows how the fleet grows across different stages of the game.
+This is Beyond the Belt, an incremental space game I'm developing at Team Jape. This clip shows how the fleet grows across different stages of the game.
 
-Find the game through the website link on our Page.
+Find the game through the website link on my Page.
 
 #IndieGame #IncrementalGame #BeyondTheBelt
 ```
@@ -159,7 +159,7 @@ Find the game through the website link on our Page.
 ```text
 A look behind the scenes at Beyond the Belt.
 
-We're exploring how different abilities work together as the fleet grows. Here's one combination in action.
+I'm exploring how different abilities work together as the fleet grows. Here's one combination in action.
 
 Explore the game: [GAME_URL]
 
@@ -179,7 +179,7 @@ Put a direct game URL in the post when visiting the game page is the goal. You d
 ```text
 One harvester to a whole fleet. 🚀
 
-A look at progression in Beyond the Belt, our incremental space game.
+A look at progression in Beyond the Belt, my incremental space game.
 
 Explore the game: [GAME_URL]
 
@@ -203,7 +203,7 @@ These are intentionally short for a standard post. Check the composer after repl
 [Skills/beyond-the-belt-shorts](Skills/beyond-the-belt-shorts/SKILL.md) makes a short end to end from new footage, for Claude Code and Codex alike:
 
 1. **Stage** any game state in a scene file: a debug preset plus exact upgrade levels, currencies, stats, abilities, modules and signals.
-2. **Record** it with the game's own capture mode (`--capture scene.json`). The game renders offscreen in a native 9:16 play field at 4K/60, on a fixed timestep, with scripted clicks, holds, gravity wells, abilities, upgrades and zooms. Every sound the game plays is logged, so the real game audio can be rebuilt.
+2. **Record** it with the game's own capture mode (`--capture scene.json`). The game renders offscreen in a native 9:16 play field at 4K/60, on a fixed timestep, with scripted clicks, holds, tractor belts, abilities, upgrades and zooms. Every sound the game plays is logged, so the real game audio can be rebuilt.
 3. **Edit** to music with `render_short.py`: punch-ins, slow pushes, slow motion, honest live numbers from the capture log, and text in the `fullscreen` layout (default).
 
 Work folders live in `Marketing/Shorts/NN-slug/` (scenes and edit files are versioned; takes and renders are ignored by Git). The capture mode never uses the player's save or `Settings.json`, and only runs in development builds (`Demo.IsDev`).
@@ -243,6 +243,14 @@ python3 $S/capture.py Marketing/Shorts/01-first-click/scenes/*.json            #
 python3 $S/render_short.py Marketing/Shorts/01-first-click/edit.json            # final MP4 + review sheet
 ```
 
+`Demo.IsDev` has been off in source since the playtest build, so a plain capture
+exits with "only available in development builds". Copy `bin/Debug/net10.0` to a
+private folder, add `CaptureLauncher.dll` (it sets `IsDev` and stops a capture
+whose game loop hangs) plus a `launcher.runtimeconfig.json` with dynamic code
+on, and run with `BTB_CAPTURE_SNAPSHOT=<folder>`. Add `BTB_GPU_LOCK=<file>` so
+parallel jobs take turns on the GPU. The private copy also protects a batch from
+other sessions rebuilding the shared `bin` folder.
+
 ## Current shorts slate
 
 The old shorts, their scenes, edits, takes, renders and ZIP archive were removed on
@@ -254,14 +262,16 @@ All ten were approved for production. Full-resolution exports and their current
 status are indexed in [Shorts/README.md](Shorts/README.md); suggested titles and
 captions are in [Shorts/POSTING.md](Shorts/POSTING.md).
 
-## Updated store media — 25 October 2026
+## Updated store media — 9 November 2026
 
-The [Steam refresh](Steam/2026-10-25-refresh/STORE_PAGE.md) contains eleven silent
-feature loops and eleven native 4K screenshots from the current 25 October footage,
-with updated description copy. [Review all assets](Steam/2026-10-25-refresh/review.html).
-The [itch.io package](Itch/2026-10-25-refresh/ITCH_PAGE.md) reuses the footage as
-eleven GIFs and eleven 1920×1080 JPEG screenshots; its upload notes include checked
-format and size guidance.
+The [Steam refresh](Steam/2026-11-09-refresh/STORE_PAGE.md) contains twelve silent
+feature loops and thirteen native 4K screenshots from 9 November footage, including
+the new Weaponry panel and Tractor Belt, with updated description copy.
+[Review all assets](Steam/2026-11-09-refresh/review.html).
+The [itch.io package](Itch/2026-11-09-refresh/ITCH_PAGE.md) reuses the footage as
+twelve GIFs and thirteen 1920×1080 JPEG screenshots. The 25 October packages are
+kept next to them.
 
-All current shorts use music only. Current exports are linked in
-[Shorts/README.md](Shorts/README.md). Nothing has been published.
+All thirteen shorts were recaptured and re-rendered on the same day; current
+exports are linked in [Shorts/README.md](Shorts/README.md). Nothing has been
+published.

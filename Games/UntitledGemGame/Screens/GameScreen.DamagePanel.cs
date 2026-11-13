@@ -7,48 +7,114 @@ using Vector2 = Microsoft.Xna.Framework.Vector2;
 
 namespace UntitledGemGame.Screens;
 
-// The HUD's Damage panel: the planet's damage by source (PlanetDamageMeter), over the
-// last minute and over the run, strongest first. The Damage button at the right end of
-// the HUD bar shows the total per minute and opens or closes the panel, which grows up
-// from the bar over the play area; the choice is kept in the settings. Sources show up
-// once they have dealt damage this run.
+// The HUD's Collection and Damage panels: gem collection (GemCollectionMeter) and planet
+// damage (PlanetDamageMeter) by source, over the last minute and over the run. Each is one
+// table: the total on top, then every row that has contributed this run, strongest first,
+// as many as fit on screen. Collection rows are ships, clicks and the Tractor Belt alongside
+// the talents, upgrades and modules that pulled gems in, so they add up to the total. Two
+// minimal chevron toggle buttons sit on the left edge in level with the home base ship and
+// expand or collapse the panels; both choices are kept in the settings.
 public partial class UntitledGemGameGameScreen
 {
   private const int DamagePanelPadding = 24;
   private const int DamagePanelGap = 12;
   private const int DamageTitleHeight = 72;
   private const int DamageColumnsHeight = 40;
-  private const int DamageTotalHeight = 58;
+  private const int DamageTotalHeight = 64;
+  private const int MeterBottomPadding = 12;
   // Right edges of the per-minute and run columns, from the panel's left.
   private const int DamageMinuteRight = 470;
 
-  private readonly PlanetDamageSource[] damageRows = new PlanetDamageSource[PlanetDamageMeter.SourceCount];
-  private int damageRowCount;
+  // The table being drawn, sorted; both panels fill it in turn (FillCollectionRows, FillDamageRows).
+  private static readonly int MeterRowCapacity = Math.Max(GemCollectionMeter.RowCount, PlanetDamageMeter.SourceCount);
+  private readonly string[] meterRowNames = new string[MeterRowCapacity];
+  private readonly double[] meterRowMinute = new double[MeterRowCapacity];
+  private readonly double[] meterRowRun = new double[MeterRowCapacity];
+  private int meterRowCount;
 
-  private bool DamagePanelVisible => HudLayout.BottomBarVisible && GameStarted && PlanetMiningEnabled && !GameMain.IsPaused
-    && !m_prestiging && !m_postPrestige && !_renderGuiSystem.IsOverlayVisible
+  private bool MeterPanelsVisible => !SideResourcesSuppressed && !GameMain.IsPaused
     && !_renderGuiSystem.BulkUpgradeButtonsShown;
 
+  private bool CollectionPanelVisible => MeterPanelsVisible;
+  private bool DamagePanelVisible => MeterPanelsVisible && PlanetMiningEnabled;
 
+  private bool CollectionPanelOpen => GameMain.CollectionPanelOpen;
   private bool DamagePanelOpen => GameMain.DamagePanelOpen;
   private bool damagePanelGestureCaptured;
 
-  // The open panel blocks world clicks under it, so reading it never fires the cannon.
-  private bool DamagePanelUnderCursor => damagePanelGestureCaptured
-    || (DamagePanelVisible && DamagePanelOpen && DamagePanelBounds().Contains(GameInput.UiCursor));
+  private Rectangle CollectionButtonBounds => HudLayout.SideCollectionButton();
+  private Rectangle DamageButtonBounds => HudLayout.SideDamageButton();
 
-  // Right-aligned with the button, bottom just above the HUD bar, growing up as sources appear.
-  private Rectangle DamagePanelBounds()
+  // The buttons and open panels block world clicks under them, so toggling or reading them never fires the cannon.
+  private bool DamagePanelUnderCursor => damagePanelGestureCaptured
+    || (CollectionPanelVisible && (CollectionButtonBounds.Contains(GameInput.UiCursor)
+      || (CollectionPanelOpen && CollectionPanelBounds().Contains(GameInput.UiCursor))))
+    || (DamagePanelVisible && (DamageButtonBounds.Contains(GameInput.UiCursor)
+      || (DamagePanelOpen && DamagePanelBounds().Contains(GameInput.UiCursor))));
+
+  private const int MeterChromeHeight = DamageTitleHeight + DamageColumnsHeight + DamageTotalHeight + MeterBottomPadding;
+
+  private static int MeterPanelHeight(int rows)
+    => MeterChromeHeight + Math.Max(1, rows) * HudLayout.DamageRowHeight;
+
+  // Rows a panel can show without running off screen; the quietest ones go first.
+  private static int MaxMeterRows
+    => Math.Max(1, (HudLayout.ContentBottom - 32 - MeterChromeHeight) / HudLayout.DamageRowHeight);
+
+  private static int ClampMeterPanelTop(int y, int height)
+    => Math.Clamp(y, 16, Math.Max(16, HudLayout.ContentBottom - 16 - height));
+
+  private int MeterPanelsLeft => HudLayout.SideMeterButtonWidth + DamagePanelGap;
+
+  private Rectangle CollectionPanelBounds()
   {
-    int rows = Math.Max(1, CountDamageRows());
-    int height = DamageTitleHeight + DamageColumnsHeight + rows * HudLayout.DamageRowHeight + DamageTotalHeight;
-    int bottom = HudLayout.Top - DamagePanelGap;
-    return new Rectangle(HudLayout.DamageButton.Right - HudLayout.DamagePanelWidth, bottom - height,
+    int height = MeterPanelHeight(CountCollectionRows());
+    int centerY = HudLayout.SideMeterCenterY;
+    if (DamagePanelVisible && DamagePanelOpen)
+    {
+      int damageHeight = MeterPanelHeight(CountDamageRows());
+      int combined = height + DamagePanelGap + damageHeight;
+      if (combined <= HudLayout.ContentBottom - 32)
+      {
+        int top = ClampMeterPanelTop(centerY - combined / 2, combined);
+        return new Rectangle(MeterPanelsLeft, top, HudLayout.DamagePanelWidth, height);
+      }
+    }
+    return new Rectangle(MeterPanelsLeft, ClampMeterPanelTop(centerY - height / 2, height),
       HudLayout.DamagePanelWidth, height);
   }
 
+  private Rectangle DamagePanelBounds()
+  {
+    int height = MeterPanelHeight(CountDamageRows());
+    int centerY = HudLayout.SideMeterCenterY;
+    if (CollectionPanelVisible && CollectionPanelOpen)
+    {
+      var collection = CollectionPanelBounds();
+      int stackedTop = collection.Bottom + DamagePanelGap;
+      if (stackedTop + height <= HudLayout.ContentBottom - 16)
+        return new Rectangle(MeterPanelsLeft, stackedTop, HudLayout.DamagePanelWidth, height);
+      return new Rectangle(collection.Right + DamagePanelGap,
+        ClampMeterPanelTop(centerY - height / 2, height), HudLayout.DamagePanelWidth, height);
+    }
+    return new Rectangle(MeterPanelsLeft, ClampMeterPanelTop(centerY - height / 2, height),
+      HudLayout.DamagePanelWidth, height);
+  }
+
+  private Rectangle CollectionPanelCloseButton
+    => GuiSkin.PanelCloseButtonBounds(CollectionPanelBounds(), size: 38, marginX: 20, marginY: 16);
+
   private Rectangle DamagePanelCloseButton
     => GuiSkin.PanelCloseButtonBounds(DamagePanelBounds(), size: 38, marginX: 20, marginY: 16);
+
+  private int CountCollectionRows()
+  {
+    var collection = m_gameState.Collection;
+    int count = 0;
+    for (int row = 0; row < GemCollectionMeter.RowCount; row++)
+      if (GemCollectionMeter.IsRow(row) && collection.ThisRun(row) > 0) count++;
+    return Math.Min(count, MaxMeterRows);
+  }
 
   private int CountDamageRows()
   {
@@ -56,53 +122,84 @@ public partial class UntitledGemGameGameScreen
     int count = 0;
     for (int i = 0; i < PlanetDamageMeter.SourceCount; i++)
       if (damage.ThisRun((PlanetDamageSource)i) > 0) count++;
-    return count;
+    return Math.Min(count, MaxMeterRows);
   }
 
   private void UpdateDamagePanel()
   {
     if (damagePanelGestureCaptured && !GameInput.Mouse.IsButtonDown(MouseButton.Left))
       damagePanelGestureCaptured = false;
-    if (!DamagePanelVisible || !GameplayInputEnabled) return;
+    if (!MeterPanelsVisible || !GameplayInputEnabled) return;
     if (!GameInput.Mouse.WasButtonPressed(MouseButton.Left)) return;
-    if (DamagePanelOpen && DamagePanelCloseButton.Contains(GameInput.UiCursor))
+    var cursor = GameInput.UiCursor;
+
+    if (CollectionPanelVisible && CollectionPanelOpen && CollectionPanelCloseButton.Contains(cursor))
+    {
+      damagePanelGestureCaptured = true;
+      GameMain.CollectionPanelOpen = false;
+      AudioManager.Instance.PlaySound(SoundEvent.WindowClose);
+      return;
+    }
+    if (DamagePanelVisible && DamagePanelOpen && DamagePanelCloseButton.Contains(cursor))
     {
       damagePanelGestureCaptured = true;
       GameMain.DamagePanelOpen = false;
       AudioManager.Instance.PlaySound(SoundEvent.WindowClose);
       return;
     }
-    if (!HudLayout.DamageButton.Contains(GameInput.UiCursor)) return;
-    GameMain.DamagePanelOpen = !GameMain.DamagePanelOpen;
-    AudioManager.Instance.PlaySound(SoundEvent.MenuClick);
-  }
-
-  // Busiest sources first: by damage over the last minute, then over the run.
-  private void SortDamageRows()
-  {
-    var damage = m_gameState.Damage;
-    damageRowCount = 0;
-    for (int i = 0; i < PlanetDamageMeter.SourceCount; i++)
-      if (damage.ThisRun((PlanetDamageSource)i) > 0) damageRows[damageRowCount++] = (PlanetDamageSource)i;
-    // Insertion sort: a handful of rows, and no allocation every frame.
-    for (int i = 1; i < damageRowCount; i++)
+    if (CollectionPanelVisible && CollectionButtonBounds.Contains(cursor))
     {
-      var row = damageRows[i];
-      int j = i - 1;
-      while (j >= 0 && DamageRowBefore(row, damageRows[j]))
-      {
-        damageRows[j + 1] = damageRows[j];
-        j--;
-      }
-      damageRows[j + 1] = row;
+      damagePanelGestureCaptured = true;
+      GameMain.CollectionPanelOpen = !GameMain.CollectionPanelOpen;
+      AudioManager.Instance.PlaySound(SoundEvent.MenuClick);
+      return;
+    }
+    if (DamagePanelVisible && DamageButtonBounds.Contains(cursor))
+    {
+      damagePanelGestureCaptured = true;
+      GameMain.DamagePanelOpen = !GameMain.DamagePanelOpen;
+      AudioManager.Instance.PlaySound(SoundEvent.MenuClick);
     }
   }
 
-  private bool DamageRowBefore(PlanetDamageSource a, PlanetDamageSource b)
+  private void FillCollectionRows()
+  {
+    var collection = m_gameState.Collection;
+    meterRowCount = 0;
+    for (int row = 0; row < GemCollectionMeter.RowCount; row++)
+      if (GemCollectionMeter.IsRow(row))
+        AddMeterRow(GemCollectionMeter.RowName(row), collection.PerMinute(row), collection.ThisRun(row));
+    meterRowCount = Math.Min(meterRowCount, MaxMeterRows);
+  }
+
+  private void FillDamageRows()
   {
     var damage = m_gameState.Damage;
-    double minuteA = damage.PerMinute(a), minuteB = damage.PerMinute(b);
-    return minuteA != minuteB ? minuteA > minuteB : damage.ThisRun(a) > damage.ThisRun(b);
+    meterRowCount = 0;
+    for (int i = 0; i < PlanetDamageMeter.SourceCount; i++)
+    {
+      var source = (PlanetDamageSource)i;
+      AddMeterRow(PlanetDamageMeter.Name(source), damage.PerMinute(source), damage.ThisRun(source));
+    }
+    meterRowCount = Math.Min(meterRowCount, MaxMeterRows);
+  }
+
+  // Inserted in order, busiest first: by the last minute, then by the run. Rows that have
+  // contributed nothing this run stay off the table.
+  private void AddMeterRow(string name, double minute, double run)
+  {
+    if (!(run > 0)) return;
+    int i = meterRowCount++;
+    while (i > 0 && (meterRowMinute[i - 1] != minute ? meterRowMinute[i - 1] < minute : meterRowRun[i - 1] < run))
+    {
+      meterRowNames[i] = meterRowNames[i - 1];
+      meterRowMinute[i] = meterRowMinute[i - 1];
+      meterRowRun[i] = meterRowRun[i - 1];
+      i--;
+    }
+    meterRowNames[i] = name;
+    meterRowMinute[i] = minute;
+    meterRowRun[i] = run;
   }
 
   private static string DamageText(double damage)
@@ -116,93 +213,134 @@ public partial class UntitledGemGameGameScreen
 
   private void DrawDamagePanel()
   {
-    if (!DamagePanelVisible || _renderGuiSystem.DrawingPopout) return;
-    DrawDamageButton();
-    if (!DamagePanelOpen) return;
+    if (!MeterPanelsVisible || _renderGuiSystem.DrawingPopout) return;
+    if (CollectionPanelVisible)
+    {
+      DrawMeterExpanderButton(CollectionButtonBounds, CollectionPanelOpen);
+      if (CollectionPanelOpen)
+        DrawCollectionPanelCard();
+    }
+    if (DamagePanelVisible)
+    {
+      DrawMeterExpanderButton(DamageButtonBounds, DamagePanelOpen);
+      if (DamagePanelOpen)
+        DrawDamagePanelCard();
+    }
+  }
 
+  private void DrawMeterRowProgressBar(Rectangle track, float share, bool activeThisMinute)
+  {
+    share = Math.Clamp(share, 0f, 1f);
+    var pixel = GuiSkin.Pixel(GraphicsDevice);
+    m_spriteBatch.Draw(pixel, track, Color.Black * 0.65f);
+
+    if (share > 0f)
+    {
+      int fillWidth = Math.Max(4, (int)MathF.Round(track.Width * share));
+      var fillRect = new Rectangle(track.X, track.Y, Math.Min(track.Width, fillWidth), track.Height);
+      Color fillColor = activeThisMinute ? GuiSkin.ProgressAccent * 0.85f : GuiSkin.ProgressAccent * 0.45f;
+      m_spriteBatch.Draw(pixel, fillRect, fillColor);
+    }
+
+    m_spriteBatch.Draw(pixel, new Rectangle(track.X, track.Y, track.Width, 1), GuiSkin.BorderColor * 0.35f);
+    m_spriteBatch.Draw(pixel, new Rectangle(track.X, track.Bottom - 1, track.Width, 1), GuiSkin.BorderColor * 0.35f);
+    m_spriteBatch.Draw(pixel, new Rectangle(track.X, track.Y, 1, track.Height), GuiSkin.BorderColor * 0.35f);
+    m_spriteBatch.Draw(pixel, new Rectangle(track.Right - 1, track.Y, 1, track.Height), GuiSkin.BorderColor * 0.35f);
+  }
+
+  private void DrawCollectionPanelCard()
+  {
+    var collection = m_gameState.Collection;
+    FillCollectionRows();
+    DrawMeterTable(CollectionPanelBounds(), CollectionPanelCloseButton, Loc.T("COLLECTION"),
+      Loc.T("No gems collected yet"), collection.TotalPerMinute, collection.TotalThisRun);
+  }
+
+  private void DrawDamagePanelCard()
+  {
     var damage = m_gameState.Damage;
-    SortDamageRows();
-    var bounds = DamagePanelBounds();
-    var closeBtn = DamagePanelCloseButton;
+    FillDamageRows();
+    DrawMeterTable(DamagePanelBounds(), DamagePanelCloseButton, Loc.T("DAMAGE"),
+      Loc.T("No damage yet"), damage.TotalPerMinute, damage.TotalThisRun);
+  }
+
+  // Title, column headings, the total, then the filled rows, each with a bar for its share
+  // of the last minute (or of the run when the last minute was idle).
+  private void DrawMeterTable(Rectangle bounds, Rectangle closeBtn, string title, string emptyText,
+    double minuteTotal, double runTotal)
+  {
     int left = bounds.X + DamagePanelPadding, right = bounds.Right - DamagePanelPadding;
+    int minuteRight = bounds.X + DamageMinuteRight;
     int columns = bounds.Y + DamageTitleHeight;
-    int top = columns + DamageColumnsHeight;
-    double minuteTotal = damage.TotalPerMinute;
+    int totalTop = columns + DamageColumnsHeight;
+    int top = totalTop + DamageTotalHeight;
 
     m_spriteBatch.Begin(transformMatrix: HudLayout.RenderTransform);
     GuiSkin.TechCard(m_spriteBatch, bounds, GuiPalette.Base(new Color(6, 20, 38, 224)), GuiSkin.Accent, cornerGraphic: true, hexWatermark: false);
     GuiSkin.TechDivider(m_spriteBatch, new Rectangle(left, columns - 4, right - left, 3), GuiSkin.Accent * 0.65f);
+    GuiSkin.TechDivider(m_spriteBatch, new Rectangle(left, top - 10, right - left, 3), GuiSkin.Accent * 0.65f);
     GuiSkin.CloseButton(m_spriteBatch, closeBtn, GuiSkin.Accent, GameplayInputEnabled && closeBtn.Contains(GameInput.UiCursor));
-    // Each row's share of the last minute's damage, as a bar under its name.
-    for (int i = 0; i < damageRowCount; i++)
+    for (int i = 0; i < meterRowCount; i++)
     {
       int y = top + i * HudLayout.DamageRowHeight;
-      float share = minuteTotal > 0 ? (float)(damage.PerMinute(damageRows[i]) / minuteTotal) : 0f;
-      m_spriteBatch.Draw(AssetManager.DefaultTexture,
-        new Rectangle(left, y + HudLayout.DamageRowHeight - 8, right - left, 3), GuiSkin.ButtonColor);
-      if (share > 0f)
-        m_spriteBatch.Draw(AssetManager.DefaultTexture,
-          new Rectangle(left, y + HudLayout.DamageRowHeight - 8, Math.Max(2, (int)((right - left) * share)), 3),
-          GuiSkin.Accent * 0.8f);
+      float share = minuteTotal > 0
+        ? (float)(meterRowMinute[i] / minuteTotal)
+        : runTotal > 0 ? (float)(meterRowRun[i] / runTotal) : 0f;
+      DrawMeterRowProgressBar(new Rectangle(left, y + HudLayout.DamageRowHeight - 12, right - left, 8), share,
+        meterRowMinute[i] > 0);
     }
-    int separator = top + Math.Max(1, damageRowCount) * HudLayout.DamageRowHeight + 6;
-    GuiSkin.TechDivider(m_spriteBatch, new Rectangle(left, separator, right - left, 3), GuiSkin.Accent * 0.65f);
     m_spriteBatch.End();
 
-    DrawFittedHudText(Loc.T("DAMAGE"), new Vector2(left, bounds.Y + 18), Math.Max(80, closeBtn.Left - left - 12), 36f, GuiSkin.StatHeadingColor);
+    DrawFittedHudText(title, new Vector2(left, bounds.Y + 18), Math.Max(80, closeBtn.Left - left - 12), 36f, GuiSkin.StatHeadingColor);
     DrawFittedHudText(Loc.T("SOURCE"), new Vector2(left, columns + 6), 200, 24f, GuiSkin.MutedTextColor);
-    DrawRightHudText(Loc.T("PER MIN"), bounds.X + DamageMinuteRight, columns + 6, 24f, GuiSkin.MutedTextColor);
+    DrawRightHudText(Loc.T("PER MIN"), minuteRight, columns + 6, 24f, GuiSkin.MutedTextColor);
     DrawRightHudText(Loc.T("THIS RUN"), right, columns + 6, 24f, GuiSkin.MutedTextColor);
-    if (damageRowCount == 0)
-      DrawFittedHudText(Loc.T("No damage yet"), new Vector2(left, top + 6), right - left, 28f, GuiSkin.MutedTextColor);
-    for (int i = 0; i < damageRowCount; i++)
-    {
-      var source = damageRows[i];
-      float y = top + i * HudLayout.DamageRowHeight + 4;
-      double minute = damage.PerMinute(source);
-      DrawFittedHudText(Loc.T(PlanetDamageMeter.Name(source)), new Vector2(left, y), DamageMinuteRight - DamagePanelPadding - 130,
-        28f, minute > 0 ? GuiSkin.ButtonTextColor : GuiSkin.MutedTextColor);
-      DrawRightHudText(DamageText(minute), bounds.X + DamageMinuteRight, y, 28f,
-        minute > 0 ? GuiSkin.StatValueColor : GuiSkin.MutedTextColor);
-      DrawRightHudText(DamageText(damage.ThisRun(source)), right, y, 28f, GuiSkin.StatHeadingColor);
-    }
-    float total = top + Math.Max(1, damageRowCount) * HudLayout.DamageRowHeight + 16;
+    float total = totalTop + 10;
     DrawFittedHudText(Loc.T("Total"), new Vector2(left, total), 200, 30f, GuiSkin.StatHeadingColor);
-    DrawRightHudText(DamageText(minuteTotal), bounds.X + DamageMinuteRight, total, 30f, GuiSkin.StatValueColor);
-    DrawRightHudText(DamageText(damage.TotalThisRun), right, total, 30f, GuiSkin.StatHeadingColor);
+    DrawRightHudText(DamageText(minuteTotal), minuteRight, total, 30f, GuiSkin.StatValueColor);
+    DrawRightHudText(DamageText(runTotal), right, total, 30f, GuiSkin.StatHeadingColor);
+    if (meterRowCount == 0)
+      DrawFittedHudText(emptyText, new Vector2(left, top + 6), right - left, 28f, GuiSkin.MutedTextColor);
+    for (int i = 0; i < meterRowCount; i++)
+    {
+      float y = top + i * HudLayout.DamageRowHeight + 2;
+      bool active = meterRowMinute[i] > 0;
+      DrawFittedHudText(Loc.T(meterRowNames[i]), new Vector2(left, y), DamageMinuteRight - DamagePanelPadding - 130,
+        28f, active ? GuiSkin.ButtonTextColor : GuiSkin.MutedTextColor);
+      DrawRightHudText(DamageText(meterRowMinute[i]), minuteRight, y, 28f,
+        active ? GuiSkin.StatValueColor : GuiSkin.MutedTextColor);
+      DrawRightHudText(DamageText(meterRowRun[i]), right, y, 28f, GuiSkin.StatHeadingColor);
+    }
   }
 
-  // Laid out like the power cell panel: a title over a status line.
-  private void DrawDamageButton()
+  // Minimal chevron-only toggle tab on the left edge at ship level; no text until expanded.
+  private void DrawMeterExpanderButton(Rectangle button, bool open)
   {
-    var button = HudLayout.DamageButton;
-    bool open = DamagePanelOpen;
     bool hovered = GameplayInputEnabled && button.Contains(GameInput.UiCursor);
-    int padding = HudLayout.ProgressPanelPadding;
-    int contentWidth = button.Width - padding * 2;
+    Color pillFill = hovered
+      ? GuiPalette.Base(new Color(14, 38, 60, 238))
+      : open
+        ? GuiPalette.Base(new Color(9, 28, 46, 224))
+        : GuiPalette.Base(new Color(5, 16, 26, 190));
 
     m_spriteBatch.Begin(transformMatrix: HudLayout.RenderTransform);
-    GuiSkin.Button(m_spriteBatch, button, open || hovered);
-    DrawDamageChevron(new Vector2(button.Right - padding - 12, button.Y + 26), open,
-      hovered ? Color.White : GuiSkin.ButtonTextColor);
+    var pixel = GuiSkin.Pixel(GraphicsDevice);
+    m_spriteBatch.Draw(pixel, button, pillFill);
+    DrawDamageChevron(new Vector2(button.Center.X, button.Center.Y), open,
+      hovered ? Color.White : open ? GuiSkin.ProgressAccent : GuiSkin.ButtonTextColor * 0.85f);
     m_spriteBatch.End();
-
-    DrawFittedHudText(Loc.T("DAMAGE"), new Vector2(button.X + padding, button.Y + 12),
-      contentWidth - 40, 26f, hovered ? Color.White : GuiSkin.StatHeadingColor);
-    DrawFittedHudText(Loc.F("{0} / min", DamageText(m_gameState.Damage.TotalPerMinute)),
-      new Vector2(button.X + padding, button.Y + 46), contentWidth, 26f, GuiSkin.StatValueColor);
   }
 
-  // Pointing up (the way the panel opens) when closed, down when open. Called inside a
+  // Pointing right (the way the panel opens) when closed, left when open. Called inside a
   // SpriteBatch pass.
   private void DrawDamageChevron(Vector2 center, bool open, Color color)
   {
-    const float arm = 15f, thickness = 4f;
-    float tip = open ? MathHelper.PiOver2 : -MathHelper.PiOver2;
-    var pointAt = center + new Vector2(MathF.Cos(tip), MathF.Sin(tip)) * arm * 0.4f;
+    const float arm = 16f, thickness = 3.5f;
+    float tip = open ? MathHelper.Pi : 0f;
+    var pointAt = center + new Vector2(MathF.Cos(tip), MathF.Sin(tip)) * arm * 0.35f;
     for (int side = -1; side <= 1; side += 2)
     {
-      float angle = tip + MathHelper.Pi + side * MathHelper.PiOver4;
+      float angle = tip + MathHelper.Pi + side * 0.55f;
       m_spriteBatch.Draw(AssetManager.DefaultTexture, pointAt, null, color, angle, new Vector2(0f, 0.5f),
         new Vector2(arm, thickness), Microsoft.Xna.Framework.Graphics.SpriteEffects.None, 0f);
     }

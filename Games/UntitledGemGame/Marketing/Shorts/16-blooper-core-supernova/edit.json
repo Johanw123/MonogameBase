@@ -1,5 +1,5 @@
 {
-  "output": "renders/btb_16_blooper-core-supernova.mp4",
+  "output": "renders/btb_16_blooper-core-supernova_v2.mp4",
   "layout": "fullscreen",
   "size": [
     1080,
@@ -17,44 +17,24 @@
   },
   "shots": [
     {
-      "take": "takes/supernova_fracture_v1.mp4",
+      "take": "takes/supernova_fracture_v2.mp4",
       "in": 0.1,
-      "dur": 2.7,
-      "zoom": 1.18,
-      "focus": [
-        0.58,
-        0.5
-      ]
+      "dur": 2.7
     },
     {
-      "take": "takes/supernova_fracture_v1.mp4",
+      "take": "takes/supernova_fracture_v2.mp4",
       "in": 2.8,
-      "dur": 5.0,
-      "zoom": 1.0,
-      "focus": [
-        0.5,
-        0.5
-      ]
+      "dur": 5.0
     },
     {
-      "take": "takes/supernova_fracture_v1.mp4",
+      "take": "takes/supernova_fracture_v2.mp4",
       "in": 7.8,
-      "dur": 4.8,
-      "zoom": 1.12,
-      "focus": [
-        0.58,
-        0.48
-      ]
+      "dur": 4.8
     },
     {
-      "take": "takes/supernova_fracture_v1.mp4",
+      "take": "takes/supernova_fracture_v2.mp4",
       "in": 12.6,
-      "dur": 5.0,
-      "zoom": 1.0,
-      "focus": [
-        0.5,
-        0.5
-      ]
+      "dur": 5.0
     }
   ],
   "texts": [

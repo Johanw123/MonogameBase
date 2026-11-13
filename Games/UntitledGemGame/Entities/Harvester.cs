@@ -46,7 +46,7 @@ namespace UntitledGemGame.Entities
 
     public bool ReturningToHomebase => Type == HarvesterType.Drone
       ? droneExpired || CarryingGemCount >= BaseStats.GetHarvesterCapacity(this)
-      : CarryingGemCount >= ModuleReturnCapacity;
+      : CarryingGemCount >= ModuleReturnCapacity || CalledHomeEarly;
 
     public float TimeAlive = 0;
     internal float? VisualCollectionRangeMultiplier;
@@ -89,7 +89,6 @@ namespace UntitledGemGame.Entities
     public float WakeFlashRemaining;
     public float OverdriveTimeRemaining;
     public int SingularityPickups;
-    private int echoPickups;
     private bool supernovaConsumed;
     public Vector2 ModulePulsePosition;
     public float ModulePulseRadius, ModulePulseRemaining;
@@ -116,12 +115,11 @@ namespace UntitledGemGame.Entities
     public void BeginModuleTrip()
     {
       ulong previousLoadout = moduleLoadout;
-      moduleLoadout = UpgradeManager.Instance.Modules.GetLoadout(Type);
+      moduleLoadout = UpgradeManager.Instance.Modules.GetLoadout(Type) & ~RoleExcludedModules;
       modulesInitialized = true;
       ResetAdditionalModuleTrip(previousLoadout);
       finalSweepConsumed = false;
       supernovaConsumed = false;
-      echoPickups = 0;
       SingularityPickups = 0;
       OverdriveTimeRemaining = 0f;
       CollectionEndpoint = null;
@@ -186,6 +184,8 @@ namespace UntitledGemGame.Entities
 
 
     public Bag<int> ClaimedGems = new Bag<int>(50);
+    // What the claims came from when a module or ability made them, until they resolve.
+    public GemCollectionMethod ClaimsMethod;
 
 
     public bool PositionMoved = false;
@@ -219,17 +219,23 @@ namespace UntitledGemGame.Entities
 
     public uint CarryingGemCount = 0;
     public ulong CarryingGemBaseValue = 0;
+    // The hold's value by how it came in, for the Collection panel (GemCollectionMeter).
+    public readonly CargoCredits Credits = new();
 
     public void ClearCargoForPrestige()
     {
+      ClearFleetTalents();
       CarryingGemCount = 0;
       CarryingGemBaseValue = 0;
+      Credits.Clear();
       ClaimedGems.Clear();
+      ClaimsMethod = GemCollectionMethod.None;
       ReachedHome = false;
       EntangledValueAccumulator = 0;
       echoVaultDeliveries = 0;
       nextOverflowDriveStacks = 0;
       GhostRoute = null;
+      GhostPayout = 0;
       droneRelayUsed = false;
       BeginModuleTrip();
     }
@@ -282,12 +288,6 @@ namespace UntitledGemGame.Entities
         ? AbilityGemValue.AddBonus(gem.BaseValue, SignalStats.SweepValue)
         : gem.BaseValue;
       CarryingGemBaseValue = PrestigeProgression.AddSaturating(CarryingGemBaseValue, pickupValue);
-      if (HasModule(ShipModule.EchoChamber) && ++echoPickups >= ModuleCatalog.EchoInterval)
-      {
-        echoPickups = 0;
-        CarryingGemBaseValue = PrestigeProgression.AddSaturating(CarryingGemBaseValue, (ulong)pickupValue * 2);
-        ShowModulePulse(BoundingCircle.Center, 48f, Color.MediumPurple);
-      }
       ApplyAdditionalCargoModules(pickupValue);
       ++CarryingGemCount;
       if (DroneOverchargeMultiplier > 1f && CarryingGemCount <= 25 && CarryingGemCount % 5 == 0)

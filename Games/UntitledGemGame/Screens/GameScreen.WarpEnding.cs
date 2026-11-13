@@ -30,6 +30,8 @@ public partial class UntitledGemGameGameScreen
   // stop once the ship outruns it.
   private const float WarpClimbHeights = 0.6f;
   private const float WarpCameraStopSeconds = 0.9f;
+  // How long the jump's streak takes to fade.
+  private const float WarpStreakSeconds = 1.2f;
   private static readonly Color WarpColor = new(110, 200, 255);
 
   private bool _warpEscaping;
@@ -247,33 +249,45 @@ public partial class UntitledGemGameGameScreen
     SaveProgress();
   }
 
-  // The drive's glow builds on the ship as it charges and climbs; the jump leaves a
-  // trail from where it fired to the ship, fading as the ship vanishes.
+  // The drive's light builds on the ship as it charges and climbs; the jump leaves a
+  // shock where it fired and a streak after the ship, fading as the ship vanishes
+  // (ModuleEffects.fx).
   private void DrawWarpEscapeEffects()
   {
     if (!_warpEscaping || _endingDialogVisible) return;
     float t = m_prestigeTime;
     var ship = m_homeBaseEntity.Get<Transform2>().Position;
     float charge = Smooth(WarpChargeSeconds, WarpJumpSeconds, t);
-    float glowFade = 1f - Smooth(WarpJumpSeconds, WarpJumpSeconds + 0.25f, t);
-    float pulse = 0.85f + 0.15f * MathF.Sin(t * (10f + 30f * charge));
-    m_shapeBatch.Begin(m_camera.GetViewMatrix(), blendState: BlendState.Additive);
-    if (charge * glowFade > 0f)
+    float power = charge * (1f - Smooth(WarpJumpSeconds, WarpJumpSeconds + 0.25f, t));
+    var effects = WeaponEffects;
+    if (power > 0f)
     {
-      m_shapeBatch.FillCircle(ship, 24f + 70f * charge, WarpColor * (0.35f * charge * glowFade * pulse), 30f);
-      m_shapeBatch.FillCircle(ship, 8f + 20f * charge, Color.White * (0.7f * charge * glowFade * pulse), 8f);
-      m_shapeBatch.BorderCircle(ship, 40f + 50f * charge * pulse, WarpColor * (0.5f * charge * glowFade), 2.5f, 3f);
+      // The core's energy winds into the drive: fields collapse onto the ship one after
+      // another, faster as the charge builds, around a star that swells at its heart.
+      float charging = Math.Max(0f, t - WarpChargeSeconds);
+      float beat = charging * (0.9f + 0.55f * charging);
+      float radius = 70f + 60f * charge;
+      effects.Ring(ship, radius, beat % 1f, WarpColor, ModuleEffectBatch.RingStyle.Collapse, 0.2f, power);
+      effects.Ring(ship, radius * 0.8f, (beat + 0.5f) % 1f, WarpColor, ModuleEffectBatch.RingStyle.Collapse, 0.7f,
+        power * 0.7f);
+      float pulse = 0.85f + 0.15f * MathF.Sin(t * (10f + 30f * charge));
+      effects.Glint(ship, (50f + 110f * charge) * pulse, WarpColor, 0.3f, power);
     }
-    if (t >= WarpJumpSeconds)
+    float since = t - WarpJumpSeconds;
+    if (since >= 0f)
     {
-      float trail = 1f - Smooth(WarpJumpSeconds + 0.1f, WarpJumpSeconds + 1.1f, t);
       var from = _escapeOrigin - new Vector2(0f, WarpShipClimb(WarpJumpSeconds));
-      m_shapeBatch.FillLine(from, ship, 14f * trail, WarpColor * (0.6f * trail), 14f);
-      m_shapeBatch.FillLine(from, ship, 4f * trail, Color.White * trail, 4f);
-      float flash = 1f - Smooth(WarpJumpSeconds, WarpJumpSeconds + 0.5f, t);
-      m_shapeBatch.FillCircle(from, 30f + 160f * (1f - flash), WarpColor * (0.5f * flash), 60f);
+      if (since < WarpStreakSeconds)
+        effects.Lance(from, ship, since / WarpStreakSeconds, WarpColor, 16f, 0.4f);
+      if (since < 0.7f)
+      {
+        effects.Ring(from, 200f, since / 0.7f, WarpColor, ModuleEffectBatch.RingStyle.Burst, 0.6f);
+        effects.Glint(from, 360f * (1f - since / 0.7f), Color.White, 0.6f, 1f - since / 0.7f);
+      }
+      if (since < 1f)
+        effects.Ring(from, 330f, since, WarpColor, ModuleEffectBatch.RingStyle.Shock, 0.3f, 0.6f);
     }
-    m_shapeBatch.End();
+    effects.Draw(m_camera.ViewProjection(), t);
   }
 
   private void DrawWarpEndingHud()

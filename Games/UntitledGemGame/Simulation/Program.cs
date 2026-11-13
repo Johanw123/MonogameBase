@@ -154,6 +154,8 @@ sealed class Simulator
         // Ship system talents need Auxiliary Power, the talent above and enough cells in earlier tiers.
         if (n.Tree == "abilities") return um.ShipSystemsUnlocked && ShipSystems.CanLearn(systemTalents, n.Id);
         if (n.Tree == "meta") return PrestigeTalentLayout.IsUnlocked(talents, n.Id);
+        // Unreleased weapons can't be bought in this version.
+        if (Weaponry.IsUnreleasedNode(n.Id)) return false;
         var d = n.Button.Data;
         bool root = string.IsNullOrEmpty(d.BlockedBy) && string.IsNullOrEmpty(d.LockedBy) && string.IsNullOrEmpty(d.HiddenBy);
         bool unlocked = root || n.Level > 0 || Nodes.Any(p => p.Tree == n.Tree && p.Id == d.BlockedBy && p.Level > 0);
@@ -352,7 +354,7 @@ sealed class Simulator
             int power = MainShipWeapons.FirePower(ug, weapon);
             float rate = MainShipWeapons.FireRate(ug, weapon);
             double gems = MainShipWeapons.GemsPerSecond(ug, weapon, rate, power);
-            double thermal = weapon == MainShipWeapon.Laser && ug.MiningLaserThermalLance ? MainShipWeapons.ThermalLanceValue : 1;
+            double thermal = weapon == MainShipWeapon.Laser ? MainShipWeapons.LaserGemValue(ug) : 1;
             spawn += gems;
             colorValue += gems * GemQualityTable.ExpectedValueMultiplier(power) * thermal;
         }

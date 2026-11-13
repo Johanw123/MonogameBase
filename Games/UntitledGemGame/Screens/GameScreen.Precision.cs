@@ -11,7 +11,8 @@ namespace UntitledGemGame.Screens;
 //  - Hot Streak: each crit raises every weapon's crit chance for a while;
 //  - Critical Mass: each crit queues a free plasma shell at the spot it hit, and those
 //    shells roll crits of their own;
-//  - Jackpot: a rare crit hits a hundred times as hard and shakes the planet;
+//  - Supercritical: a full Hot Streak sets every weapon off, the cannon volley all crits,
+//    and the streak starts over;
 //  - Critical Cascade (a cannon core shard): a critical shell fires another sure crit.
 // Cannon shells roll when fired (RollCriticalShell) and land here through CritLanded;
 // rockets, Railgun rounds and the laser roll on impact (RollCrit); harpoon pulses and arcs
@@ -25,6 +26,7 @@ public partial class UntitledGemGameGameScreen
   private float hotStreakClock;
   private readonly Queue<Vector2> criticalMassTargets = new();
   private float criticalMassTimer;
+  private bool supercriticalPending;
 
   // A weapon hit without a crit chance of its own.
   private int RollCrit(int gems, Vector2 at)
@@ -38,8 +40,7 @@ public partial class UntitledGemGameGameScreen
   // A hit's damage when it crits (Executioner, Lethal Margin).
   private static long CritDamage(long gems) => (long)Math.Min(long.MaxValue, gems * (double)SignalStats.CritMultiplier);
 
-  // Every crit lands here with its critical damage: Hot Streak, Critical Mass and Jackpot
-  // answer it.
+  // Every crit lands here with its critical damage: Hot Streak and Critical Mass answer it.
   private int CritLanded(long damage, Vector2 at)
   {
     var meta = UpgradeManager.Instance.UGM;
@@ -48,29 +49,21 @@ public partial class UntitledGemGameGameScreen
       if (hotStreak.Count >= PrestigeTalentEffects.HotStreakMaxStacks) hotStreak.Dequeue();
       hotStreak.Enqueue(hotStreakClock + PrestigeTalentEffects.HotStreakSeconds);
       PrestigeTalentEffects.HotStreakStacks = hotStreak.Count;
+      // The burst waits for the update: crits land from inside the weapon loops.
+      if (PrestigeTalentEffects.SupercriticalReady(hotStreak.Count)) supercriticalPending = true;
     }
     if (meta.CriticalMass && CombatActive && criticalMassTargets.Count < PrestigeTalentEffects.CriticalMassMaxQueued)
       criticalMassTargets.Enqueue(at);
-    if (PrestigeTalentEffects.Jackpots && Random.Shared.NextSingle() < PrestigeTalentEffects.JackpotChance)
-    {
-      damage = (long)Math.Min(long.MaxValue, damage * (double)PrestigeTalentEffects.JackpotMultiplier / SignalStats.CritMultiplier);
-      JackpotEffects(at);
-    }
     return (int)Math.Min(int.MaxValue, damage);
-  }
-
-  private void JackpotEffects(Vector2 at)
-  {
-    AudioManager.Instance.PlaySound(SoundEvent.WeaponJackpot);
-    PulsePlanet(1f, 1f);
-    planetShake = Math.Max(planetShake, 1f);
-    EmitBlastParticles(at, 3f, Color.Gold, majorEvent: true);
-    SpawnerEffects.Add(null, at, Color.Gold, 10f, 180f, 0.7f);
-    SpawnerEffects.Add(null, PlanetPos, Color.Gold, PlanetRadius, PlanetRadius * 2.4f, 0.8f);
   }
 
   private void UpdatePrecision(float dt)
   {
+    if (supercriticalPending)
+    {
+      supercriticalPending = false;
+      if (CombatActive && PrestigeTalentEffects.SupercriticalReady(hotStreak.Count)) SupercriticalBurst();
+    }
     if (hotStreak.Count == 0) hotStreakClock = 0f;
     else
     {
@@ -95,12 +88,37 @@ public partial class UntitledGemGameGameScreen
     if (gems > 0) LaunchCannonShot(PlanetShotKind.Cannon, CannonMount(), target, gems, firePower);
   }
 
+  // Supercritical: the streak discharges into every weapon at once. The cannon's volley is
+  // sure crits, so the next streak starts as the shells land.
+  private void SupercriticalBurst()
+  {
+    hotStreak.Clear();
+    hotStreakClock = 0f;
+    PrestigeTalentEffects.HotStreakStacks = 0;
+    AudioManager.Instance.PlaySound(SoundEvent.SupercriticalBurst);
+    PulsePlanet(1f, 0.8f);
+    planetShake = Math.Max(planetShake, 0.6f);
+    SpawnerEffects.Add(null, PlanetPos, Color.Gold, PlanetRadius, PlanetRadius * 2.4f, 0.8f);
+    SpawnerEffects.Add(null, HomeBasePos, Color.White, 10f, 120f, 0.5f);
+    ShowWorldPopup(HomeBasePos - Vector2.UnitY * 70f, Loc.T("SUPERCRITICAL!"), large: true);
+    FireAllWeapons(true, 0, arsenal: false);
+    var upgrades = UpgradeManager.Instance.UG;
+    int firePower = SignalStats.FirePower(MainShipWeapon.Cannon);
+    for (int i = 0; i < PrestigeTalentEffects.SupercriticalShells; i++)
+    {
+      int gems = (int)Math.Min(int.MaxValue, AutomaticWeaponYield(firePower, arsenal: false)
+        * (double)(SignalStats.CritMultiplier + upgrades.CannonCritDamage));
+      if (gems <= 0) break;
+      LaunchPlanetShot(PlanetShotKind.Cannon, CannonMount(), AutomaticPlanetTarget(0.9f), gems, firePower, critical: true);
+    }
+  }
+
   // Critical Cascade: a critical cannon shell fires another that is sure to crit.
   private void CascadeShell(PlanetShot shot, float impactAngle)
   {
     if (!UpgradeManager.Instance.UG.CannonCascade || shot.Cascade >= MainShipWeapons.CascadeShells) return;
     int firePower = SignalStats.FirePower(MainShipWeapon.Cannon);
-    int gems = (int)Math.Min(int.MaxValue, CritDamage(AutomaticWeaponYield(firePower, arsenal: false)));
+    int gems = (int)Math.Min(int.MaxValue, AutomaticWeaponYield(firePower, arsenal: false) * (double)(SignalStats.CritMultiplier + UpgradeManager.Instance.UG.CannonCritDamage));
     if (gems <= 0) return;
     float angle = impactAngle + (Random.Shared.NextSingle() * 2f - 1f) * CascadeSpread;
     LaunchPlanetShot(PlanetShotKind.Cannon, CannonMount(), PlanetPos + PlanetDirection(angle) * PlanetRadius * 0.9f,
@@ -114,6 +132,7 @@ public partial class UntitledGemGameGameScreen
     hotStreak.Clear();
     criticalMassTargets.Clear();
     hotStreakClock = criticalMassTimer = 0f;
+    supercriticalPending = false;
     PrestigeTalentEffects.HotStreakStacks = 0;
   }
 }

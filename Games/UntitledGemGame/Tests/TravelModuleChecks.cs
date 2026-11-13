@@ -12,9 +12,9 @@ internal static class TravelModuleChecks
 
   public static void Run()
   {
-    using (var scene = new Scene(ShipModule.ArcEmitter, ShipModule.CascadeCapacitor))
+    using (var scene = new Scene(ShipModule.ArcEmitter))
     {
-      var gems = Enumerable.Range(1, 5).Select(i => scene.AddGem(new Vector2(500 + i * 65, 500))).ToArray();
+      var gems = Enumerable.Range(1, 6).Select(i => scene.AddGem(new Vector2(500 + i * 65, 500))).ToArray();
       var claimed = scene.AddGem(new Vector2(500, 510));
       scene.Prepare();
       scene.Fleet.flatSpatialHash.TryClaim(claimed.GridIndex);
@@ -23,43 +23,37 @@ internal static class TravelModuleChecks
       Check(gems.All(g => !g.PickedUp), "Arc waits for travel threshold");
       scene.Ship.ChargeTravelModules(1f);
       scene.Invoke("ApplyTravelModules", scene.Ship, 0f);
-      Check(gems.Take(4).All(g => g.PickedUp) && !gems[4].PickedUp && !claimed.PickedUp,
-        "Arc hops beyond pickup range, respects reservations and caps at four");
-      Check(scene.Ship.DirectModulePickups == 0 && scene.Ship.CascadeCharges == 4
-        && scene.Ship.StormArcCount == 5, "Travel arcs are visible bonus pulls without recursive direct effects");
+      Check(gems.Take(5).All(g => g.PickedUp) && !gems[5].PickedUp && !claimed.PickedUp,
+        "Arc hops beyond pickup range, respects reservations and caps at five");
+      Check(scene.Ship.Credits[GemCollectionMethod.ArcEmitter] == 150, "Zapped gems are worth triple");
+      Check(scene.Ship.DirectModulePickups == 0 && scene.Ship.StormArcCount == 6, "Travel arcs are visible bonus pulls without recursive direct effects");
       scene.Ship.BeginModuleTrip();
       Check(scene.Ship.ArcTravelCharge == 0, "Trip resets travel charges");
     }
     using (var scene = new Scene(ShipModule.GravityBuoy))
     {
-      var gems = Enumerable.Range(0, 10).Select(i => scene.AddGem(new Vector2(510 + i, 500))).ToArray();
+      var gems = Enumerable.Range(0, 30).Select(i => scene.AddGem(new Vector2(510 + i, 500))).ToArray();
       scene.Prepare();
-      scene.Ship.ChargeTravelModules(180f);
+      scene.Ship.ChargeTravelModules(150f);
       scene.Invoke("ApplyTravelModules", scene.Ship, 0f);
       scene.Ship.SetCollisionPosition(new Vector2(900, 900));
-      scene.Invoke("ApplyTravelModules", scene.Ship, 0.99f);
+      scene.Invoke("ApplyTravelModules", scene.Ship, 0.49f);
       Check(gems.All(g => !g.PickedUp), "Buoy delays its collection");
       scene.Invoke("ApplyTravelModules", scene.Ship, 0.02f);
-      Check(gems.Count(g => g.PickedUp) == 8 && scene.Ship.BuoyRemaining == 0,
-        "Buoy stays behind the moving ship and caps collection at eight");
+      Check(gems.Count(g => g.PickedUp) == 24 && scene.Ship.BuoyRemaining == 0,
+        "Buoy stays behind the moving ship and caps collection at twenty-four");
     }
-    using (var scene = new Scene(ShipModule.RecallTether, ShipModule.ArcEmitter))
+    using (var scene = new Scene(ShipModule.GravityBuoy))
     {
-      scene.Ship.ChargeTravelModules(120f);
-      Check(scene.Ship.RecallTravelCharge == 0, "Outbound travel cannot charge recall");
-      scene.Ship.CarryingGemCount = (uint)BaseStats.GetHarvesterCapacity(scene.Ship);
-      scene.Ship.CollectionEndpoint = scene.Transform.Position;
-      scene.Ship.SetCollisionPosition(new Vector2(900, 900));
-      var gems = Enumerable.Range(0, 5).Select(i => scene.AddGem(new Vector2(510 + i, 500))).ToArray();
-      scene.Prepare();
-      scene.Ship.ChargeTravelModules(120f);
+      scene.Ship.ChargeTravelModules(150f);
       scene.Invoke("ApplyTravelModules", scene.Ship, 0f);
-      Check(gems.Count(g => g.PickedUp) == 3 && scene.Ship.CarryingGemCount > BaseStats.GetHarvesterCapacity(scene.Ship),
-        "Recall collects remotely on return beyond full capacity");
       scene.Ship.BeginModuleTrip();
-      Check(scene.Ship.RecallTravelCharge == 0 && scene.Ship.BuoyRemaining == 0,
-        "New trips cancel pending travel effects");
+      Check(scene.Ship.BuoyTravelCharge == 0 && scene.Ship.BuoyRemaining > 0,
+        "A new trip clears travel charge but leaves a dropped buoy armed");
+      scene.Manager.Modules.TryEquip(0, 0, ShipModule.None);
+      scene.Ship.BeginModuleTrip();
+      Check(scene.Ship.BuoyRemaining == 0, "Unequipping cancels a pending buoy");
     }
-    Console.WriteLine("Travel modules passed: chain range, claims, thresholds, delayed buoys, remote return collection and trip resets.");
+    Console.WriteLine("Travel modules passed: chain range, claims, thresholds, delayed buoys and trip resets.");
   }
 }

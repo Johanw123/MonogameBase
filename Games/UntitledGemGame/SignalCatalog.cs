@@ -48,10 +48,10 @@ public enum SignalKind
   ClickChainRange,
   HoldClickFrequency,
   ClickComboWindow,
-  CursorGravityRadius,
-  CursorGravityStrength,
-  CursorGravityDuration,
-  CursorGravityCooldown
+  TractorBeltRadius,
+  TractorBeltSpeed,
+  TractorBeltDuration,
+  TractorBeltCapacity
 }
 
 public sealed record SignalDefinition(string Name, string Category, string Target, string Icon, bool Reduction)
@@ -109,10 +109,10 @@ public static class SignalCatalog
     new(Loc.N("Arc Conductor"), Loc.N("LEFT CLICK"), Loc.N("Gem Link hop range"), "Textures/scifi_icons/icon_power/12_power.png", false),
     new(Loc.N("Pulse Accelerator"), Loc.N("LEFT CLICK"), Loc.N("held-click frequency"), "Textures/scifi_icons/icon_power/4_power.png", false),
     new(Loc.N("Combo Echo"), Loc.N("LEFT CLICK"), Loc.N("time available to continue a click combo"), "Textures/scifi_icons/icon_arrow/16_arrow.png", false),
-    new(Loc.N("Horizon Lens"), Loc.N("GRAVITY WELL"), Loc.N("mouse gravity well radius"), "Textures/scifi_icons/icon_heal/8_heal.png", false),
-    new(Loc.N("Singularity Core"), Loc.N("GRAVITY WELL"), Loc.N("mouse gravity well pull strength"), "Textures/scifi_icons/icon_power/11_power.png", false),
-    new(Loc.N("Persistent Gravity"), Loc.N("GRAVITY WELL"), Loc.N("mouse gravity well duration"), "Textures/scifi_icons/icon_accuracy/14_accuracy.png", false),
-    new(Loc.N("Singularity Relay"), Loc.N("GRAVITY WELL"), Loc.N("mouse gravity well cooldown"), "Textures/scifi_icons/icon_heal/17_heal.png", true)
+    new(Loc.N("Intake Lens"), Loc.N("TRACTOR BELT"), Loc.N("tractor belt intake radius"), "Textures/scifi_icons/icon_heal/8_heal.png", false),
+    new(Loc.N("Mag-Rail Coils"), Loc.N("TRACTOR BELT"), Loc.N("tractor belt speed"), "Textures/scifi_icons/icon_power/4_power.png", false),
+    new(Loc.N("Belt Capacitors"), Loc.N("TRACTOR BELT"), Loc.N("how long each tractor belt placement runs"), "Textures/scifi_icons/icon_accuracy/14_accuracy.png", false),
+    new(Loc.N("Pod Stackers"), Loc.N("TRACTOR BELT"), Loc.N("gems each tractor belt pod carries"), "Textures/scifi_icons/icon_power/10_power.png", false)
   ];
 
   public static bool IsAvailable(int id)
@@ -150,8 +150,9 @@ public static class SignalCatalog
       SignalKind.ClickChainRange => ug.ClickChainCount > 0,
       SignalKind.HoldClickFrequency => ug.HoldClickEnabled,
       SignalKind.ClickComboWindow => ug.ClickComboBonus > 0,
-      SignalKind.CursorGravityRadius or SignalKind.CursorGravityStrength
-        or SignalKind.CursorGravityDuration or SignalKind.CursorGravityCooldown => ug.CursorGravityEnabled,
+      SignalKind.TractorBeltRadius or SignalKind.TractorBeltSpeed or SignalKind.TractorBeltCapacity => ug.TractorBeltEnabled,
+      // Run time stops mattering once Fixed Installation makes the belt permanent.
+      SignalKind.TractorBeltDuration => ug.TractorBeltEnabled && !ug.TractorBeltPermanent,
       _ => true
     };
   }

@@ -1,5 +1,5 @@
 {
-  "output": "renders/btb_04_core-fracture_v1.mp4",
+  "output": "renders/btb_04_core-fracture_v3.mp4",
   "layout": "fullscreen",
   "size": [
     1080,
@@ -17,17 +17,12 @@
   },
   "shots": [
     {
-      "take": "takes/fracture_v1.mp4",
+      "take": "takes/fracture_v3.mp4",
       "in": 2,
-      "dur": 8,
-      "zoom": 1.6,
-      "focus": [
-        0.75,
-        0.45
-      ]
+      "dur": 8
     },
     {
-      "take": "takes/fracture_v1.mp4",
+      "take": "takes/fracture_v3.mp4",
       "in": 10,
       "dur": 8
     }
@@ -41,7 +36,7 @@
       "pos": 0.16
     },
     {
-      "at": 6.5,
+      "at": 5.5,
       "dur": 3,
       "text": "Collect the Core Shard",
       "size": 72,

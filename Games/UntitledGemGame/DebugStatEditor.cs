@@ -115,7 +115,7 @@ public sealed class DebugStatEditor
   private static string Group(JsonUpgrade stat) => stat.PropertyName switch
   {
     var p when p.StartsWith("Click", StringComparison.Ordinal) || p.StartsWith("HoldClick", StringComparison.Ordinal)
-      || p.StartsWith("CursorGravity", StringComparison.Ordinal) => "Clicking and cursor gravity",
+      || p.StartsWith("TractorBelt", StringComparison.Ordinal) => "Clicking and tractor belt",
     var p when p.StartsWith("AdvancedHarvester", StringComparison.Ordinal)
       || p is "TreasureScanner" or "QuantumCargoHold" => "Fleet: Seekers",
     var p when p.StartsWith("ExpertHarvester", StringComparison.Ordinal)
@@ -142,6 +142,7 @@ public sealed class DebugStatEditor
       => "Weapons: mining laser",
     var p when p.StartsWith("Rocket", StringComparison.Ordinal) => "Weapons: rocket pods",
     var p when p.StartsWith("Railgun", StringComparison.Ordinal) => "Weapons: Railgun",
+    var p when p.StartsWith("Flak", StringComparison.Ordinal) => "Weapons: flak battery",
     var p when p.StartsWith("PassiveIncome", StringComparison.Ordinal) || p.StartsWith("GemValue", StringComparison.Ordinal)
       || p.StartsWith("GemMerger", StringComparison.Ordinal) => "Economy and gem value",
     "MaxGemCount" => "Gem capacity",

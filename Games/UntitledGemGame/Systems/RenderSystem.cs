@@ -33,17 +33,33 @@ namespace UntitledGemGame.Systems
       ColorEnd = colorEnd;
     }
   }
-  public class RenderSystem : EntityDrawSystem
+  public partial class RenderSystem : EntityDrawSystem
   {
     private readonly SpriteBatch _spriteBatch;
     private readonly Transform2 _collectorDrawTransform = new Transform2();
     private readonly ShapeBatch _shapeBatch;
     private readonly GraphicsDevice _graphicsDevice;
     private readonly SdfLineRenderer _entanglementLineRenderer;
+    private readonly ModuleEffectBatch _moduleEffects;
     private OrthographicCamera m_camera;
 
     private const int MaxEntanglementPulsesPerFrame = 8;
     private static readonly Vector2[] FinalSweepRingPoints = CreateFinalSweepRingPoints();
+
+    // A ring around the hull that fills with the hold, so a quiet carrier reads as loading.
+    private void DrawCarrierHold(Harvester carrier)
+    {
+      var center = carrier.BoundingCircle.Center;
+      float radius = BaseStats.GetHarvesterBaseCollectionRange(carrier) * (carrier.VisualCollectionRangeMultiplier ?? 1f) + 12f;
+      int filled = (int)MathF.Round(carrier.HoldFill * (FinalSweepRingPoints.Length - 1));
+      var previous = center + FinalSweepRingPoints[0] * radius;
+      for (int segment = 1; segment < FinalSweepRingPoints.Length; segment++)
+      {
+        var next = center + FinalSweepRingPoints[segment] * radius;
+        _shapeBatch.FillLine(previous, next, 0.1f, segment <= filled ? Color.Gold * 0.8f : Color.White * 0.12f, 2.5f);
+        previous = next;
+      }
+    }
 
     private static Vector2[] CreateFinalSweepRingPoints()
     {
@@ -88,6 +104,7 @@ namespace UntitledGemGame.Systems
         BaseGlowPadding = 10f,
         PulseExtraPadding = 8f
       };
+      _moduleEffects = new ModuleEffectBatch(graphicsDevice);
       m_camera = camera;
     }
 
@@ -181,100 +198,24 @@ namespace UntitledGemGame.Systems
           && harvester.ReturningToHomebase && UntitledGemGameGameScreen.HomeBasePos != Vector2.Zero)
         {
           // _shapeBatch.DrawLine(harvester.Bounds.Position, harvester.TargetScreenPosition.Value, 0.1f, Color.AliceBlue, Color.White, 1, 1.5f);
-          _shapeBatch.FillLine(harvester.BoundingCircle.Center, UntitledGemGameGameScreen.HomeBasePos, 0.1f, new Color(0.2f, 0.1f, 0.9f, 0.4f), 3.0f);
+          _shapeBatch.FillLine(harvester.BoundingCircle.Center, harvester.DockPosition, 0.1f, new Color(0.2f, 0.1f, 0.9f, 0.4f), 3.0f);
         }
 
-        if (harvester != null && harvester.TractorFlashRemaining > 0f)
-          _shapeBatch.FillLine(harvester.TractorOrigin, harvester.TractorTarget, 0.1f,
-            Color.Cyan * (harvester.TractorFlashRemaining / 0.25f), 2f);
-        if (harvester != null && harvester.WakeFlashRemaining > 0f)
-          _shapeBatch.FillLine(harvester.WakeStart, harvester.WakeEnd, 0.1f,
-            Color.LightCyan * 0.25f, ModuleCatalog.WakeRadius * 2f);
-
-        if (harvester != null && harvester.OverdriveTimeRemaining > 0f)
-          _shapeBatch.FillLine(transform.Position, transform.Position - new Vector2(
-            MathF.Cos(transform.Rotation - MathHelper.PiOver2), MathF.Sin(transform.Rotation - MathHelper.PiOver2)) * 32f, 0.1f,
-            Color.Orange * (0.6f * harvester.OverdriveTimeRemaining / ModuleCatalog.OverdriveDuration), 5f);
-
-        if (harvester != null && harvester.HasModule(ShipModule.WorldEater))
+        if (harvester != null)
         {
-          var center = harvester.BoundingCircle.Center;
-          _shapeBatch.FillCircle(center, harvester.WorldEaterRadius, Color.MediumPurple * 0.12f, 4f);
-          _shapeBatch.FillCircle(center, 22f + harvester.WorldEaterPickups * 0.25f, Color.Black * 0.9f, 5f);
-          for (int ray = 0; ray < 8; ray++)
-          {
-            float angle = harvester.ModuleTripAge * 2f + ray * MathHelper.TwoPi / 8f;
-            var direction = new Vector2(MathF.Cos(angle), MathF.Sin(angle));
-            _shapeBatch.FillLine(center + direction * 32f, center + direction * harvester.WorldEaterRadius,
-              0.1f, Color.MediumPurple * 0.35f, 2f);
-          }
-        }
-        if (harvester != null && harvester.ThunderFlashRemaining > 0f)
-          foreach (var arc in harvester.ThunderArcs)
-          {
-            var middle = (arc.Start + arc.End) * 0.5f + new Vector2(8f, -12f);
-            var color = Color.LightCyan * (harvester.ThunderFlashRemaining / ModuleCatalog.PulseDuration);
-            _shapeBatch.FillLine(arc.Start, middle, 0.1f, color, 4f);
-            _shapeBatch.FillLine(middle, arc.End, 0.1f, color, 4f);
-          }
-        if (harvester?.GhostRoute != null)
-        {
-          _shapeBatch.FillLine(harvester.GhostPreviousPosition, harvester.GhostPosition, 0.1f, Color.Cyan * 0.4f, 10f);
-          _shapeBatch.FillCircle(harvester.GhostPosition, 18f, Color.Cyan * 0.5f, 3f);
-          _shapeBatch.FillLine(harvester.GhostPosition + new Vector2(-12, 12),
-            harvester.GhostPosition + new Vector2(0, -18), 0.1f, Color.White * 0.6f, 3f);
-          _shapeBatch.FillLine(harvester.GhostPosition + new Vector2(0, -18),
-            harvester.GhostPosition + new Vector2(12, 12), 0.1f, Color.White * 0.6f, 3f);
+          DrawFleetTalentEffects(harvester, transform);
+          QueueModuleEffects(harvester, transform);
         }
 
-        if (harvester != null && harvester.BuoyRemaining > 0f)
-          _shapeBatch.FillCircle(harvester.BuoyPosition, 12f + (1f - harvester.BuoyRemaining) * 20f,
-            Color.MediumPurple * 0.4f, 2f);
-
-        if (harvester != null && harvester.StormArcRemaining > 0f)
-          for (int arc = 1; arc < harvester.StormArcCount; arc++)
-            _shapeBatch.FillLine(harvester.StormArcPoints[arc - 1], harvester.StormArcPoints[arc], 0.1f,
-              Color.LightSkyBlue * (harvester.StormArcRemaining / ModuleCatalog.PulseDuration), 3f);
-
-        if (harvester != null && harvester.RelayFlashRemaining > 0f)
-          _shapeBatch.FillLine(harvester.RelayOrigin, UntitledGemGameGameScreen.HomeBasePos, 0.1f,
-            Color.Gold * (harvester.RelayFlashRemaining / ModuleCatalog.PulseDuration), 3f);
-
-        if (harvester != null && harvester.ModulePulseRemaining > 0f)
-        {
-          float progress = 1f - harvester.ModulePulseRemaining / ModuleCatalog.PulseDuration;
-          bool collapsing = harvester.ModulePulseColor == Color.MediumPurple;
-          float radius = harvester.ModulePulseRadius * (collapsing ? 1f - progress : MathHelper.Lerp(0.1f, 1f, progress));
-          var color = harvester.ModulePulseColor * (0.8f * (1f - progress));
-          var previous = harvester.ModulePulsePosition + FinalSweepRingPoints[0] * radius;
-          for (int segment = 1; segment < FinalSweepRingPoints.Length; segment++)
-          {
-            var next = harvester.ModulePulsePosition + FinalSweepRingPoints[segment] * radius;
-            _shapeBatch.FillLine(previous, next, 0.1f, color, 3f);
-            previous = next;
-          }
-        }
-
-        if (harvester != null && harvester.FinalSweepTimeRemaining > 0f)
-        {
-          float progress = 1f - harvester.FinalSweepTimeRemaining / BaseStats.DroneFinalSweepDurationSeconds;
-          float radius = harvester.FinalSweepRadius * MathHelper.Lerp(0.25f, 1f, progress);
-          var color = Color.LightCyan * (0.5f * (1f - progress));
-          var previous = harvester.FinalSweepPosition + FinalSweepRingPoints[0] * radius;
-          for (int segment = 1; segment < FinalSweepRingPoints.Length; segment++)
-          {
-            var next = harvester.FinalSweepPosition + FinalSweepRingPoints[segment] * radius;
-            _shapeBatch.FillLine(previous, next, 0.1f, color, 1.5f);
-            previous = next;
-          }
-        }
+        if (harvester is { IsCarrier: true })
+          DrawCarrierHold(harvester);
 
         if (harvester != null && harvester.WarpDriveFlashTimeRemaining > 0f)
         {
           float progress = 1f - harvester.WarpDriveFlashTimeRemaining / BaseStats.WarpDriveFlashDurationSeconds;
           float radius = Math.Max(20f, BaseStats.GetHarvesterBaseCollectionRange(harvester) * 2f);
-          DrawWarpFlash(harvester.WarpDriveDeparturePosition, radius, progress, arriving: false);
-          DrawWarpFlash(harvester.WarpDriveArrivalPosition, radius, progress, arriving: true);
+          QueueWarpFlash(harvester.WarpDriveDeparturePosition, radius, progress, arriving: false);
+          QueueWarpFlash(harvester.WarpDriveArrivalPosition, radius, progress, arriving: true);
         }
 
         // Share the pickup multiplier with both hull and engines, without changing
@@ -283,7 +224,8 @@ namespace UntitledGemGame.Systems
         if (harvester != null)
         {
           float baseRange = BaseStats.GetHarvesterBaseCollectionRange(harvester);
-          float targetSize = baseRange > 0f ? BaseStats.GetHarvesterCollectionRange(harvester) / baseRange : 1f;
+          float targetSize = (baseRange > 0f ? BaseStats.GetHarvesterCollectionRange(harvester) / baseRange : 1f)
+            * harvester.HullScale;
           float visualSize = harvester.VisualCollectionRangeMultiplier.HasValue
             ? MathHelper.Lerp(harvester.VisualCollectionRangeMultiplier.Value, targetSize, sizeBlend)
             : targetSize;
@@ -363,11 +305,9 @@ namespace UntitledGemGame.Systems
         var line = entry.Value;
         if (line != null)
         {
-          // _shapeBatch.FillLine(line.Start, line.End,
-          //   Math.Max(line.Thickness, 0.5f), line.ColorStart, 0.5f);
-          _shapeBatch.FillLine(line.Start, line.End, line.Thickness, line.ColorStart, 1.5f);
+          // A lean beam from the gem to where it is pulled: hundreds of them meet at the ship.
+          _moduleEffects.Beam(line.Start, line.End, 0f, line.ColorStart, 0.7f, entry.Key * 0.137f, 0.9f, lean: 1f);
           renderedChainLines++;
-          // _shapeBatch.FillLine(harvester.BoundingCircle.Center, UntitledGemGameGameScreen.HomeBasePos, 0.1f, new Color(0.2f, 0.1f, 0.9f, 0.4f), 3.0f);
         }
       }
 
@@ -379,6 +319,17 @@ namespace UntitledGemGame.Systems
 
       _spriteBatch.End();
       _shapeBatch.End();
+
+      // Over the hulls, like the shapes they replace.
+      // Tidal Pull: the home base's tide, a ring collapsing onto it.
+      var tide = UpdateSystem2.Instance;
+      if (tide != null && tide.TidalPullFlashRemaining > 0f)
+        _moduleEffects.Ring(UntitledGemGameGameScreen.HomeBasePos, UpdateSystem2.TidalPullRadius,
+          1f - tide.TidalPullFlashRemaining / UpdateSystem2.TidalPullFlash, new Color(90, 200, 255),
+          ModuleEffectBatch.RingStyle.Collapse, 0.37f, 0.6f);
+      _moduleEffects.Draw(m_camera.ViewProjection(), (float)gameTime.TotalGameTime.TotalSeconds);
+
+      DrawTractorTailGems();
 
       // Draw warnings over hulls and module effects, independent of atlas outline width.
       _shapeBatch.Begin(m_camera.GetViewMatrix());
@@ -441,14 +392,16 @@ namespace UntitledGemGame.Systems
       float flash = net.Age - ConstellationNet.Windup - ConstellationNet.CollapseDuration;
       if (flash >= 0f)
       {
-        DrawWarpFlash(net.Destination, 70f, flash / ConstellationNet.FlashDuration, true);
+        QueueWarpFlash(net.Destination, 70f, flash / ConstellationNet.FlashDuration, true);
         return;
       }
       float charge = Math.Clamp(net.Age / ConstellationNet.Windup, 0f, 1f);
       float pull = net.PullProgress;
-      float shimmer = 0.8f + 0.2f * MathF.Sin(net.Age * 35f);
-      var glow = new Color(90, 110, 255) * (0.65f * shimmer);
-      var core = Color.Lerp(Color.Cyan, Color.White, charge) * 0.95f;
+      // The outline is stitched star to star, brightening from indigo to white as it charges.
+      var thread = Color.Lerp(new Color(90, 130, 255), new Color(150, 225, 255), charge);
+      var star = Color.Lerp(Color.Cyan, Color.White, charge);
+      // As the net collapses its stars land on one spot, so they shrink and dim on the way in.
+      float spread = 1f - pull;
       int count = net.Hull.Length;
       for (int i = 0; i < count; ++i)
       {
@@ -456,15 +409,10 @@ namespace UntitledGemGame.Systems
         var end = Vector2.Lerp(net.Hull[(i + 1) % count], net.Destination, pull);
         float stitch = Math.Clamp(charge * count - i, 0f, 1f);
         if (stitch <= 0f) continue;
-        var stitchedEnd = Vector2.Lerp(start, end, stitch);
-        _shapeBatch.FillLine(start, stitchedEnd, 3f, glow, 5f);
-        _shapeBatch.FillLine(start, stitchedEnd, 0.9f, core, 1.5f);
-        float starSize = 3f + 3f * charge;
-        _shapeBatch.FillLine(start - Vector2.UnitX * starSize, start + Vector2.UnitX * starSize, 1f, core, 2f);
-        _shapeBatch.FillLine(start - Vector2.UnitY * starSize, start + Vector2.UnitY * starSize, 1f, core, 2f);
+        _moduleEffects.Beam(start, Vector2.Lerp(start, end, stitch), 0f, thread, 1.8f, i * 0.31f, 0.3f + 0.7f * spread, lean: 0.5f);
+        _moduleEffects.Glint(start, (22f + 16f * charge) * (0.4f + 0.6f * spread), star, i * 0.17f, 0.25f + 0.75f * spread);
       }
-      // Three bright pulses race around the completed outline. Captures use a
-      // bounded set of flickering sparks, not hundreds of extra chain lines.
+      // Three bright pulses race around the completed outline.
       if (charge >= 1f)
       {
         for (int pulse = 0; pulse < 3; ++pulse)
@@ -473,47 +421,14 @@ namespace UntitledGemGame.Systems
           int edge = (int)along;
           var point = Vector2.Lerp(net.Hull[edge], net.Hull[(edge + 1) % count], along - edge);
           point = Vector2.Lerp(point, net.Destination, pull);
-          _shapeBatch.FillLine(point - Vector2.One * 3f, point + Vector2.One * 3f, 2f, Color.White, 3f);
+          _moduleEffects.Glint(point, 26f * (0.4f + 0.6f * spread), Color.White, pulse * 0.33f, 0.25f + 0.75f * spread, 0f, new Vector2(1f, 1f));
         }
       }
+      // The gems it has caught twinkle inside it.
       for (int i = 0; i < net.Sparks.Length; ++i)
       {
         var point = Vector2.Lerp(net.Sparks[i], net.Destination, pull);
-        float twinkle = 0.5f + 0.5f * MathF.Sin(net.Age * 24f + i * 2.4f);
-        var color = Color.Cyan * (twinkle * charge);
-        _shapeBatch.FillLine(point - Vector2.UnitX * 2f, point + Vector2.UnitX * 2f, 0.8f, color, 2f);
-        _shapeBatch.FillLine(point - Vector2.UnitY * 2f, point + Vector2.UnitY * 2f, 0.8f, color, 2f);
-      }
-    }
-
-    private void DrawWarpFlash(Vector2 position, float size, float progress, bool arriving)
-    {
-      // A collapsing departure portal and expanding arrival flash share the
-      // cached ring geometry. Both stay anchored to the actual teleport sites.
-      float fade = (1f - progress) * (1f - progress);
-      float radius = size * (arriving
-        ? MathHelper.Lerp(0.2f, 1.4f, progress)
-        : MathHelper.Lerp(1f, 0.15f, progress));
-      var glow = (arriving ? Color.Cyan : new Color(155, 100, 255)) * (0.45f * fade);
-      var core = new Color(220, 245, 255) * (0.85f * fade);
-      var previous = position + FinalSweepRingPoints[0] * radius;
-      for (int i = 1; i < FinalSweepRingPoints.Length; i++)
-      {
-        var next = position + FinalSweepRingPoints[i] * radius;
-        _shapeBatch.FillLine(previous, next, 2f, glow, 4f);
-        _shapeBatch.FillLine(previous, next, 0.7f, core, 1.5f);
-        previous = next;
-      }
-
-      // Short radial streaks give the blink a bright, magical burst without
-      // drawing a distracting line across the entire teleport distance.
-      for (int i = 0; i < 32; i += 4)
-      {
-        var direction = FinalSweepRingPoints[i];
-        float reach = size * (i % 8 == 0 ? 1.1f : 0.7f) * (1f - progress * 0.5f);
-        var end = position + direction * reach;
-        _shapeBatch.FillLine(position, end, 2f, glow, 4f);
-        _shapeBatch.FillLine(position, end, 0.7f, core, 1.5f);
+        _moduleEffects.Glint(point, 12f, Color.Cyan, i * 0.21f, charge * spread, 1f);
       }
     }
 

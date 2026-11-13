@@ -24,8 +24,6 @@ namespace Apos.Shapes {
 
             GenerateIndexArray();
 
-            _vertexBuffer = new DynamicVertexBuffer(_graphicsDevice, typeof(VertexShape), _vertices.Length, BufferUsage.WriteOnly);
-
             _indexBuffer = new IndexBuffer(_graphicsDevice, IndexElementSize.ThirtyTwoBits, _indices.Length, BufferUsage.WriteOnly);
             _indexBuffer.SetData(_indices);
 
@@ -787,10 +785,7 @@ namespace Apos.Shapes {
             _viewProjection.SetValue(_view * _projection);
 
             if (_indicesChanged) {
-                _vertexBuffer.Dispose();
                 _indexBuffer.Dispose();
-
-                _vertexBuffer = new DynamicVertexBuffer(_graphicsDevice, typeof(VertexShape), _vertices.Length, BufferUsage.WriteOnly);
 
                 GenerateIndexArray();
 
@@ -803,8 +798,11 @@ namespace Apos.Shapes {
             // UntitledGemGame: upload only this batch's vertices and let the driver orphan the old
             // storage (upstream does the same from 0.7.0). Rewriting the whole array in place made
             // every End() wait for the GPU to finish the previous batch.
-            _vertexBuffer.SetData(_vertices, 0, _vertexCount, SetDataOptions.Discard);
-            _graphicsDevice.SetVertexBuffer(_vertexBuffer);
+            // Discard orphans the whole buffer, so each batch uses the smallest power-of-two
+            // buffer that holds it: one huge batch must not make every small one reallocate it.
+            DynamicVertexBuffer vertexBuffer = VertexBufferFor(_vertexCount);
+            vertexBuffer.SetData(_vertices, 0, _vertexCount, SetDataOptions.Discard);
+            _graphicsDevice.SetVertexBuffer(vertexBuffer);
 
             _graphicsDevice.Indices = _indexBuffer;
 
@@ -824,6 +822,14 @@ namespace Apos.Shapes {
             _triangleCount = 0;
             _vertexCount = 0;
             _indexCount = 0;
+        }
+        private DynamicVertexBuffer VertexBufferFor(int vertexCount) {
+            int capacity = (int)System.Numerics.BitOperations.RoundUpToPowerOf2((uint)Math.Max(vertexCount, _minimumBufferVertices));
+            if (!_vertexBuffers.TryGetValue(capacity, out DynamicVertexBuffer? buffer)) {
+                buffer = new DynamicVertexBuffer(_graphicsDevice, typeof(VertexShape), capacity, BufferUsage.WriteOnly);
+                _vertexBuffers[capacity] = buffer;
+            }
+            return buffer;
         }
         private float ScreenToWorldScale() {
             return Vector2.Distance(ScreenToWorld(0f, 0f), ScreenToWorld(1f, 0f));
@@ -927,7 +933,9 @@ namespace Apos.Shapes {
         private int _vertexCount = 0;
         private int _indexCount = 0;
 
-        private DynamicVertexBuffer _vertexBuffer;
+        // UntitledGemGame: vertex buffers by capacity (powers of two); see VertexBufferFor.
+        private readonly System.Collections.Generic.Dictionary<int, DynamicVertexBuffer> _vertexBuffers = new();
+        private const int _minimumBufferVertices = 1024;
         private IndexBuffer _indexBuffer;
 
         private BlendState _blendState = null!;

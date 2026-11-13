@@ -28,6 +28,12 @@ Scripts are in `scripts/` next to this file. Run them with `python3`.
   planet's world position relative to already-spawned gems, placing gems on top
   of the planet. Keep `CameraZoomScale` and scene `zoom` constant within each
   take; do any push-in or pull-out in `edit.json` (`zoom` / `zoom_end`).
+- **Show the ship and the whole planet.** Portrait world shots use
+  `"frame_planet": 0.46` in the scene, and the edit keeps them at `zoom` 1
+  (at most a slight push). A punch-in that crops the ship or half the planet
+  makes the shot confusing: the viewer cannot tell what the game is.
+- **First person singular.** The user is a solo developer: captions and posting
+  copy say "I" and "my", never "we" or "our".
 - **Keep harvesters active (use infinite fuel for behavior showcases).** Enable
   auto-refuel in showcase scenes with `"stats": {"AutoRefuel": true}`. When
   showcasing harvester movement, classes, or collection behavior (where fuel is
@@ -84,15 +90,16 @@ Scripts are in `scripts/` next to this file. Run them with `python3`.
    payoff cut on a drop and cuts on bars/beats.
 
 7. **Edit.** Write `edit.json` (`references/editing.md`): shots from takes
-   (in point, duration, punch-in/push, slow motion), text, end card, music,
+   (in point, duration, punch-in/push, slow motion, speed ramps), text, end card, music,
    game audio. `python3 scripts/render_short.py edit.json --fast` for a quick
    look, then without `--fast` for the final. Read the `.sheet.jpg` it writes.
 
 8. **Review** before calling it done: the hook frame is strong; text readable at
    phone size and inside the safe zone (nothing important in the bottom 20% or
    right 12%); no dead frames at cuts; numbers match the log; ends on the
-   CTA or loops; render check passed (size, duration, audio, -14 LUFS). Tell
-   the user what is staged.
+   CTA or loops; render check passed (size, frame count, repeated and black
+   frames, audio, -14 LUFS, true peak; `references/editing.md`). Read any
+   `note:` lines. Tell the user what is staged.
 
 9. **Optional finishing in Resolve:** `render_short.py edit.json --resolve`
    writes `<render>.resolve/plan.json` for the `resolve-game-video` skill (takes

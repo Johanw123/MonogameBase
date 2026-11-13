@@ -1,5 +1,5 @@
 {
-  "output": "../takes/hud_tour_v1.mp4",
+  "output": "../takes/hud_tour_v2.mp4",
   "preset": "Late game: production",
   "width": 3840,
   "height": 2160,
@@ -21,7 +21,7 @@
     "modules": [
       "Thunder God",
       "Rocket Rack",
-      "Laser Uplink",
+      "Siege Cannon",
       "Gravity Buoy"
     ],
     "upgrades": {

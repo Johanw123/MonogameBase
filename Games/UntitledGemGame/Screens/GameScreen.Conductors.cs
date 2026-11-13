@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
 
 namespace UntitledGemGame.Screens;
 
@@ -15,17 +14,22 @@ namespace UntitledGemGame.Screens;
 public partial class UntitledGemGameGameScreen
 {
   private static readonly Color ConductorGlow = new(150, 205, 255);
-  private static readonly Color ConductorCore = new(235, 245, 255);
-  private const float ConductorSlugLength = 16f;
+  private const float ConductorSlugLength = 19f;
+  private const float ConductorSlugHalfWidth = 2.3f;
+  // A slug lands white hot and cools to bare steel.
+  private const float ConductorCoolSeconds = 2.5f;
 
-  // Where each lodged slug sits on the rim, oldest first.
-  private readonly List<float> conductorSlugs = new();
+  // A lodged slug: where on the rim it sits, and when it landed (in planetAge).
+  private readonly record struct ConductorSlug(float Angle, float Landed);
+
+  // Oldest first.
+  private readonly List<ConductorSlug> conductorSlugs = new();
 
   private void LodgeConductorSlug(float impactAngle)
   {
     if (!UpgradeManager.Instance.UG.RailgunConductor) return;
     if (conductorSlugs.Count >= MainShipWeapons.ConductorSlugs) conductorSlugs.RemoveAt(0);
-    conductorSlugs.Add(impactAngle);
+    conductorSlugs.Add(new ConductorSlug(impactAngle, planetAge));
   }
 
   private Vector2 ConductorSlugPoint(float angle) => PlanetPos + PlanetDirection(angle) * PlanetRadius * 0.9f;
@@ -45,9 +49,10 @@ public partial class UntitledGemGameGameScreen
     }
 
     if (!upgrades.RailgunConductor) return;
-    int shed = (int)MathF.Ceiling(pulseGems * MainShipWeapons.ConductorShare);
-    foreach (float angle in conductorSlugs)
+    int shed = (int)MathF.Ceiling(pulseGems * MainShipWeapons.RailgunConductorDamage(UpgradeManager.Instance.UG));
+    foreach (var lodged in conductorSlugs)
     {
+      float angle = lodged.Angle;
       var slug = ConductorSlugPoint(angle);
       var anchor = NearestHarpoonAnchor(slug);
       var fromCenter = anchor - PlanetPos;
@@ -62,20 +67,25 @@ public partial class UntitledGemGameGameScreen
 
   private void ClearConductors() => conductorSlugs.Clear();
 
-  // A lodged slug juts out of the rim, glowing as it holds charge.
-  private void DrawConductorSlugs(float feather)
+  // A lodged slug juts out of the rim: a steel rod that lands white hot, quivers and cools,
+  // and lights up from its root to its tail as each pulse runs through it (ModuleEffects.fx).
+  private void DrawConductorSlugs()
   {
     if (conductorSlugs.Count == 0) return;
-    float flash = harpoonPulseFlash / HarpoonPulseFlashSeconds;
-    m_shapeBatch.Begin(m_camera.GetViewMatrix(), blendState: BlendState.Additive);
-    foreach (float angle in conductorSlugs)
+    float charge = harpoonPulseFlash / HarpoonPulseFlashSeconds;
+    var effects = WeaponEffects;
+    for (int i = 0; i < conductorSlugs.Count; i++)
     {
-      var direction = PlanetDirection(angle);
-      var root = ConductorSlugPoint(angle);
-      var tip = root + direction * ConductorSlugLength;
-      m_shapeBatch.FillLine(root, tip, 5f, ConductorGlow * (0.35f + 0.5f * flash), Math.Max(feather, 3f));
-      m_shapeBatch.FillLine(root, tip, 1.8f, ConductorCore * (0.7f + 0.3f * flash), feather);
+      var slug = conductorSlugs[i];
+      float age = planetAge - slug.Landed;
+      if (age < 0f) age = ConductorCoolSeconds;
+      // It quivers about where it went in, like an arrow.
+      float quiver = MathF.Sin(age * 46f) * MathF.Exp(-age * 7f) * 0.2f;
+      var root = ConductorSlugPoint(slug.Angle);
+      var tail = root + PlanetDirection(slug.Angle + quiver) * ConductorSlugLength;
+      effects.Slug(root, tail, age / ConductorCoolSeconds, charge, ConductorGlow, ConductorSlugHalfWidth,
+        slug.Angle * 0.37f + i * 0.21f);
     }
-    m_shapeBatch.End();
+    effects.Draw(m_camera.ViewProjection(), planetAge);
   }
 }

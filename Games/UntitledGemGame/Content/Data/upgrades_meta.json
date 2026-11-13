@@ -76,14 +76,25 @@
       "icon": "Textures/scifi_icons/icon_arrow/16_arrow.png"
     },
     {
+      "name": "Belt Network",
+      "propname": "BeltNetwork",
+      "shortname": "BNW",
+      "type": "bool",
+      "currency": "purple",
+      "base": "false",
+      "tooltip": "Run twice as many tractor belts at once.",
+      "tooltip_extra": "Two belts, or four with Branch Line. Needs the Tractor Belt upgrade.",
+      "icon": "Textures/scifi_icons/icon_arrow/15_arrow.png"
+    },
+    {
       "name": "Combined Arms",
       "propname": "CombinedArms",
       "shortname": "CA",
       "type": "bool",
       "currency": "purple",
       "base": "false",
-      "tooltip": "Each automatic weapon you own boosts all of them by 20%.",
-      "tooltip_extra": "With all four weapons online, each produces 60% more gems.",
+      "tooltip": "Each extra automatic weapon boosts all of them by 20%.",
+      "tooltip_extra": "With all five automatic weapons online, each produces 80% more gems.",
       "icon": "Textures/scifi_icons/icon_power/12_power.png"
     },
     {
@@ -323,16 +334,6 @@
       "icon": "Textures/scifi_icons/icon_accuracy/14_accuracy.png"
     },
     {
-      "name": "Phase Logistics",
-      "propname": "HarvestersInstantCollection",
-      "shortname": "HICM",
-      "type": "bool",
-      "base": "false",
-      "tooltip": "Ships send every gem straight home at 75% value, skipping return trips.",
-      "currency": "purple",
-      "icon": "Textures/scifi_icons/icon_misc/15_misc.png"
-    },
-    {
       "name": "Ability Slot",
       "propname": "AbilitySlot",
       "shortname": "AS",
@@ -358,7 +359,7 @@
       "shortname": "MS",
       "type": "int",
       "base": "2",
-      "tooltip": "One more module slot for every ship type, up to 4.",
+      "tooltip": "Two more module slots for every ship type.",
       "currency": "purple",
       "icon": "Textures/scifi_icons/icon_shield/4_shield.png"
     },
@@ -399,54 +400,10 @@
       "shortname": "MCR",
       "type": "float",
       "base": "1",
-      "tooltip": "Doubles your click radius and the gravity well's radius.",
+      "tooltip": "Doubles your click radius and the tractor belt's intake.",
       "tooltip_extra": "Stacks with run upgrades and signals.",
       "currency": "purple",
       "icon": "Textures/scifi_icons/icon_accuracy/14_accuracy.png"
-    },
-    {
-      "name": "Quantum Touch",
-      "propname": "QuantumTouch",
-      "shortname": "MHF",
-      "type": "bool",
-      "base": "false",
-      "tooltip": "Each click also collects up to 32 gems at the mirrored spot across the middle of the screen.",
-      "tooltip_extra": "Works with Sustained Harvest. Mirrored pickups don't repeat Gem Link or shockwaves.",
-      "currency": "purple",
-      "icon": "Textures/scifi_icons/icon_power/4_power.png"
-    },
-    {
-      "name": "Event Horizon",
-      "propname": "CursorGravityEventHorizon",
-      "shortname": "MGS",
-      "type": "bool",
-      "base": "false",
-      "tooltip": "The gravity well's core harvests gems at double click value.",
-      "tooltip_extra": "Requires Gravity Well in the run tree.",
-      "currency": "purple",
-      "icon": "Textures/scifi_icons/icon_power/11_power.png"
-    },
-    {
-      "name": "Gravity Mastery",
-      "propname": "CursorGravityMobile",
-      "shortname": "MGD",
-      "type": "bool",
-      "base": "false",
-      "tooltip": "Hold right-click to steer the gravity well. Its core harvests gems at double click value.",
-      "tooltip_extra": "Requires Gravity Well in the run tree.",
-      "currency": "purple",
-      "icon": "Textures/scifi_icons/icon_power/13_power.png"
-    },
-    {
-      "name": "Singularity Collapse",
-      "propname": "CursorGravityCollapse",
-      "shortname": "MGF",
-      "type": "bool",
-      "base": "false",
-      "tooltip": "The gravity well detonates when it ends, harvesting up to 128 gems at triple click value.",
-      "tooltip_extra": "Requires Gravity Well in the run tree. Canceling the well doesn't detonate it.",
-      "currency": "purple",
-      "icon": "Textures/scifi_icons/icon_heal/17_heal.png"
     },
     {
       "name": "Planet Cracker Core",
@@ -664,7 +621,7 @@
       "currency": "purple",
       "base": "false",
       "tooltip": "For 3 seconds after each Railgun round, gems you collect by hand are worth three times as much.",
-      "tooltip_extra": "Counts clicks and the gravity well. Requires Railgun in the run tree.",
+      "tooltip_extra": "Requires Railgun in the run tree.",
       "icon": "Textures/scifi_icons/icons_hexagon/2_hexagon.png"
     },
     {
@@ -707,7 +664,7 @@
       "type": "bool",
       "currency": "purple",
       "base": "false",
-      "tooltip": "Every weapon hit has a 5% chance to crit for five times the damage.",
+      "tooltip": "Every weapon hit has a 10% chance to crit for five times the damage.",
       "tooltip_extra": "Adds to Critical Shells and Galvanic Shock. Crit chance from every source stacks.",
       "icon": "Textures/scifi_icons/icon_ranger/3_ranger.png"
     },
@@ -721,6 +678,17 @@
       "tooltip": "Each crit adds 1% crit chance to every weapon for 4 seconds, stacking up to 50%.",
       "tooltip_extra": "Needs crits to get going: Deadeye, Critical Shells or Galvanic Shock.",
       "icon": "Textures/scifi_icons/icon_heal/11_heal.png"
+    },
+    {
+      "name": "Fault Cells",
+      "propname": "FaultCells",
+      "shortname": "FCL",
+      "type": "bool",
+      "currency": "purple",
+      "base": "false",
+      "tooltip": "Every core fracture also throws out two power cells.",
+      "tooltip_extra": "Spend them on ship system talents. The more damage you deal, the more fractures you get.",
+      "icon": "Textures/scifi_icons/icon_power/6_power.png"
     },
     {
       "name": "Critical Mass",
@@ -745,15 +713,48 @@
       "icon": "Textures/scifi_icons/icon_skull/10_skull.png"
     },
     {
-      "name": "Jackpot",
-      "propname": "Jackpot",
-      "shortname": "JKP",
+      "name": "Mothership Protocol",
+      "propname": "MothershipProtocol",
+      "shortname": "MSP",
       "type": "bool",
       "currency": "purple",
       "base": "false",
-      "tooltip": "One crit in fifty is a jackpot: a hundred times the damage, and the whole planet shakes.",
-      "tooltip_extra": "Counts every crit, from every weapon.",
-      "icon": "Textures/scifi_icons/icon_heal/5_heal.png"
+      "tooltip": "Each ship type combines into one large carrier with a swarm of collection shuttles. Shuttles fill its hold, and the carrier makes huge deliveries.",
+      "tooltip_extra": "Three fuel-free shuttles per ship. Effects that fire on delivery trigger far less often, but Cargo Catapult fires faster.",
+      "icon": "Textures/scifi_icons/icon_snipe/15_snipe.png"
+    },
+    {
+      "name": "Supercritical",
+      "propname": "Supercritical",
+      "shortname": "SCR",
+      "type": "bool",
+      "currency": "purple",
+      "base": "false",
+      "tooltip": "When Hot Streak reaches 50 stacks, every weapon fires at once, the cannon volley is all crits, and the streak starts over.",
+      "tooltip_extra": "Requires Hot Streak. Needs crits to get going: Deadeye, Critical Shells or Galvanic Shock.",
+      "icon": "Textures/scifi_icons/icon_ranger/18_ranger.png"
+    },
+    {
+      "name": "Chaos Theory",
+      "propname": "ChaosTheory",
+      "shortname": "CHT",
+      "type": "bool",
+      "currency": "purple",
+      "base": "false",
+      "tooltip": "Every 60 seconds one weapon goes chaotic for 10 seconds: each of its hits also lands as another weapon's hit, with that weapon's specials.",
+      "tooltip_extra": "The borrowed weapon can be one you don't own yet. Borrowed hits deal the chaotic weapon's damage.",
+      "icon": "Textures/scifi_icons/icon_misc/2_misc.png"
+    },
+    {
+      "name": "Ouroboros",
+      "propname": "Ouroboros",
+      "shortname": "OUR",
+      "type": "bool",
+      "currency": "purple",
+      "base": "false",
+      "tooltip": "Every prestige point you have ever earned adds 2% weapon damage, spent or not.",
+      "tooltip_extra": "Points earned this run count as soon as they condense.",
+      "icon": "Textures/scifi_icons/icon_arrow/9_arrow.png"
     },
     {
       "name": "Fault Seeding",
@@ -839,7 +840,7 @@
       "type": "bool",
       "currency": "purple",
       "base": "false",
-      "tooltip": "Your fleet stays docked. Clicks and the gravity well collect five times the value, and your shots hit five times as hard.",
+      "tooltip": "Your fleet stays docked. Clicks collect five times the value, and your shots hit five times as hard.",
       "tooltip_extra": "Fleet upgrades and the Shipyard do nothing. Drones still fly.",
       "icon": "Textures/scifi_icons/icon_misc/10_misc.png"
     },
@@ -861,7 +862,7 @@
       "type": "bool",
       "currency": "purple",
       "base": "false",
-      "tooltip": "Core fractures need half as much damage per minute.",
+      "tooltip": "Core fractures need 40% less damage per minute.",
       "tooltip_extra": "More fractures mean more Core Shards.",
       "icon": "Textures/scifi_icons/icon_heart/2_heart.png"
     },
@@ -927,6 +928,39 @@
       "base": "false",
       "tooltip": "Every talent you learn in this tier makes gems worth more.",
       "icon": "Textures/scifi_icons/icon_misc/17_misc.png"
+    },
+    {
+      "name": "Tractor Tails",
+      "propname": "TractorTails",
+      "shortname": "TT",
+      "type": "bool",
+      "currency": "purple",
+      "base": "false",
+      "tooltip": "Returning fleet ships tow extra gems outside their holds: 25% of cargo capacity, with a minimum of 3.",
+      "tooltip_extra": "Towed gems receive delivery bonuses and count toward Cargo Catapult. Shuttles bring them to their carrier.",
+      "icon": "Textures/scifi_icons/icon_power/10_power.png"
+    },
+    {
+      "name": "Drop Pods",
+      "propname": "DropPods",
+      "shortname": "DPD",
+      "type": "bool",
+      "currency": "purple",
+      "base": "false",
+      "tooltip": "Once per trip, a fleet ship with a full hold launches it home as a pod and keeps collecting.",
+      "tooltip_extra": "The pod counts as a delivery. Shuttles do not launch pods.",
+      "icon": "Textures/scifi_icons/icon_power/9_power.png"
+    },
+    {
+      "name": "Perpetual Reactor",
+      "propname": "InfiniteFleetFuel",
+      "shortname": "IFF",
+      "type": "bool",
+      "currency": "purple",
+      "base": "false",
+      "tooltip": "Fleet harvesters have infinite fuel and never stop to refuel.",
+      "tooltip_extra": "Completes Fuel Tanks, Fleet Refuel, Dockside Reclamation and Emergency Autopilot for free each run.",
+      "icon": "Textures/scifi_icons/icon_power/21_power.png"
     }
   ]
 }

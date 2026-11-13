@@ -151,17 +151,18 @@ public partial class UntitledGemGameGameScreen
     float direction = ParticleOutwardAngle(shot.End);
     bool rail = shot.Kind == PlanetShotKind.Rail;
     bool rocket = shot.Kind == PlanetShotKind.Rocket;
+    bool flak = shot.Kind == PlanetShotKind.Flak;
     bool major = rail || (rocket && !shot.Mini);
-    int count = rail ? 220 : rocket ? (shot.Mini ? 48 : 128) : shot.Critical ? 80
+    int count = rail ? 220 : rocket ? (shot.Mini ? 48 : 128) : flak ? 14 : shot.Critical ? 80
       : shot.Kind == PlanetShotKind.Manual ? 40 : 24;
-    Color hot = rail ? new Color(160, 230, 255) : shot.Critical ? new Color(255, 235, 140) : new Color(255, 185, 65);
-    AddMiningImpact(shot.End, hot, rail ? 2f : rocket && !shot.Mini ? 1.5f : shot.Critical ? 1.3f : .85f);
+    Color hot = rail ? new Color(160, 230, 255) : flak ? new Color(255, 170, 50) : shot.Critical ? new Color(255, 235, 140) : new Color(255, 185, 65);
+    AddMiningImpact(shot.End, hot, rail ? 2f : rocket && !shot.Mini ? 1.5f : flak ? 0.45f : shot.Critical ? 1.3f : .85f);
     EmitGameplayParticles(new GpuParticleBurst(shot.End, count, hot)
     {
-      Direction = direction, Spread = rail ? 0.65f : rocket ? 2.5f : 1.9f,
-      Speed = rail ? new(150, 330) : rocket ? new(65, 190) : new(45, shot.Critical ? 170 : 115),
-      Size = rail ? new(0.45f, 1f) : new(0.4f, 0.95f),
-      Lifetime = new(0.16f, rail ? 0.6f : 0.45f), Radius = rocket ? 5f : 2f, Streak = true
+      Direction = direction, Spread = rail ? 0.65f : rocket ? 2.5f : flak ? 2.2f : 1.9f,
+      Speed = rail ? new(150, 330) : rocket ? new(65, 190) : flak ? new(35, 95) : new(45, shot.Critical ? 170 : 115),
+      Size = rail ? new(0.45f, 1f) : flak ? new(0.3f, 0.7f) : new(0.4f, 0.95f),
+      Lifetime = new(0.16f, rail ? 0.6f : flak ? 0.35f : 0.45f), Radius = rocket ? 5f : 2f, Streak = true
     }, majorEvent: major);
     EmitGameplayParticles(new GpuParticleBurst(shot.End, Math.Max(6, count / 3), rail ? RailGlow : new Color(255, 90, 20))
     {

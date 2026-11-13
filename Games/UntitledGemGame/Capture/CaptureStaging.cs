@@ -30,12 +30,18 @@ internal static class Staging
     // This run's points are on the ladder too.
     save.PrestigePointsEarned = Math.Max(save.PrestigePointsEarned, save.PendingPrestigePoints);
     if (wanted.PrestigeEcho is double echo) save.PrestigeEcho = PrestigeProgression.SanitizeEcho(echo);
+    if (wanted.Extractions is int extractions) save.CoreExtractions = (ulong)Math.Max(0, extractions);
     if (wanted.ActiveGems is int active)
     {
       save.ActiveGemCount = Math.Max(0, active);
       save.CreatedInitialGems = true;
     }
     SetLevels(upgrades.UpgradeButtons, save.Upgrades, wanted.Upgrades);
+    // Like the presets, a staged ship carries the weapons it owns; in play a bought blueprint
+    // waits in inventory until it is dragged onto a hardpoint.
+    foreach (var tab in Weaponry.Tabs)
+      if (tab.Weapon != MainShipWeapon.Cannon && save.Upgrades.GetValueOrDefault(tab.Root) > 0)
+        save.Weapons.TryAutoFit(tab.Weapon);
     SetLevels(upgrades.UpgradeButtonsAbilities, save.Abilities, wanted.Abilities);
     SetLevels(upgrades.UpgradeButtonsMeta, save.Meta, wanted.Meta);
     if (wanted.Equip != null)
@@ -87,6 +93,11 @@ internal static class Staging
     {
       UnlockMeta(upgrades, save, "SYU1");
       save.Modules.StartSalvage(new Random(42));
+      // A scene's fit replaces the preset's whole loadout, so a take shows only what it names.
+      var fitted = wanted.Fit.Values.SelectMany(names => names).Select(Actions.Slug).ToList();
+      if (fitted.Count != fitted.Distinct().Count())
+        throw new ArgumentException("A module is fitted twice: each module is unique");
+      Array.Clear(save.Modules.Slots);
       foreach (var (type, names) in wanted.Fit)
       {
         int typeIndex = Array.FindIndex(ModuleCatalog.Types, t => Actions.Slug(t.ToString()).StartsWith(Actions.Slug(type)));
@@ -97,14 +108,11 @@ internal static class Staging
         {
           int index = Array.FindIndex(ModuleCatalog.Names, n => Actions.Slug(n) == Actions.Slug(names[slot]));
           if (index <= 0) throw new ArgumentException($"Unknown module {names[slot]} (see --capture-list)");
-          if (save.Modules.Slots.Contains((ShipModule)index))
-            throw new ArgumentException($"{names[slot]} is fitted twice: each module is unique");
           save.Modules.Owned.Add((ShipModule)index);
           save.Modules.Slots[typeIndex * ModuleCatalog.MaxSlotsPerType + slot] = (ShipModule)index;
         }
-        // Slots past the base two need the Module Bays ranks.
-        if (names.Count > ModuleCatalog.BaseSlotsPerType)
-          save.Meta["MS1"] = Math.Max(save.Meta.GetValueOrDefault("MS1"), names.Count - ModuleCatalog.BaseSlotsPerType);
+        // Slots past the base two need the Module Bays talent.
+        if (names.Count > ModuleCatalog.BaseSlotsPerType) save.Meta["MS1"] = 1;
       }
       DebugProgressionPresets.RepairDiscoveryTarget(save.Modules);
     }

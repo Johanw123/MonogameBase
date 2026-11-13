@@ -39,6 +39,7 @@ namespace UntitledGemGame
         if (PrestigeTalentLayout.IsFreeReward(id)) node.CurrentLevel = 0;
       RefreshRestoredTree(buttons, CurrentUpgrades.UpgradeJointsMeta);
       ApplyExpandSpace();
+      SyncWeaponrySlots();
       HideTooltip();
       UntitledGemGameGameScreen.Instance?.SaveProgress();
       return true;

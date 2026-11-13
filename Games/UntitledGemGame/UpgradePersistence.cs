@@ -43,26 +43,65 @@ namespace UntitledGemGame
 
     }
 
+    // Free run upgrades remain earned if the talent is later unlearned.
+    public void CompleteObsoleteFuelUpgrades()
+    {
+      if (!UGM.InfiniteFleetFuel) return;
+      bool changed = false;
+      foreach (var button in CurrentUpgrades.UpgradeButtons.Values)
+      {
+        if (button.Data.UpgradeDefinition.ShortName is not ("FMF" or "FR" or "RH" or "AR")) continue;
+        while (button.CurrentLevel < button.Data.NumLevels)
+        {
+          ApplyUpgradeEffect(button.Data, button.Data.LevelInfo[button.CurrentLevel++]);
+          changed = true;
+        }
+      }
+      if (changed) RefreshRestoredTree(CurrentUpgrades.UpgradeButtons, CurrentUpgrades.UpgradeJoints);
+    }
+
     public void CaptureProgress(GameSave save)
     {
       save.HarvesterUnlockAchievements = new(harvesterUnlockAchievements);
       save.Upgrades = CaptureLevels(CurrentUpgrades.UpgradeButtons);
       save.Abilities = CaptureLevels(CurrentUpgrades.UpgradeButtonsAbilities);
       save.Meta = CaptureLevels(CurrentUpgrades.UpgradeButtonsMeta);
+      save.Weapons = m_gameState.Weapons.Clone();
     }
 
     private static Dictionary<string, int> CaptureLevels(Dictionary<string, UpgradeButton> buttons)
       => buttons.Where(pair => pair.Value.CurrentLevel > 0)
         .ToDictionary(pair => pair.Key, pair => pair.Value.CurrentLevel);
 
+    public bool IsWeaponBlueprintUnlocked(MainShipWeapon weapon)
+    {
+      if (weapon == MainShipWeapon.Cannon) return true;
+      if (!Weaponry.IsAvailable(weapon)) return false;
+      string root = Weaponry.ForWeapon(weapon).Root;
+      return CurrentUpgrades.UpgradeButtons.TryGetValue(root, out var button) && button.CurrentLevel > 0;
+    }
+
+    public void SyncWeaponrySlots()
+    {
+      m_gameState.Weapons.SyncWithUnlockedBlueprints(IsWeaponBlueprintUnlocked);
+      UG.MiningLaser = IsWeaponBlueprintUnlocked(MainShipWeapon.Laser) && m_gameState.Weapons.IsFitted(MainShipWeapon.Laser);
+      UG.ArcHarpoon = IsWeaponBlueprintUnlocked(MainShipWeapon.Harpoon) && m_gameState.Weapons.IsFitted(MainShipWeapon.Harpoon);
+      UG.RocketPods = IsWeaponBlueprintUnlocked(MainShipWeapon.Rockets) && m_gameState.Weapons.IsFitted(MainShipWeapon.Rockets);
+      UG.Railgun = IsWeaponBlueprintUnlocked(MainShipWeapon.Railgun) && m_gameState.Weapons.IsFitted(MainShipWeapon.Railgun);
+      UG.FlakBattery = IsWeaponBlueprintUnlocked(MainShipWeapon.Flak) && m_gameState.Weapons.IsFitted(MainShipWeapon.Flak);
+    }
+
     // Called after all three trees have initialized their base values.
     // Apply only upgrade effects: loading must not spend currency, refund points, or trigger prestige.
     public void RestoreProgress(GameSave save)
     {
       harvesterUnlockAchievements = new(save.HarvesterUnlockAchievements);
+      m_gameState.Weapons = (save.Weapons ?? new WeaponryLoadout()).Clone();
       RestoreTree(CurrentUpgrades.UpgradeButtons, CurrentUpgrades.UpgradeJoints, save.Upgrades);
       RestoreTree(CurrentUpgrades.UpgradeButtonsAbilities, CurrentUpgrades.UpgradeJointsAbilities, save.Abilities);
       RestoreTree(CurrentUpgrades.UpgradeButtonsMeta, CurrentUpgrades.UpgradeJointsMeta, save.Meta);
+      CompleteObsoleteFuelUpgrades();
+      SyncWeaponrySlots();
       foreach (var button in CurrentUpgrades.UpgradeButtons.Values
         .Concat(CurrentUpgrades.UpgradeButtonsAbilities.Values).Concat(CurrentUpgrades.UpgradeButtonsMeta.Values))
       {
@@ -121,6 +160,9 @@ namespace UntitledGemGame
       }
       if (affected.Contains("SYU") && UGM.ShipyardUnlocked) Modules.StartSalvage(Random.Shared);
       RefreshRestoredTree(buttons, joints);
+      if (ReferenceEquals(buttons, CurrentUpgrades.UpgradeButtons)
+        || ReferenceEquals(buttons, CurrentUpgrades.UpgradeButtonsMeta))
+        SyncWeaponrySlots();
       ApplyExpandSpace();
       HideTooltip();
     }
@@ -149,6 +191,7 @@ namespace UntitledGemGame
         UGM.Reset(button.Data.UpgradeDefinition.ShortName);
       }
       RefreshRestoredTree(buttons, CurrentUpgrades.UpgradeJointsMeta);
+      SyncWeaponrySlots();
       ApplyExpandSpace();
       HideTooltip();
       UntitledGemGameGameScreen.Instance?.SaveProgress();
@@ -219,7 +262,12 @@ namespace UntitledGemGame
             ? UpgradeButton.UnlockState.Unlocked : UpgradeButton.UnlockState.Revealed;
         bool root = string.IsNullOrEmpty(data.HiddenBy) && string.IsNullOrEmpty(data.LockedBy)
           && string.IsNullOrEmpty(data.BlockedBy);
-        if (!fixedLayout && (root || Purchased(data.BlockedBy)))
+        if (!fixedLayout && Weaponry.IsInTree(data.ShortName))
+        {
+          if (Purchased("HB"))
+            state = (root || Purchased(data.BlockedBy)) ? UpgradeButton.UnlockState.Unlocked : UpgradeButton.UnlockState.Revealed;
+        }
+        else if (!fixedLayout && (root || Purchased(data.BlockedBy)))
           state = UpgradeButton.UnlockState.Unlocked;
         else if (!fixedLayout && Purchased(data.LockedBy))
           state = UpgradeButton.UnlockState.Revealed;

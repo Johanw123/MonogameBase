@@ -1,5 +1,5 @@
 {
-  "output": "renders/btb_15_blooper-thruster-soup.mp4",
+  "output": "renders/btb_15_blooper-thruster-soup_v2.mp4",
   "layout": "fullscreen",
   "size": [
     1080,
@@ -17,44 +17,24 @@
   },
   "shots": [
     {
-      "take": "takes/thruster_overdrive_v1.mp4",
+      "take": "takes/thruster_overdrive_v2.mp4",
       "in": 1.6,
-      "dur": 1.8,
-      "zoom": 1.12,
-      "focus": [
-        0.54,
-        0.5
-      ]
+      "dur": 1.8
     },
     {
-      "take": "takes/thruster_overdrive_v1.mp4",
+      "take": "takes/thruster_overdrive_v2.mp4",
       "in": 3.4,
-      "dur": 4.6,
-      "zoom": 1.0,
-      "focus": [
-        0.5,
-        0.5
-      ]
+      "dur": 4.6
     },
     {
-      "take": "takes/thruster_overdrive_v1.mp4",
+      "take": "takes/thruster_overdrive_v2.mp4",
       "in": 8.0,
-      "dur": 4.5,
-      "zoom": 1.0,
-      "focus": [
-        0.5,
-        0.5
-      ]
+      "dur": 4.5
     },
     {
-      "take": "takes/thruster_overdrive_v1.mp4",
+      "take": "takes/thruster_overdrive_v2.mp4",
       "in": 12.5,
-      "dur": 5.3,
-      "zoom": 1.0,
-      "focus": [
-        0.5,
-        0.5
-      ]
+      "dur": 5.3
     }
   ],
   "texts": [

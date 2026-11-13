@@ -479,7 +479,7 @@ public partial class RenderGuiSystem
     var title = WrapTooltipText(Loc.F("SLOT {0} / LOCKED", slot + 1),
       width - TooltipLayout.Padding * 2, TooltipLayout.TitleSize);
     DrawTooltipHeader(batch, new Rectangle(x, y, width, height), title, null, GuiSkin.LockedTextColor);
-    ShipyardLabel(Loc.F("Module Bays rank {0}", slot - ModuleCatalog.BaseSlotsPerType + 1),
+    ShipyardLabel(Loc.T("Module Bays"),
       new Vector2(x + 24, y + 86), 26, GuiSkin.StatHeadingColor);
     ShipyardLabel(Loc.T("Unlock in the meta upgrade tree"), new Vector2(x + 24, y + 128), 22, GuiSkin.MutedTextColor);
   }

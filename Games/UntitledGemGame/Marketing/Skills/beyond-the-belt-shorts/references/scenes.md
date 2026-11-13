@@ -45,7 +45,7 @@ Comments (`//`) and trailing commas are allowed (also in edit files).
 |---|---|---|
 | `output` | required | `.mp4`, relative to the scene file. Writes `<name>.capture.json` beside it. |
 | `width`, `height` | 2160, 3840 | Output size. The world always renders at the pixel area of a 4K screen in this aspect (9:16 -> 2160x3840, 1:1 -> 2880x2880), so framing does not depend on output size; smaller outputs are scaled down. |
-| `fps` | 60 | 120 for slow motion (play at `speed: 0.5`). |
+| `fps` | 60 | Slow motion needs the edit's fps divided by the slowest speed: 120 for `speed: 0.5`, 240 for 0.25 (`speed` and `ramp` in `references/editing.md`). |
 | `time_scale` | 1 | Time-lapse: the game simulates N real steps per recorded frame (6 = six times speed; label it on screen). `duration` and action times are footage seconds. |
 | `warmup` | 6 | Simulated seconds before recording. The landing intro + logo take ~3.5 s; ≥5 s skips them. `0` records the intro (a good hook). |
 | `warmup_render_interval` | 1 | Draw only every Nth simulation step during warmup. All simulation steps and actions still run, and the final warmup second renders normally to settle effects and HUD layout. Useful for naturally filling a gem field on software renderers. Recorded frames are unaffected. |
@@ -55,6 +55,7 @@ Comments (`//`) and trailing commas are allowed (also in edit files).
 | `stats` | | Raw stat values by short or property name (`"CameraZoomScale": 2.0`, `"HCE": true`), applied after loading, like the debug stat sliders. Kept on top of later upgrades. |
 | `auto_fractures` | true | `false` stops damage from setting off core fractures on its own (weapon showcases deal plenty); the `fracture` action still works. |
 | `zoom` | 1 | Multiplies the camera zoom after loading. Gameplay happens in the camera view, so zooming in also makes the play area smaller and denser; zooming out gives more space. |
+| `frame_planet` | | Portrait framing: the planet's width as a share of the frame width (`0.46`). Sets the camera zoom from the staged planet's size (never closer than 3) and puts the ship just inside the left edge and the whole planet inside the right edge. Use it on every portrait world shot instead of `stats.CameraZoomScale`: the game spaces ship and planet for 16:9, so a grown late-game planet is otherwise half off the frame. `zoom` still multiplies the result. |
 | `hud` | false | Compose the real HUD over the world. Needs a 16:9 size (renders 3840x2160). For upgrade trees, shipyard, signals. |
 | `hud_inset` | false | Keep gems out of the HUD strip even without a HUD. Off: the whole frame is play area. |
 | `main_menu` | false | Record the title screen from the moment it appears (the fleet warping in) instead of a staged session; `preset`, `save` and `stats` are ignored. Use `hud: true` to include the logo and buttons, and `warmup: 0` to catch the arrival. |
@@ -62,7 +63,7 @@ Comments (`//`) and trailing commas are allowed (also in edit files).
 | `quality` | 16 | CQ/CRF; lower is better. Takes are intermediates, keep it high. |
 | `stills` | | Seconds of recorded footage to also save as lossless PNGs beside the take (`<take>_<t>s.png`, full capture size): store screenshots from the same frames the video gets. |
 | `benchmark` | false | Measure instead of record: no video, the game runs unthrottled and `<name>.capture.json` gets a `benchmark` block (frame/update/draw times, GC, draw calls, every frame's time). Stills still work; their frames and the two after them are left out of the timings. Used by `benchmark.sh` with the scenes in `tools/benchmark/scenes`. |
-| `autoplay` | | A stand-in player for pacing playthroughs (Capture/Autoplay.cs): `click_rate` (3/s; shards first, the planet while the cannon is manual or the field is thin, else gem clusters), `shop_every` (10 s; Core Shard upgrades, then the cheapest affordable upgrade or power cell, then system talents), `planet_share` (0.15), `extract` (`never`, `points` with `points`, or `stall`: no new point for `stall_minutes` after `min_run_minutes`), `loops` (max extractions), `shards` (Core Shard upgrades to buy, in order, and only those; `[]` buys none; unset uses its own priority, then any). After an extraction it learns talents (highest open tier first) and starts the next run. Logs `point`, `shard`, `buy`, `command`, `extract`, `talent` and `run` events, and `idle` for a shopping round that bought nothing (id: the cheapest open upgrade, its price and the gems held, or `none`). Use with `benchmark: true`, a small size and a high `time_scale` (60 plays 4 hours in about 10 minutes); start from the `Beginning` preset for a fresh save. |
+| `autoplay` | | A stand-in player for pacing playthroughs (Capture/Autoplay.cs): `click_rate` (3/s; shards first, the planet while the cannon is manual or the field is thin, else gem clusters), `shop_every` (10 s; Core Shard upgrades, then the cheapest affordable upgrade or power cell, then system talents), `planet_share` (0.15), `extract` (`never`, `points` with `points`, or `stall`: no new point for `stall_minutes` after `min_run_minutes`, and at least `min_points` pending, default 0, so `1` plays a pointless run on instead of extracting it), `loops` (max extractions), `shards` (Core Shard upgrades to buy, in order, and only those; `[]` buys none; unset uses its own priority, then any). After an extraction it learns talents (highest open tier first) and starts the next run. Logs `point`, `shard`, `buy`, `command`, `extract`, `talent` and `run` events, and `idle` for a shopping round that bought nothing (id: the cheapest open upgrade, its price and the gems held, or `none`). Use with `benchmark: true`, a small size and a high `time_scale` (60 plays 4 hours in about 10 minutes); start from the `Beginning` preset for a fresh save. |
 
 ## save
 
@@ -70,11 +71,12 @@ Comments (`//`) and trailing commas are allowed (also in edit files).
 |---|---|
 | `gems`, `earned_this_run`, `ability_points`, `prestige_points` | Currencies (numbers, `1e12` ok). `earned_this_run` defaults to at least `gems` (manual abilities unlock from it). |
 | `prestige_earned`, `prestige_pending`, `prestige_echo` | The prestige ladder: points ever earned (each raises the next one's income bar), this run's unpaid points (the extraction panel's `+N`) and the dim part of its bar remembered from earlier loops (`0`–`1`). Presets set `prestige_earned` to their permanent budget. |
+| `extractions` | Core extractions so far. From the first one on, learned talents grant Gem Lore and Expand Space (presets with permanent points set it; `Beginning` has 0). |
 | `active_gems` | Gems on the field at load. |
 | `upgrades`, `abilities`, `meta` | `{id: level}` per tree; level is a number or `"max"`, `0` removes. `"GS*": "max"` sets every node starting with GS, `"*"` the whole tree (a fully built ability needs its sub-nodes, not just the root). Blocking prerequisites are added at level 1. Ids from `--capture-list` (`upgrades[].id`, `tree`). |
 | `equip` | Abilities to equip, by id or name: `spawner`/`GS1` (Genesis Pulse), `chain`/`CM1` (Graviton Cascade), `drones`/`Drones1`, `drill`/`CoreDrill1` (Core Drill), `kamikaze`/`KW1` (Kamikaze Wing, which replaces Drone Swarm; its talents in `abilities` imply the Kamikaze Drones talent). Each must be unlocked in `abilities`. In game every online ship system takes a slot, so systems left out of this list are taken offline (`[]` = none). (Speed1/HBM1 exist in code but have no tree node.) Equip only what the shot is about: built-out abilities fire every 1.5-3 s on their own. |
 | `modules` | `"all"` or module names to own (unlocks the shipyard). |
-| `fit` | Modules fitted per fleet class, owned for you: `{"harvester": ["Rocket Rack", "Gun Pod"], "advanced": ["Laser Uplink"]}` (up to 4 per class; each module fits once; slots past two add Module Bays ranks). |
+| `fit` | Modules fitted per fleet class, owned for you: `{"harvester": ["Rocket Rack", "Gun Pod"], "advanced": ["Laser Uplink"]}` (up to 4 per class; each module fits once; slots past two add the Module Bays talent). Replaces the preset's whole loadout, so `{"harvester": []}` strips every class. |
 | `reveal` | Module names queued as sealed discoveries (inspect them in the shipyard's Discovery tab: legendary reveals take 3.6 s and end on an impact). |
 | `signals` | `[{"name": "Prismatic Core", "rarity": "Legendary", "count": 2}]` (unlocks signals; `count: 0` adds up to three initial pending choices). |
 | `signal_scans` | `[{"name": "Tractor Array", "rarity": "Rare"}, ...]` queued offers (in groups of three) popped in order when clicking `scan` during capture. |
@@ -101,12 +103,12 @@ game's own click cursor ring follows it while visible.
 | do | fields | effect |
 |---|---|---|
 | `pointer` | `pos`/`target`/`ui`, `dur` | Show the pointer and glide there (eased). `target`: `gems`, `home`, `planet`, or `shard` (a Core Shard waiting after a `fracture`). |
-| | `ui` | With `hud: true`, aim at a named HUD element via the game's own layout: `nav:upgrades/abilities/shipyard/signals/talents` (talents: the run's prestige talents, read-only, once any are owned), `discovery`, `inspect`, `reveal_skip`, `reveal_continue`, `reveal_shipyard`, `ship:<class>`, `slot:<0-3>`, `module:<name>`, `scan`, `card:<0-2>`, `signal_tile:<0-N>`, `command:<0-4|name>` (the manual fleet command buttons; a click fires the command through the game's own input), `node:<id>` (a node of the open upgrade tree, e.g. `node:LZQ1`; glide there, then buy it with `upgrade`). `damage` is the Damage button at the right end of the HUD bar (hidden while the upgrade tree is open): a click opens or closes the panel above it listing the planet's damage by source (closed by default in captures). `extract` is the Extract Core panel: hovering shows its tooltip, a `hold` of 1.5 s extracts the core through the game's own input (needs a prestige point on the first loop). `buy_cell` is Buy +1 power cell in the Ship Systems window (open it with the `panel` action, id `abilities`). Works on pointer, click and hold (drag a module = hold on `module:X` + pointer to `slot:N`). The capture draws a mouse cursor in HUD shots. |
+| | `ui` | With `hud: true`, aim at a named HUD element via the game's own layout: `nav:upgrades/abilities/shipyard/signals/talents` (talents: the run's prestige talents, read-only, once any are owned), `discovery`, `inspect`, `reveal_skip`, `reveal_continue`, `reveal_shipyard`, `ship:<class>`, `slot:<0-3>`, `module:<name>`, `scan`, `card:<0-2>`, `signal_tile:<0-N>`, `command:<0-4|name>` (the manual fleet command buttons; a click fires the command through the game's own input), `node:<id>` (a node of the open upgrade tree, e.g. `node:LZQ1`; glide there, then buy it with `upgrade`). `damage` is the Damage button at the right end of the HUD bar (hidden while the upgrade tree is open): a click opens or closes the panel above it listing the planet's damage by source (closed by default in captures). `collection` is the chevron on the HUD's left edge that opens or closes the Collection panel: gems by ship, clicks, Tractor Belt, talent, upgrade and module, in one table under the total. `extract` is the Extract Core panel: hovering shows its tooltip, a `hold` of 1.5 s extracts the core through the game's own input (needs a prestige point on the first loop). `buy_cell` is Buy +1 power cell in the Ship Systems window (open it with the `panel` action, id `abilities`). Works on pointer, click and hold (drag a module = hold on `module:X` + pointer to `slot:N`). The capture draws a mouse cursor in HUD shots. |
 | `hide` | | Hide the pointer (no cursor ring). |
 | `click` | `pos`/`target` | One left click. |
 | `click_gems` | `dur`, `rate` (clicks/s, 3) | A player clicking through gem clusters. |
 | `hold` | `pos`/`target`, `dur` | Hold left (sustained harvest when unlocked). |
-| `gravity` | `pos`/`target`, `dur` | Cursor gravity well (when unlocked): holds right and left-clicks once, as the game expects; the well lives for its own duration. |
+| `belt` | `pos`/`target`, `dur` | Tractor Belt (when unlocked): holds right, which places an intake there (or grabs the one under the pointer). A `pointer` glide during the hold drags it. Each placement runs for its own time unless Fixed Installation is owned. |
 | `ability` | `id` | Fire an equipped automatic ability now (resets its cooldown to 0). |
 | `manual` | `id` (name or slot 0-4) | Trigger a manual fleet ability: Overdrive, Planet Cracker, Collector Swarm, Fault Scan, System Surge. Fails if locked or recharging. |
 | `upgrade` | `id` | Buy through the real purchase path (cost, sounds, animation). Fails if locked or unaffordable. |
@@ -125,7 +127,7 @@ game's own click cursor ring follows it while visible.
 
 ## Capture log (`<take>.capture.json`)
 
-`events`: `{t, type, ...}` with `action`, `click` (`pos`), `ability` (automatic
+`collection`: gems collected while recording by Collection panel row (ship classes, clicks, and each talent, upgrade or module that pulls gems in); `collection_late` counts the second half only. `events`: `{t, type, ...}` with `action`, `click` (`pos`), `ability` (automatic
 activations, id), `sound` (`file`, `volume`, `pitch`, `pan`). `samples` every
 0.25 s: `gems`, `gems_per_minute`, `earned_this_run`, `sustained_income` (gem income
 over the last minute, which earns prestige points), `prestige_bar` (the extraction
@@ -147,9 +149,10 @@ numbers in text. `scripts/sfx.py` rebuilds the game audio from the sound events
 Capture samples also include `fleet_ships`, `ships_waiting_for_fuel` (OutOfFuel
 or RequestingFuel) and `ships_refueling`. Use these with visual review to check
 showcase fleets. Brief automatic refueling is normal; sustained waiting is not.
-For portrait shots in the current ship-left/planet-right layout, start with
-`stats.CameraZoomScale: 2.8` and `zoom: 1` so both fit; old scene zoom multipliers
-can crop the ship or planet. Recheck each scene's framing in a preview.
+For portrait shots use `"frame_planet": 0.46` so the ship and the whole planet are
+in frame (user feedback 2026-11-10: shots with half a planet and no ship do not
+show what the game is about). A fixed `stats.CameraZoomScale: 2.8` only fits the
+small first-run planet. Recheck each scene's framing in a preview.
 
 World-only captures disable pointer hit-testing against the hidden HUD; use `hud`
 or `hud_inset` when scripting named HUD targets.

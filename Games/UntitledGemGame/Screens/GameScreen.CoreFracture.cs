@@ -24,6 +24,7 @@ namespace UntitledGemGame.Screens;
 //     the strongest weapon's reach.
 //  4. Shard (4 s): a Core Shard flies out of the crack and hovers, and everything
 //     moves again. Clicking the shard collects it; otherwise it flies home on its own.
+//     With Fault Cells, power cells fly out beside it (GameScreen.FaultCells.cs).
 public partial class UntitledGemGameGameScreen
 {
   private const float FractureSwallowStart = 1.8f;
@@ -105,6 +106,7 @@ public partial class UntitledGemGameGameScreen
   {
     if (m_prestiging || m_postPrestige) return;
     m_gameState.Damage.Record(source, damage);
+    BuriedGems.OnDamage(damage);
     if (PlanetShelled) DamageShell(damage);
     else planetDamage.Record(damage);
   }
@@ -118,6 +120,7 @@ public partial class UntitledGemGameGameScreen
     if (shardPopupTime >= 0f && !fractureActive && (shardPopupTime += dt) >= ShardPopupSeconds)
       shardPopupTime = -1f;
     UpdateShardPickups(dt);
+    UpdateFaultCells(dt);
     UpdatePlanetSize(dt);
     if (fractureActive)
     {
@@ -149,9 +152,10 @@ public partial class UntitledGemGameGameScreen
     fractureTime = 0f;
     fractureSwallowed = eruptionTotal = eruptionRemaining = 0;
     eruptionCarry = fractureParticleClock = 0f;
-    // The fracture and its shard count at once, so a save mid-event loses neither.
+    // The fracture, its shard and its cells count at once, so a save mid-event loses none.
     m_gameState.CoreFractures++;
     ++shardsOwed;
+    OweFaultCells();
     AddEventCrackNetwork();
     PulsePlanet(0.5f, 0.3f);
     AudioManager.Instance.PlaySound(SoundEvent.CoreFractureStart);
@@ -346,6 +350,7 @@ public partial class UntitledGemGameGameScreen
     });
     SpawnerEffects.Add(null, start, CoreShards.Color, 4f, 70f, 0.5f);
     AudioManager.Instance.PlaySound(SoundEvent.CoreShardRelease);
+    ThrowFaultCells(start, direction, landing);
   }
 
   private float ShardVisualSize => PlanetPresentation.ShardSize(m_camera.Zoom / RenderQuality.WorldScale);
@@ -472,6 +477,7 @@ public partial class UntitledGemGameGameScreen
     fractureSwallowed = eruptionTotal = eruptionRemaining = 0;
     shardsOwed = 0;
     shardPickups.Clear();
+    ClearFaultCells();
     shipPushes.Clear();
     shardPopupTime = -1f;
   }

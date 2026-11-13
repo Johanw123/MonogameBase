@@ -27,13 +27,16 @@ public partial class HarvesterCollectionSystem
 
   public float CollectorSwarmValueMultiplier()
   {
-    int ships = 0;
+    int ships = 0, shuttles = 0;
     foreach (int id in _harvesters)
     {
       var ship = _harvesterMapper.Get(id);
-      if (ship != null && !ship.MarkedForDestroy && BaseStats.IsFleetHarvester(ship)) ++ships;
+      if (ship == null || ship.MarkedForDestroy || !BaseStats.IsFleetHarvester(ship) || ship.IsCarrier) continue;
+      if (ship.IsShuttle) ++shuttles;
+      else ++ships;
     }
-    return Math.Max(1f, ships / (float)ManualFleetAbilities.CollectorCount);
+    float purchased = ships + shuttles / (float)PrestigeTalentEffects.ShuttlesPerShip;
+    return Math.Max(1f, purchased / ManualFleetAbilities.CollectorCount);
   }
 
   public void GetCollectorSwarmStats(out float speed, out float range)
@@ -45,7 +48,7 @@ public partial class HarvesterCollectionSystem
     {
       var ship = _harvesterMapper.Get(id);
       if (ship == null || ship.MarkedForDestroy || !BaseStats.IsFleetHarvester(ship)) continue;
-      speed = Math.Max(speed, BaseStats.GetHarvesterSpeed(ship));
+      speed = Math.Max(speed, BaseStats.GetHarvesterSpeed(ship) / ship.RoleSpeedMultiplier);
       range = Math.Max(range, BaseStats.GetHarvesterCollectionRange(ship));
     }
     // Overdrive is applied dynamically to drones, rather than captured twice.

@@ -32,6 +32,7 @@ internal sealed partial class MenuRenderChecks
 
   private void CheckHud()
   {
+    CheckTerminalCorners();
     GumService.Default.Root.Children.Clear();
     GumService.Default.PopupRoot.Children.Clear();
     using var batch = new SpriteBatch(GraphicsDevice);
@@ -82,5 +83,31 @@ internal sealed partial class MenuRenderChecks
     Button(new Rectangle(490, 2050, 460, 76), "Buy +1 ability point", true, confirm: true);
     Skin("Progress", batch, new Rectangle(46, 2120, 390, 6), .65f);
     Finish("HudSurfaces");
+  }
+
+  private void CheckTerminalCorners()
+  {
+    // Draw the real CRT overlays alone: no frame may hide pixels that escaped
+    // the screen silhouette. Bright white makes even faint scanlines measurable.
+    var gui = System.Runtime.CompilerServices.RuntimeHelpers.GetUninitializedObject(typeof(RenderGuiSystem));
+    var draw = typeof(RenderGuiSystem).GetMethod("DrawShipTerminalScreenInterior",
+      BindingFlags.Instance | BindingFlags.NonPublic)!;
+    using var target = new RenderTarget2D(GraphicsDevice, 400, 300);
+    using var batch = new SpriteBatch(GraphicsDevice);
+    var panel = new Rectangle(20, 20, 360, 260);
+    GraphicsDevice.SetRenderTarget(target);
+    GraphicsDevice.Clear(Color.Transparent);
+    batch.Begin();
+    draw.Invoke(gui, new object[] { batch, panel, Color.White });
+    batch.End();
+    GraphicsDevice.SetRenderTarget(null);
+    var pixels = new Color[400 * 300];
+    target.GetData(pixels);
+    Color At(int x, int y) => pixels[y * 400 + x];
+    if (At(panel.Right - 7, panel.Top + 6).A != 0 ||
+        At(panel.Left + 6, panel.Bottom - 8).A != 0)
+      throw new Exception("Terminal CRT overlays cross the chamfered screen corners.");
+    if (At(panel.Center.X, panel.Top + 6).A == 0)
+      throw new Exception("Terminal corner clipping removed the interior sheen.");
   }
 }

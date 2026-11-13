@@ -1,18 +1,25 @@
 using System;
 using System.Collections.Generic;
-using Apos.Shapes;
 using Microsoft.Xna.Framework;
 
 namespace UntitledGemGame;
 
 // One activation per mouse gesture. Only nearby loose gems are queried; effects
 // keep positions rather than entity references, so recycling cannot move a link.
+// The effects are drawn by ModuleEffects.fx: a pulse where the click lands, and a spark
+// that hops along the Gem Link from gem to gem, each one flaring as it is reached.
 public sealed class ClickUtility
 {
   public const int MaxCombo = 10;
   public const float ShockwaveRadius = 90f;
   private const int MaxEffects = 128;
   private const int MaxCandidatesPerSearch = 4096;
+  private const float PulseSeconds = 0.4f, LinkSeconds = 0.5f;
+  // Clicks come several times a second, so their rings stay thinner and dimmer than a module's.
+  public const float PulseWidth = 0.6f, PulseIntensity = 0.65f;
+  // The part of a link's life its spark takes to cross it (LinkPS in ModuleEffects.fx).
+  private const float LinkCrossing = 0.22f;
+  private float flashSeed;
   private readonly List<Flash> flashes = new(MaxEffects);
   private readonly List<int> extraTargets = new(32);
   public int SupernovaProgress { get; private set; }
@@ -36,7 +43,9 @@ public sealed class ClickUtility
   {
     public Vector2 Start, End;
     public Color Color;
-    public float Age, Radius;
+    // Age is below zero while a link waits for the spark to reach it.
+    public float Age, Life, Radius, Seed;
+    public bool Burst;
   }
 
   public static Matrix RenderView(Matrix cameraView, Matrix viewportScale)
@@ -149,7 +158,7 @@ public sealed class ClickUtility
     {
       var flash = flashes[i];
       flash.Age += dt;
-      if (flash.Age >= 0.4f) flashes.RemoveAt(i);
+      if (flash.Age >= flash.Life) flashes.RemoveAt(i);
       else flashes[i] = flash;
     }
   }
@@ -164,7 +173,7 @@ public sealed class ClickUtility
   public bool Activate(GemSpatialIndex grid, IReadOnlyList<int> direct, Vector2 mouse,
     UpgradesGeneratorUpgrades upgrades, Func<int, double, bool> collect, double criticalRoll,
     SignalProgression signals = null, UpgradesGeneratorUpgrades_meta meta = null,
-    Vector2? mirrorCenter = null, float clickRadius = 0,
+    float clickRadius = 0,
     Func<int, Vector2, float, bool> overlaps = null)
   {
     int seed = -1;
@@ -176,12 +185,8 @@ public sealed class ClickUtility
       float distance = Vector2.DistanceSquared(mouse, new Vector2(gem.X, gem.Y));
       if (distance < nearest) { nearest = distance; seed = index; }
     }
-    Vector2 mirror = mirrorCenter.GetValueOrDefault() * 2 - mouse;
-    extraTargets.Clear();
-    if (meta?.QuantumTouch == true && mirrorCenter.HasValue && clickRadius > 0)
-      GatherTargets(grid, mirror, clickRadius, overlaps);
-    if (seed < 0 && extraTargets.Count == 0) return false;
-    Vector2 origin = seed >= 0 ? new(grid.Gems[seed].X, grid.Gems[seed].Y) : mouse;
+    if (seed < 0) return false;
+    Vector2 origin = new(grid.Gems[seed].X, grid.Gems[seed].Y);
     int nextCombo = Math.Min(MaxCombo, Combo + 1);
     bool critical = criticalRoll < Math.Clamp(upgrades.ClickCriticalChance, 0f, 1f);
     double multiplier = Math.Max(1, SignalStats.Scale(SignalKind.ClickValue,
@@ -190,15 +195,7 @@ public sealed class ClickUtility
       * (1 + (nextCombo - 1) * Math.Max(0, upgrades.ClickComboBonus)) * (critical ? 3 : 1);
     bool success = false;
     foreach (int index in direct) success |= collect(index, multiplier);
-    bool mirrorSuccess = false;
-    foreach (int index in extraTargets) mirrorSuccess |= collect(index, multiplier);
-    success |= mirrorSuccess;
     if (!success) return false;
-    if (mirrorSuccess)
-    {
-      AddFlash(mouse, mirror, Color.Violet);
-      AddFlash(mirror, mirror, Color.Violet, clickRadius);
-    }
 
     Combo = nextCombo;
     comboRemaining = Math.Max(0.1f, SignalStats.Scale(SignalKind.ClickComboWindow, upgrades.ClickComboWindow, signals));
@@ -216,7 +213,7 @@ public sealed class ClickUtility
         float radius = Math.Max(180, clickRadius * 2);
         GatherTargets(grid, origin, radius, overlaps);
         foreach (int index in extraTargets) collect(index, multiplier * 3);
-        AddFlash(origin, origin, Color.Orange, radius);
+        AddFlash(origin, origin, Color.Orange, radius, burst: true);
       }
     }
 
@@ -228,13 +225,13 @@ public sealed class ClickUtility
       AddFlash(origin, new Vector2(grid.Gems[target].X, grid.Gems[target].Y), color);
     }
     Vector2 previous = origin;
-    for (int i = 0; i < Math.Clamp(upgrades.ClickChainCount, 0, 64); ++i)
+    for (int i = 0; i < Math.Clamp(upgrades.ClickChainCount, 0, 96); ++i)
     {
       int target = FindNearest(grid, previous, Math.Max(0, SignalStats.Scale(SignalKind.ClickChainRange, upgrades.ClickChainRange, signals)));
       if (target < 0) break;
       Vector2 position = new(grid.Gems[target].X, grid.Gems[target].Y);
       if (!collect(target, multiplier)) break;
-      AddFlash(previous, position, color);
+      AddFlash(previous, position, color, delay: HopDelay(i));
       previous = position;
     }
     return true;
@@ -271,48 +268,43 @@ public sealed class ClickUtility
     return best;
   }
 
-  private void AddFlash(Vector2 start, Vector2 end, Color color, float radius = 0)
+  // When the spark reaches each hop: quick at first, and a long chain still finishes in a
+  // third of a second.
+  public static float HopDelay(int hop) => 0.32f * (1f - MathF.Exp(-hop * 0.07f));
+
+  private void AddFlash(Vector2 start, Vector2 end, Color color, float radius = 0, float delay = 0, bool burst = false)
   {
     if (flashes.Count == MaxEffects) flashes.RemoveAt(0);
-    flashes.Add(new Flash { Start = start, End = end, Color = color, Radius = radius });
+    flashSeed = (flashSeed + 0.137f) % 1f;
+    flashes.Add(new Flash { Start = start, End = end, Color = color, Radius = radius, Age = -delay,
+      Life = radius > 0 ? PulseSeconds : LinkSeconds, Seed = flashSeed, Burst = burst });
   }
 
-  // Caller owns the additive, world-space shape batch.
-  public void Draw(ShapeBatch batch, float zoom)
+  // Queues the effects; the caller draws the batch in world space. Zoom is the camera's:
+  // pulled far out, the links are drawn wider so they stay about a pixel thick.
+  public void Draw(ModuleEffectBatch effects, float zoom)
   {
-    float feather = 1f / Math.Max(0.1f, zoom);
+    float pixel = RenderQuality.WorldScale / Math.Max(0.01f, zoom);
+    float halfWidth = Math.Max(0.9f, pixel);
+    float flare = Math.Max(1f, pixel * 0.8f);
     foreach (var flash in flashes)
     {
-      float progress = flash.Age / 0.4f;
-      var color = new Color(flash.Color.R, flash.Color.G, flash.Color.B, (byte)(255 * (1 - progress)));
+      if (flash.Age < 0f) continue;
+      float progress = flash.Age / flash.Life;
       if (flash.Radius > 0)
       {
-        float radius = MathHelper.Lerp(5f, flash.Radius, progress);
-        const int segments = 32;
-        Vector2 previous = flash.Start + new Vector2(radius, 0);
-        for (int i = 1; i <= segments; ++i)
-        {
-          float angle = i * MathHelper.TwoPi / segments;
-          Vector2 next = flash.Start + new Vector2(MathF.Cos(angle), MathF.Sin(angle)) * radius;
-          batch.FillLine(previous, next, 1.5f, color, feather);
-          previous = next;
-        }
+        effects.Ring(flash.Start, flash.Radius, progress, flash.Color,
+          flash.Burst ? ModuleEffectBatch.RingStyle.Burst : ModuleEffectBatch.RingStyle.Shock, flash.Seed,
+          PulseIntensity, PulseWidth);
+        continue;
       }
-      else
-      {
-        Vector2 direction = flash.End - flash.Start;
-        Vector2 side = direction.LengthSquared() > 0 ? Vector2.Normalize(new Vector2(-direction.Y, direction.X)) : Vector2.Zero;
-        Vector2 previous = flash.Start;
-        for (int i = 1; i <= 6; ++i)
-        {
-          Vector2 next = Vector2.Lerp(flash.Start, flash.End, i / 6f)
-            + (i < 6 ? side * MathF.Sin(i * 8f + flash.Age * 20f) * 4f : Vector2.Zero);
-          batch.FillLine(previous, next, 4f, color * 0.3f, feather * 2f);
-          batch.FillLine(previous, next, 1.2f, color, feather);
-          previous = next;
-        }
-        batch.FillCircle(flash.End, 4f, color, feather);
-      }
+      effects.Link(flash.Start, flash.End, progress, flash.Color, halfWidth, flash.Seed);
+      // The gem flares as the spark lands on it.
+      float landed = (progress - LinkCrossing) / (1f - LinkCrossing);
+      if (landed <= 0f) continue;
+      float fade = 1f - landed;
+      effects.Glint(flash.End, MathHelper.Lerp(9f, 15f, fade) * flare, flash.Color, flash.Seed, fade * fade,
+        heading: flash.End - flash.Start);
     }
   }
 }

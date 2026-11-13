@@ -36,7 +36,8 @@ overwrite an existing output.
 | `zoom`, `zoom_end` | 1 | Punch-in (2160x3840 takes allow 2x at 1080x1920 without losing detail). `zoom_end` animates a smooth push. |
 | `split` | | Instead of `take`/`in`: `[{"take", "in", "focus", "zoom"}, {...}]` stacks two takes (top, bottom halves, a thin accent divider). Capture split takes at 9:8 (`"width": 2160, "height": 1920`). Game audio of both halves is mixed. |
 | `fade_in`, `fade_out` | | Seconds of a dip from / to black at the shot's start / end (a title transition: `fade_out` on the last cold-open shot, `fade_in` on the title shot). |
-| `speed` | 1 | 0.5 = slow motion (capture that take at 120 fps for smooth frames), 1.5 = speed up (a zoom-out reveal that fits a bar). Game audio follows (0.5-2). |
+| `speed` | 1 | One speed for the whole shot: 0.5 = slow motion (capture that take at 120 fps for smooth frames), 1.5 = speed up (a zoom-out reveal that fits a bar). Game audio follows and keeps its pitch (0.5-2). |
+| `ramp` | | Speed that changes during the shot, instead of `speed`: `[[time, speed], ...]`, time in seconds from the shot's start. Speed eases between points and holds before the first and after the last, so `[[0.5, 1], [0.8, 0.5], [2.6, 0.5], [3.1, 1]]` slows through a payoff and recovers. `dur` stays the shot's length on the timeline. Slow parts need a take with enough frames: the edit's fps divided by the slowest speed. Game audio follows, and its pitch drops as it slows, like tape. |
 
 ## texts
 
@@ -101,3 +102,23 @@ brought to about -14 LUFS with peaks under -1.5 dBFS and encoded AAC 192k.
 `<output>.sheet.jpg` (a frame per shot, text and the end). `--fast` uses NVENC
 for review renders; `--resolve` adds `<output>.resolve/plan.json` +
 ProRes overlays for the resolve-game-video skill (fullscreen layout).
+
+## checks
+
+Every render is measured when it finishes (`scripts/video_qc.py`), and
+`render_short.py edit.json --check` measures an existing render again. These
+print `PROBLEMS` and exit non-zero; the file is still written:
+
+- Frame count more than one frame off the edit's length.
+- Repeated frames: the picture stops while the footage around it in the same
+  shot keeps moving.
+- Black frames outside `fade_in` / `fade_out`.
+- Loudness outside -14 LUFS by more than 1.5, or true peak above -1 dBTP.
+- Slow motion on a take with too few frames (0.5 needs 120 fps, 0.25 needs 240).
+
+`note:` lines do not fail the render: they mark a second or more where nothing
+moves before the end card. That is fine for a menu being read, so check it is
+meant.
+
+Known limit: slow `focus_end` pans can report repeated frames, because the crop
+moves in whole pixels and the picture stalls between steps (Shorts 07 and 13).

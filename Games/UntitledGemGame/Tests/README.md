@@ -281,25 +281,31 @@ Travel module checks run with the shipyard suite:
 dotnet run --project Tests/PersistenceChecks.csproj -- --module-check
 ```
 
-Arc Emitter (Rare) chains through up to four gems every 90 units traveled, with
-70 units per hop. Gravity Buoy (Epic) drops a delayed collection field every
-180 units traveled: after one second, it gathers up to eight gems within 100
-units of the drop position. Recall Tether (Rare) gathers up to three gems within
-100 units of the collection endpoint every 120 units traveled home. All three
-use bonus cargo pickups, respect gem reservations, and can exceed capacity.
-Actual movement charges them; warps do not. Charges and pending buoys reset
-with each trip. Preview a dense field with each module equipped, including a
-full return trip, to check lightning, the expanding purple buoy, and the cyan
-recall link.
+Arc Emitter (Rare) chains through up to five gems every 90 units traveled, with
+70 units per hop; its gems are worth triple. Gravity Buoy (Epic) drops a delayed
+collection field every 150 units traveled: after half a second it gathers up to
+24 gems within 110 units of the drop position, also at triple value. Both use
+bonus cargo pickups, respect gem reservations, and can exceed capacity. Actual
+movement charges them; warps do not. Charges reset with each trip; a buoy that
+is already dropped still fires. Preview a dense field with each module equipped
+to check the lightning and the purple buoy.
+
+Module effects that collect gems (pulls, pulses, lightning, sweeps) can add
+value to what they collect (`Harvester.ModuleGemBonus`); Echo Chamber adds +200%
+to every one of them on top of the module's own bonus. Vacuum Nozzle adds one
+gem to every such effect, and Tuning Kit doubles the bonus of each Common
+module on the ship. Rarity is meant to track strength: see the module strength
+report linked from the project memory for the measured figures.
 
 Modules last one run: extracting the core clears the collection and loadouts,
 and an unlocked Shipyard restarts from Cargo Pod and Ion Booster. The first find
 takes 20–40 seconds of harvesting; later finds take 45 s + 20 s per rarity tier,
-plus up to 60 s. Module Bays stay permanent. Weapon modules: Gun Pod (Uncommon)
-fires a cannon shell every 10 direct pickups; Rocket Rack (Rare) launches one
-rocket per 10 gems delivered (1–8); Laser Uplink (Epic) overcharges an owned
-mining laser for 0.1 s per gem delivered (up to 4 s); Detonator Charge (Legendary) detonates the molten
-scars and craters facing the delivering ship.
+plus up to 60 s. Module Bays stay permanent. Weapon modules: Detonator Charge
+(Uncommon) detonates every molten scar and crater on the planet at each
+delivery; Gun Pod (Rare) fires a cannon shell every 40 direct pickups; Rocket
+Rack (Epic) launches one rocket per 3 gems delivered (1–60); Siege Cannon
+(Legendary) fires one shell per delivery with the cannon's fire power
+multiplied by a tenth of the gems delivered (1–40x).
 
 Weapon signals roll once the weapon or special is owned: per-weapon fire power
 (Bore Rifling, Focusing Lens, Tether Coils, Warhead Yield, Tungsten Rounds) stacks
@@ -316,12 +322,14 @@ Cell); new signals reuse their save slots. `--signal-check` covers their effects
 Mythic shipyard modules are included in `--module-check`. Initial rarity weights
 are Common 48%, Uncommon 27%, Rare 15%, Epic 6%, Legendary 3%, Mythic 1%;
 exhausted tiers are excluded and the remaining weights renormalize.
-Thunder God forks through up to 40 gems every 60 travel units. Time Heist
-replays the delivered trip at 300 units/s, collecting within 70 units and paying
-ordinary ship delivery value directly; each ship has one ghost, and warps leave
-no collection trail. World Eater gathers up to 16 gems every 0.25 seconds,
-grows its field from 80 to 240 units, returns at eight normal cargo loads
-(minimum 64 gems), and sweeps up to 96 extra gems within 300 units on docking.
+Thunder God forks through up to 40 gems every 60 travel units, at double value.
+Time Heist replays the delivered trip at the ship's speed (at least 300
+units/s), collecting within 70 units and paying ordinary ship delivery value
+directly; when the ghost finishes, or the ship delivers again first, it pays the
+last delivery a second time at double value. Each ship has one ghost, and warps
+leave no collection trail. World Eater swallows one gem for every gem its ship
+picks up (and one per 0.1 s while idle), sends it home at triple value without
+using cargo, and grows its field from 80 to 240 units over a trip.
 Runtime effects reset on prestige; ghost replay stops if Time Heist is removed
 from the next trip's loadout. Preview the branching lightning, cyan ghost, and
 rotating purple black-hole field with dense gem clusters and return warps.

@@ -21,6 +21,10 @@ public partial class UntitledGemGameGameScreen
   private const float OrbitalRocketSeconds = 1.35f;
   private const float MiniRocketSeconds = 0.35f;
   private const float ShockwaveSeconds = 0.9f;
+  // Seismic cannon fire can keep thousands of waves alive (3,768 in the endgame benchmark),
+  // 16 lines each, and a few hundred already saturate the ring. Beyond this many, only a
+  // share of them is drawn; the waves and their damage are unchanged.
+  private const int MaxDrawnShockwaves = 256;
   private const int MaxMagmaScars = 32;
   private static int MagmaScarCap => PrestigeTalentEffects.MoltenSpotCap(MaxMagmaScars);
   private const float MagmaTrailInterval = 0.04f;
@@ -57,12 +61,27 @@ public partial class UntitledGemGameGameScreen
     public PlanetDamageSource Source;
     public float Angle, Age;
     public int Gems, Emitted, FirePower;
+    // In [0, 1), fixed for the wave's life and evenly spread over consecutive waves (Fibonacci
+    // hashing), so the drawn share stays the same waves every frame and covers every age.
+    // 24 bits, so the largest rank stays below 1 in a float.
+    public readonly float DrawRank = (unchecked(nextDrawRank++ * 2654435769u) >> 8) / 16777216f;
+    private static uint nextDrawRank;
   }
 
   private readonly List<MagmaScar> magmaScars = new();
   private readonly List<MagmaTrailPoint> magmaTrail = new();
   private readonly MagmaTrailPoint[] scarPrevious = new MagmaTrailPoint[MaxScarBeams];
+  private readonly Vector2[] scarPreviousDrawn = new Vector2[MaxScarBeams];
   private readonly bool[] scarHasPrevious = new bool[MaxScarBeams];
+
+  // One spot of a magma scar, worked out once a frame and drawn by each of the three passes.
+  private struct ScarSpot
+  {
+    public Vector2 Position;
+    public byte Life, Seed;
+  }
+
+  private readonly List<ScarSpot> scarSpots = new();
   private readonly List<Shockwave> shockwaves = new();
   private float magmaTimer, magmaTrailTimer;
   private bool magmaTrailBroken = true;
@@ -79,10 +98,10 @@ public partial class UntitledGemGameGameScreen
   // Critical Shells' chance, plus the crit build's (Deadeye, Hot Streak).
   private bool RollCriticalShell(ref int gems)
   {
-    float chance = (UpgradeManager.Instance.UG.CannonCritical ? SignalStats.CriticalChance : 0f)
+    float chance = (UpgradeManager.Instance.UG.CannonCritical ? SignalStats.CriticalChance + UpgradeManager.Instance.UG.CannonCritChance : 0f)
       + SignalStats.CritChance(PrestigeTalentEffects.WeaponCritChance);
     if (chance <= 0f || Random.Shared.NextSingle() >= chance) return false;
-    gems = (int)Math.Min(int.MaxValue, gems * (double)SignalStats.CritMultiplier);
+    gems = (int)Math.Min(int.MaxValue, gems * (double)(SignalStats.CritMultiplier + UpgradeManager.Instance.UG.CannonCritDamage));
     return true;
   }
 
@@ -98,7 +117,7 @@ public partial class UntitledGemGameGameScreen
   private void LaunchRicochet(PlanetShot shot, float impactAngle)
   {
     AudioManager.Instance.PlaySound(SoundEvent.CannonRicochet);
-    int gems = shot.Bounces == 0 ? (int)MathF.Ceiling(shot.Damage * MainShipWeapons.RicochetShare) : shot.Damage;
+    int gems = shot.Bounces == 0 ? (int)MathF.Ceiling(shot.Damage * Math.Min(1f, MainShipWeapons.RicochetShare + UpgradeManager.Instance.UG.CannonBounceRetention)) : shot.Damage;
     float side = Random.Shared.Next(2) == 0 ? -1f : 1f;
     float hop = 0.7f + Random.Shared.NextSingle() * 0.5f;
     var start = PlanetPos + PlanetDirection(impactAngle) * PlanetRadius * 0.95f;
@@ -115,6 +134,26 @@ public partial class UntitledGemGameGameScreen
     SetQuadraticPath(bounce, start, apex, end);
     AddPlanetShot(bounce);
     SpawnerEffects.Add(null, start, CannonGlow, 2f, 12f, 0.2f);
+  }
+
+  private void LaunchFlakFlechette(PlanetShot shot, float impactAngle)
+  {
+    int gems = (int)Math.Max(1, MathF.Round(shot.Damage * MainShipWeapons.FlechetteShare));
+    float side = Random.Shared.Next(2) == 0 ? -1f : 1f;
+    float hop = 0.2f + Random.Shared.NextSingle() * 0.35f;
+    var start = PlanetPos + PlanetDirection(impactAngle) * PlanetRadius * 0.95f;
+    var apex = PlanetPos + PlanetDirection(impactAngle + side * hop * 0.5f) * PlanetRadius * 1.3f;
+    var end = PlanetPos + PlanetDirection(impactAngle + side * hop) * PlanetRadius * 0.92f;
+    var bounce = new PlanetShot
+    {
+      Kind = PlanetShotKind.Flak,
+      Duration = 0.16f,
+      Damage = gems,
+      FirePower = shot.FirePower,
+      Bounces = shot.Bounces + 1,
+    };
+    SetQuadraticPath(bounce, start, apex, end);
+    AddPlanetShot(bounce);
   }
 
   // ---- Rockets ----
@@ -154,7 +193,7 @@ public partial class UntitledGemGameGameScreen
     var aim = rocket.End - PlanetPos;
     float target = MathF.Atan2(aim.Y, aim.X);
     int splitCount = weaponOverdriveMultiplier > 1.001f ? 5 : MainShipWeapons.ClusterWarheadSplit;
-    int share = (int)MathF.Ceiling(rocket.Damage * MainShipWeapons.ClusterWarheadShare);
+    int share = (int)MathF.Ceiling(rocket.Damage * MainShipWeapons.RocketClusterDamage(UpgradeManager.Instance.UG));
     SpawnerEffects.Add(null, position, new Color(255, 160, 70), 2f, 22f, 0.3f);
     float centerIndex = (splitCount - 1) * 0.5f;
     for (int i = 0; i < splitCount; i++)
@@ -207,7 +246,7 @@ public partial class UntitledGemGameGameScreen
     if (laserHeat >= 1f)
     {
       laserHeat = 1f;
-      laserSurge = MainShipWeapons.OverheatSurgeSeconds;
+      laserSurge = MainShipWeapons.LaserSurgeSeconds(upgrades);
       AudioManager.Instance.PlaySound(SoundEvent.LaserOverheatSurge);
       PulsePlanet(0.8f, 0.4f);
       for (int beam = 0; beam < LaserBeamCount; beam++)
@@ -249,24 +288,25 @@ public partial class UntitledGemGameGameScreen
           {
             Normal = WorldToPlanetNormal(LaserContact(beam)),
             Angle = LaserContactAngle(beam),
-            Budget = beamRate * MainShipWeapons.MagmaScarInterval * MainShipWeapons.MagmaShare * PrestigeTalentEffects.MoltenBurn,
+            Budget = beamRate * MainShipWeapons.MagmaScarInterval * MainShipWeapons.LaserScarShare(upgrades) * PrestigeTalentEffects.MoltenBurn,
             FirePower = firePower,
             Value = value,
           });
         }
       }
     }
+    float scarSeconds = MagmaScarSeconds;
     for (int i = magmaScars.Count - 1; i >= 0; i--)
     {
       var scar = magmaScars[i];
       scar.Age += dt;
-      scar.Carry += scar.Budget * dt / MagmaScarSeconds;
+      scar.Carry += scar.Budget * dt / scarSeconds;
       while (scar.Carry >= 1f)
       {
         scar.Carry -= 1f;
         KnockGemsLoose(PlanetDamageSource.MagmaScars, 1, scar.FirePower, bounds, LaserReach, scar.Angle, 0.2f, scar.Value);
       }
-      if (scar.Age >= MagmaScarSeconds) magmaScars.RemoveAt(i);
+      if (scar.Age >= scarSeconds) magmaScars.RemoveAt(i);
     }
   }
 
@@ -281,7 +321,8 @@ public partial class UntitledGemGameGameScreen
     }
     // Points are added in time order, so the oldest are at the front.
     int expired = 0;
-    while (expired < magmaTrail.Count && magmaTrail[expired].Age >= MagmaScarSeconds) expired++;
+    float scarSeconds = MagmaScarSeconds;
+    while (expired < magmaTrail.Count && magmaTrail[expired].Age >= scarSeconds) expired++;
     magmaTrail.RemoveRange(0, expired);
 
     if (!cutting)
@@ -317,8 +358,32 @@ public partial class UntitledGemGameGameScreen
     BurstEveryWeakPoint(firePower);
   }
 
+  private sealed class CannonAftershock
+  {
+    public float Delay = 0.4f, Angle;
+    public int Damage, FirePower;
+    public PlanetDamageSource Source;
+  }
+
+  private readonly List<CannonAftershock> cannonAftershocks = new();
+
+  private void CannonBlast(PlanetDamageSource source, int damage, int firePower, float angle, float radius, PlayAreaBounds bounds)
+  {
+    var at = PlanetPos + PlanetDirection(angle) * PlanetRadius;
+    SpawnerEffects.Add(null, at, CannonGlow, 3f, radius, 0.4f);
+    KnockGemsLoose(source, damage, firePower, bounds, facing: angle, spread: 1.35f + radius / 80f);
+  }
+
   private void UpdateWeaponSpecials(float dt, PlayAreaBounds bounds)
   {
+    for (int i = cannonAftershocks.Count - 1; i >= 0; i--)
+    {
+      var blast = cannonAftershocks[i];
+      blast.Delay -= dt;
+      if (blast.Delay > 0f) continue;
+      CannonBlast(blast.Source, blast.Damage, blast.FirePower, blast.Angle, 90f, bounds);
+      cannonAftershocks.RemoveAt(i);
+    }
     // The quake races both ways around the planet, shedding its ring of gems as it passes.
     for (int i = shockwaves.Count - 1; i >= 0; i--)
     {
@@ -354,6 +419,7 @@ public partial class UntitledGemGameGameScreen
     magmaTrail.Clear();
     magmaTrailBroken = true;
     shockwaves.Clear();
+    cannonAftershocks.Clear();
     magmaTimer = laserHeat = laserSurge = laserVent = 0f;
   }
 
@@ -365,43 +431,63 @@ public partial class UntitledGemGameGameScreen
   private void DrawMagmaScars()
   {
     if (magmaTrail.Count == 0 || !BeginMoltenSpots(out var center, out float texel)) return;
-    DrawMagmaScarPass(center, texel, ScarSoot);
-    DrawMagmaScarPass(center, texel, CraterBedPass);
-    DrawMagmaScarPass(center, texel, soot: 0f);
+    CollectScarSpots(center, texel);
+    float quad = MoltenQuadSize(ScarSpotTexels, texel, out byte radiusByte);
+    DrawScarSpots(quad, radiusByte, ScarSoot);
+    DrawScarSpots(quad, radiusByte, CraterBedPass);
+    DrawScarSpots(quad, radiusByte, soot: 0f);
     m_spriteBatch.End();
   }
 
-  private void DrawMagmaScarPass(Vector2 center, float texel, float soot)
+  // Walks the trail once a frame: the spots along each beam's cut that face the camera and
+  // are still alive, in drawing order. The three passes differ only in soot.
+  private void CollectScarSpots(Vector2 center, float texel)
   {
+    scarSpots.Clear();
     Array.Clear(scarHasPrevious);
+    // Looked up once: it multiplies signal and talent bonuses, and every spot needs it.
+    float scarSeconds = MagmaScarSeconds;
     float spacing = ScarSpotSpacing * texel;
     foreach (var point in magmaTrail)
     {
       int beam = point.Beam % MaxScarBeams;
+      var drawn = PlanetNormalToDrawn(center, texel, point.Normal);
       if (scarHasPrevious[beam] && !point.Starts)
       {
         var previous = scarPrevious[beam];
-        var prevDrawn = PlanetNormalToDrawn(center, texel, previous.Normal);
-        var currDrawn = PlanetNormalToDrawn(center, texel, point.Normal);
-        int steps = Math.Max(1, (int)MathF.Ceiling(Vector2.Distance(prevDrawn, currDrawn) / spacing));
+        int steps = Math.Max(1, (int)MathF.Ceiling(Vector2.Distance(scarPreviousDrawn[beam], drawn) / spacing));
         for (int step = 1; step < steps; step++)
         {
           float t = step / (float)steps;
           var normal = Vector3.Normalize(Vector3.Lerp(previous.Normal, point.Normal, t));
-          DrawMoltenSpot(center, texel, normal, ScarSpotTexels,
-            ScarLife(MathHelper.Lerp(previous.Age, point.Age, t)), (byte)(point.Seed + step * 37), soot);
+          float life = ScarLife(MathHelper.Lerp(previous.Age, point.Age, t), scarSeconds);
+          if (MoltenSpotVisible(normal, life))
+            scarSpots.Add(new ScarSpot { Position = PlanetNormalToDrawn(center, texel, normal), Life = MoltenLife(life),
+              Seed = (byte)(point.Seed + step * 37) });
         }
       }
-      DrawMoltenSpot(center, texel, point.Normal, ScarSpotTexels, ScarLife(point.Age), point.Seed, soot);
+      float pointLife = ScarLife(point.Age, scarSeconds);
+      if (MoltenSpotVisible(point.Normal, pointLife))
+        scarSpots.Add(new ScarSpot { Position = drawn, Life = MoltenLife(pointLife), Seed = point.Seed });
       scarPrevious[beam] = point;
+      scarPreviousDrawn[beam] = drawn;
       scarHasPrevious[beam] = true;
     }
   }
 
-  // A cut stays molten most of its life, then cools and crumbles near the end.
-  private float ScarLife(float age)
+  private void DrawScarSpots(float quad, byte radiusByte, float soot)
   {
-    float progress = Math.Clamp(age / MagmaScarSeconds, 0f, 1f);
+    byte sootByte = MoltenSoot(soot);
+    var texture = AsyncContent.AssetManager.DefaultTexture;
+    foreach (var spot in scarSpots)
+      m_spriteBatch.Draw(texture, spot.Position, null, new Color(spot.Life, spot.Seed, radiusByte, sootByte),
+        0f, new Vector2(0.5f), quad, SpriteEffects.None, 0f);
+  }
+
+  // A cut stays molten most of its life, then cools and crumbles near the end.
+  private static float ScarLife(float age, float scarSeconds)
+  {
+    float progress = Math.Clamp(age / scarSeconds, 0f, 1f);
     return 1f - progress * progress;
   }
 
@@ -409,8 +495,10 @@ public partial class UntitledGemGameGameScreen
   private void DrawWeaponSpecialGlows(float feather, bool laserMounted)
   {
     DrawShipTerminalGlow(feather);
+    float drawnShare = MaxDrawnShockwaves / (float)Math.Max(MaxDrawnShockwaves, shockwaves.Count);
     foreach (var wave in shockwaves)
     {
+      if (wave.DrawRank >= drawnShare) continue;
       float progress = Math.Clamp(wave.Age / ShockwaveSeconds, 0f, 1f);
       float fade = 1f - progress * 0.6f;
       for (int side = -1; side <= 1; side += 2)

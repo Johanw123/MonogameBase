@@ -1,5 +1,5 @@
 {
-  "output": "renders/btb_13_problem-idle-fleet_v2.mp4",
+  "output": "renders/btb_13_problem-idle-fleet_v4.mp4",
   "layout": "fullscreen",
   "size": [
     1080,
@@ -17,27 +17,17 @@
   },
   "shots": [
     {
-      "take": "takes/drifters_v1.mp4",
+      "take": "takes/drifters_v3.mp4",
       "in": 0.5,
-      "dur": 3.3,
-      "zoom": 1.35,
-      "focus": [
-        0.48,
-        0.5
-      ]
+      "dur": 3.3
     },
     {
-      "take": "takes/automated_v1.mp4",
+      "take": "takes/automated_v3.mp4",
       "in": 1.5,
-      "dur": 3.2,
-      "zoom": 1.25,
-      "focus": [
-        0.55,
-        0.5
-      ]
+      "dur": 3.2
     },
     {
-      "take": "takes/hud_tour_v1.mp4",
+      "take": "takes/hud_tour_v2.mp4",
       "in": 6.0,
       "dur": 4.8,
       "focus": [
@@ -51,7 +41,7 @@
       "zoom": 1.1
     },
     {
-      "take": "takes/hud_tour_v1.mp4",
+      "take": "takes/hud_tour_v2.mp4",
       "in": 11.7,
       "dur": 5.2,
       "focus": [
@@ -79,7 +69,7 @@
     {
       "at": 6.5,
       "dur": 4.8,
-      "text": "So we built a Shipyard\nto fit weapons on every class",
+      "text": "So I built a Shipyard\nto fit weapons on every class",
       "size": 64,
       "pos": 0.15
     },

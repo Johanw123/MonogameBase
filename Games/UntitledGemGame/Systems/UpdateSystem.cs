@@ -10,7 +10,7 @@ using UntitledGemGame.Screens;
 
 namespace UntitledGemGame.Systems
 {
-  public class UpdateSystem2 : EntityUpdateSystem
+  public partial class UpdateSystem2 : EntityUpdateSystem
   {
     private ComponentMapper<Gem> _gemMapper;
     private readonly OrthographicCamera m_camera;
@@ -35,8 +35,7 @@ namespace UntitledGemGame.Systems
     private uint _hoverFrame;
     private readonly List<int> _directClicks = new();
     private readonly System.Func<int, double, bool> _collectManualGem;
-    private readonly System.Action<int, Vector2> _moveManualGravity;
-    private readonly System.Func<int, Vector2, float, bool> _gravityOverlaps;
+    private readonly System.Func<int, Vector2, float, bool> _clickOverlaps;
     private PlayAreaBounds _previousBounds;
     public static UpdateSystem2 Instance;
     public int UpdatingGemCount => _awake.Count;
@@ -45,8 +44,7 @@ namespace UntitledGemGame.Systems
     public UpdateSystem2(OrthographicCamera camera) : base(Aspect.All(typeof(Gem)))
     {
       m_camera = camera;
-      _moveManualGravity = MoveManualGravity;
-      _gravityOverlaps = GravityOverlaps;
+      _clickOverlaps = ClickOverlaps;
       _collectManualGem = CollectManualGem;
       Instance = this;
     }
@@ -162,19 +160,11 @@ namespace UntitledGemGame.Systems
         }
     }
 
-    private bool GravityOverlaps(int index, Vector2 position, float radius)
+    private bool ClickOverlaps(int index, Vector2 position, float radius)
     {
       var grid = HarvesterCollectionSystem.Instance.flatSpatialHash;
       var gem = _gemMapper.Get(grid.Gems[index].EntityId);
       return gem != null && gem.IsLive && !gem.PickedUp && !gem.WasClicked && gem.OverlapsClick(position, radius);
-    }
-
-    private void MoveManualGravity(int index, Vector2 position)
-    {
-      var grid = HarvesterCollectionSystem.Instance.flatSpatialHash;
-      var gem = _gemMapper.Get(grid.Gems[index].EntityId);
-      if (gem != null && gem.IsLive && !gem.PickedUp && !gem.WasClicked)
-        gem.MoveByManualGravity(position);
     }
 
     private bool CollectManualGem(int index, double multiplier)
@@ -184,10 +174,60 @@ namespace UntitledGemGame.Systems
       ref var data = ref grid.Gems[index];
       var gem = _gemMapper.Get(data.EntityId);
       if (gem == null || !gem.UpdateRegistered || gem.PickedUp || gem.WasClicked || gem.ShouldDestroy) return false;
+      multiplier *= 1 + BuriedGems.Dig(UpgradeManager.Instance.UG.ClickDig);
       gem.ManualClickBonus = UntitledGemGameGameScreen.Instance.ClickUtility.BonusValue(gem.BaseValue, multiplier);
       gem.OnClicked(false);
       UntitledGemGameGameScreen.Instance.OnGemHandCollected();
       return true;
+    }
+
+    // Tidal Pull and Magnet Cursor send a gem home like a click does, without counting as one:
+    // no combo, no click talents.
+    private bool PullGemHome(int index)
+    {
+      var grid = HarvesterCollectionSystem.Instance.flatSpatialHash;
+      if (!grid.IsAvailable(index)) return false;
+      var gem = _gemMapper.Get(grid.Gems[index].EntityId);
+      if (gem == null || !gem.UpdateRegistered || gem.PickedUp || gem.WasClicked || gem.ShouldDestroy) return false;
+      gem.ManualClickBonus = UntitledGemGameGameScreen.Instance.ClickUtility.BonusValue(gem.BaseValue,
+        SignalStats.ClickValue * (1 + BuriedGems.Dig(UpgradeManager.Instance.UG.ClickDig)));
+      gem.OnClicked(false);
+      return true;
+    }
+
+    public const float MagnetCursorInterval = 0.1f;
+    public const int MagnetCursorGems = 10;
+    public const float TidalPullInterval = 8f;
+    public const float TidalPullRadius = 1000f;
+    // The tide reaches the whole field and takes this share of its loose gems.
+    public const float TidalPullReach = 6000f;
+    public const float TidalPullShare = 0.1f;
+    public const int TidalPullMinimumGems = 500;
+    public const float TidalPullFlash = 1.2f;
+    private float _magnetCursorTimer, _tidalPullTimer;
+    private readonly List<int> _pullTargets = new();
+    // Seconds left of the tide's ring, for RenderSystem.
+    public float TidalPullFlashRemaining { get; private set; }
+
+    // Tidal Pull: every few seconds the home base draws in the gems around it.
+    private void UpdateTidalPull(GemSpatialIndex grid, float dt)
+    {
+      TidalPullFlashRemaining = System.Math.Max(0f, TidalPullFlashRemaining - dt);
+      if (!UpgradeManager.Instance.UG.TidalPull || HomeBase.Instance?.Entity == null) { _tidalPullTimer = 0; return; }
+      _tidalPullTimer += dt;
+      if (_tidalPullTimer < TidalPullInterval) return;
+      _tidalPullTimer = 0;
+      var home = HomeBase.Instance.Entity.Get<Harvester>().BoundingCircle.Center;
+      _pullTargets.Clear();
+      int limit = System.Math.Max(TidalPullMinimumGems, (int)(grid.NumActiveGems * TidalPullShare));
+      foreach (int index in grid.QueryCollection(home.X, home.Y, TidalPullReach))
+      {
+        if (_pullTargets.Count >= limit) break;
+        if (grid.IsAvailable(index)) _pullTargets.Add(index);
+      }
+      // Finish the query before collecting: removal changes the index's linked lists.
+      foreach (int index in _pullTargets) PullGemHome(index);
+      TidalPullFlashRemaining = TidalPullFlash;
     }
 
     public Entity GetEntityP(int entityId) => GetEntity(entityId);
@@ -218,15 +258,8 @@ namespace UntitledGemGame.Systems
       bool boundsChanged = bounds.Minimum != _previousBounds.Minimum || bounds.Maximum != _previousBounds.Maximum;
       _previousBounds = bounds;
       bool magnetsActive = MagnetizerCache.ActiveMagnets.Count > 0;
-      screen.CursorGravity.FollowPointer(mousePosition, hovering && mouse.IsButtonDown(MouseButton.Right));
-      screen.CursorGravity.Update(dt, grid, _moveManualGravity, _gravityOverlaps, _collectManualGem);
-      if (screen.CursorGravity.TakeCollapseNotification())
-        AudioManager.Instance.PlaySound(SoundEvent.CursorGravityCollapse);
-      if (screen.CursorGravity.TakeReadyNotification() && UpgradeManager.Instance.UG.CursorGravityEnabled)
-        AudioManager.Instance.PlaySound(SoundEvent.CursorGravityReady);
-      screen.CursorGravity.HandleInput(mouse.IsButtonDown(MouseButton.Right),
-        mouse.WasButtonPressed(MouseButton.Left), hovering,
-        mousePosition, screen.GemClickRadius, UpgradeManager.Instance.UG, UpgradeManager.Instance.Signals, UpgradeManager.Instance.UGM);
+      UpdateTractorBelt(screen, grid, mouse.WasButtonPressed(MouseButton.Right),
+        mouse.IsButtonDown(MouseButton.Right), hovering, mousePosition, dt);
       // Idle gems sleep indefinitely. Only camera changes require a population-wide
       // update; magnets wake the gems in their reach each frame. The extraction's
       // collapse swallows the field on the GPU (Gem.Swallow), so it wakes nothing.
@@ -255,10 +288,23 @@ namespace UntitledGemGame.Systems
           if (clicked) _directClicks.Add(index);
         }
       }
+      // Magnet Cursor: the cursor keeps picking up what it hovers, without a click.
+      if (hovering && UpgradeManager.Instance.UG.MagnetCursor && !mouse.IsButtonDown(MouseButton.Right))
+      {
+        _magnetCursorTimer += dt;
+        if (_magnetCursorTimer >= MagnetCursorInterval)
+        {
+          _magnetCursorTimer = 0;
+          int pulled = 0;
+          foreach (var gem in _nextHovered)
+            if (pulled < MagnetCursorGems && PullGemHome(gem.GridIndex)) ++pulled;
+        }
+      }
+      UpdateTidalPull(grid, dt);
       if (clicked && UntitledGemGameGameScreen.Instance.ClickUtility.Activate(
         grid, _directClicks, mousePosition, UpgradeManager.Instance.UG, _collectManualGem, System.Random.Shared.NextDouble(),
         UpgradeManager.Instance.Signals, UpgradeManager.Instance.UGM,
-        bounds.Center, clickRadius, _gravityOverlaps))
+        clickRadius, _clickOverlaps))
         AudioManager.Instance.PlaySound(SoundEvent.GemClick);
       foreach (var gem in _hovered)
         if (gem.UpdateRegistered && gem.HoverFrame != _hoverFrame) gem.SetHovered(false);
@@ -279,8 +325,9 @@ namespace UntitledGemGame.Systems
             gem.SynchronizeSpatialIndex(grid);
 
           // Clicked gems have left the index. Deliver directly on arrival so
-          // their flight never needs a spatial query or a second claim.
-          if (gem.WasClicked && !gem.PickedUp && !gem.CollectingOnGpu)
+          // their flight never needs a spatial query or a second claim. The Tractor
+          // Belt delivers its own gems at the end of the belt.
+          if (gem.WasClicked && !gem.PickedUp && !gem.CollectingOnGpu && !gem.RidingTractorBelt)
           {
             var home = HomeBase.Instance.Entity.Get<Harvester>();
             float reach = BaseStats.GetHarvesterCollectionRange(home) + gem.CollectionRadius;

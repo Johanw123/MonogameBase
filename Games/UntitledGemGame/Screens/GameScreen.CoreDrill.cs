@@ -256,10 +256,14 @@ public partial class UntitledGemGameGameScreen
     return Color.Lerp(new Color(gem.R, gem.G, gem.B), Color.White, 0.35f);
   }
 
-  // Glows, cracks and trails: called inside the additive weapon shape pass.
+  private readonly Vector2[] faultPath = new Vector2[DrillFaultSegments + 2];
+
+  // Glows, cracks and trails: called inside the additive weapon shape pass. The pods' burn,
+  // the fault lines and the geyser are queued for ModuleEffects.fx and drawn right after it.
   private void DrawCoreDrillGlows(float feather)
   {
     if (drillPods.Count == 0 && drillResonance <= 0f) return;
+    var effects = WeaponEffects;
     if (DrillResonating)
     {
       bool seismic = CoreDrill.ResonanceLayers(UpgradeManager.Instance.UGA) > 0;
@@ -273,12 +277,8 @@ public partial class UntitledGemGameGameScreen
       if (!pod.Landed)
       {
         float t = Math.Clamp(pod.Age / pod.Path.Duration, 0f, 1f);
-        for (int i = 1; i <= 6; i++)
-        {
-          float a = Math.Max(0f, t - i * 0.025f), b = Math.Max(0f, t - (i - 1) * 0.025f);
-          m_shapeBatch.FillLine(Bezier(pod.Path, a), Bezier(pod.Path, b), 3f - i * 0.35f,
-            DrillGlow * (0.55f - i * 0.08f), Math.Max(feather, 4f));
-        }
+        // The pod's burn on the way down.
+        effects.Plume(Bezier(pod.Path, t), Bezier(pod.Path, Math.Max(0f, t - 0.15f)), DrillGlow, 2.8f, pod.BoreAngle, 0.9f);
         continue;
       }
       var anchor = pod.Path.End;
@@ -298,52 +298,36 @@ public partial class UntitledGemGameGameScreen
           m_shapeBatch.FillLine(from, from + PlanetDirection(angle) * 5f, 1.6f, depth * (1f - phase), feather);
         }
       }
-      // Fault Lines use the fracture palette: a molten halo around an angular,
-      // white-hot split, with small branches opening after the main crack reaches them.
+      // Fault Lines use the fracture palette: a molten glow around an angular, white-hot
+      // split that runs through its kinks as it grows, with small branches opening after
+      // the main crack reaches them.
       float growth = FaultGrowth(pod);
       for (int f = 0; f < pod.FaultBends.Length; f++)
       {
-        var previous = FaultPoint(pod, f, 0f);
-        float heat = 0.78f + 0.18f * (0.5f + 0.5f * MathF.Sin(planetAge * 13f + f * 2.3f));
-        for (int step = 1; step <= DrillFaultSegments; step++)
-        {
-          var next = FaultPoint(pod, f, growth * step / DrillFaultSegments);
-          DrawMoltenFault(previous, next, fade, heat, feather, false);
-          previous = next;
-        }
+        int reached = Math.Min(DrillFaultSegments, (int)(growth * DrillFaultSegments));
+        int count = 0;
+        for (int step = 0; step <= reached; step++)
+          faultPath[count++] = FaultVertex(pod, f, step);
+        if (reached < DrillFaultSegments)
+          faultPath[count++] = FaultPoint(pod, f, growth);
+        effects.Crack(faultPath.AsSpan(0, count), CrackMagmaColor, 1.5f, fade);
         for (int branch = 0; branch < DrillFaultBranches; branch++)
         {
           float appears = 0.32f + branch * 0.28f;
           float branchGrowth = Math.Clamp((growth - appears) / (1f - appears), 0f, 1f);
           if (branchGrowth <= 0f) continue;
-          previous = FaultBranchPoint(pod, f, branch, 0f);
-          for (int step = 1; step <= 4; step++)
-          {
-            var next = FaultBranchPoint(pod, f, branch, branchGrowth * step / 4f);
-            DrawMoltenFault(previous, next, fade, heat * 0.92f, feather, true);
-            previous = next;
-          }
+          for (int step = 0; step <= 4; step++)
+            faultPath[step] = FaultBranchPoint(pod, f, branch, branchGrowth * step / 4f);
+          effects.Crack(faultPath.AsSpan(0, 5), CrackMagmaColor, 0.9f, fade * 0.9f);
         }
       }
       if (pod.Geyser > 0f)
       {
-        float life = pod.Geyser / DrillGeyserSeconds;
-        float height = PlanetRadius * (0.8f + 1.8f * (1f - life));
-        m_shapeBatch.FillLine(anchor, anchor + outward * height, 18f * life + 4f, depth * life, Math.Max(feather, 16f));
-        m_shapeBatch.FillLine(anchor, anchor + outward * height * 0.85f, 5f * life + 2f, Color.White * life,
-          Math.Max(feather, 5f));
+        // The core's pressure blows out through the bore.
+        effects.Jet(anchor, anchor + outward * (PlanetRadius * 2.6f), 1f - pod.Geyser / DrillGeyserSeconds, depth, 11f,
+          pod.BoreAngle);
       }
     }
-  }
-
-  private void DrawMoltenFault(Vector2 from, Vector2 to, float fade, float heat, float feather, bool branch)
-  {
-    float halo = branch ? 4f : 7f;
-    m_shapeBatch.FillLine(from, to, halo, CrackMagmaColor * (0.24f * fade), Math.Max(feather, halo + 2f));
-    m_shapeBatch.FillLine(from, to, branch ? 2f : 3.2f, DrillGlow * (0.55f * fade),
-      Math.Max(feather, branch ? 3f : 4f));
-    m_shapeBatch.FillLine(from, to, branch ? 0.8f : 1.25f, CrackColor(heat) * (0.95f * fade),
-      Math.Max(feather, 1.25f));
   }
 
   // A weapon module and cutting-head effect make the pod read as mining equipment,

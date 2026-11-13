@@ -60,6 +60,22 @@ public static class HudLayout
   }
   public static Rectangle SideResourcesProximityBounds => new Rectangle(
     0, System.Math.Max(0, SideResourceTop - 48), SideResourceWidth + 96, SideResourceHeight * 2 + SideResourceGap + 96);
+  public const int SideMeterButtonWidth = 48;
+  public const int SideMeterButtonHeight = 64;
+  public const int SideMeterButtonGap = 16;
+  public static int SideMeterCenterY => ContentBottom / 2;
+  public static Rectangle SideCollectionButton(float slide = 1f)
+  {
+    int x = (int)System.MathF.Round((System.Math.Clamp(slide, 0f, 1f) - 1f) * SideMeterButtonWidth);
+    int y = SideMeterCenterY - SideMeterButtonHeight - SideMeterButtonGap / 2;
+    return new Rectangle(x, y, SideMeterButtonWidth, SideMeterButtonHeight);
+  }
+  public static Rectangle SideDamageButton(float slide = 1f)
+  {
+    int x = (int)System.MathF.Round((System.Math.Clamp(slide, 0f, 1f) - 1f) * SideMeterButtonWidth);
+    int y = SideMeterCenterY + SideMeterButtonGap / 2;
+    return new Rectangle(x, y, SideMeterButtonWidth, SideMeterButtonHeight);
+  }
   public static Rectangle ManualAbilityButton(int index)
   {
     int left = Left;
@@ -79,14 +95,14 @@ public static class HudLayout
       return (int)System.Math.Ceiling(2f / pixelsPerUnit);
     }
   }
-  // Navigation tabs, in the order their features arrive: Talents from the first extraction,
-  // then Systems, Shipyard and Signals from the talent tiers, so the bar fills without gaps.
-  public const int UpgradesTab = 0, TalentsTab = 1, SystemsTab = 2, ShipyardTab = 3, SignalsTab = 4;
-  private static int NavigationWidth => 212;
+  // Navigation tabs, in the order their features arrive: Upgrades and Weaponry from the start,
+  // Talents from the first extraction, then Systems, Shipyard and Signals from the talent tiers.
+  public const int UpgradesTab = 0, WeaponryTab = 1, TalentsTab = 2, SystemsTab = 3, ShipyardTab = 4, SignalsTab = 5;
+  private static int NavigationWidth => 196;
   private static int ProgressWidth => 416;
   private const int BulkButtonWidth = 272;
   public static Rectangle NavigationButton(int index) => new Rectangle(
-    PrestigePanel.Right + 20 + index * (NavigationWidth + 14),
+    PrestigePanel.Right + 20 + index * (NavigationWidth + 12),
     TopRowY, NavigationWidth, RowHeight);
   public static Rectangle BulkUpgradeButton(int index) => new Rectangle(
     Width - Left - BulkButtonWidth * 2 - 16 + index * (BulkButtonWidth + 16), TopRowY, BulkButtonWidth, RowHeight);
@@ -95,7 +111,7 @@ public static class HudLayout
   // The Damage button takes Spend All's slot at the bar's right end, which is free
   // whenever the upgrade tree is closed; the Damage panel opens above it.
   public const int DamagePanelWidth = 660;
-  public const int DamageRowHeight = 46;
+  public const int DamageRowHeight = 54;
   public static Rectangle DamageButton => BulkUpgradeButton(1);
   // The Feedback button takes Upgrade Cheapest's slot in the HUD bar next to Damage.
   public static Rectangle FeedbackButton => BulkUpgradeButton(0);

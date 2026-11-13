@@ -45,6 +45,7 @@ internal static class GuiThemeRuntime
   private static Color[] previous;
   private static int revision = -1;
   private static int skinRevision = -1;
+  private static bool visibleOnly;
 
   public static void CaptureStates(GumProjectSave project)
   {
@@ -96,8 +97,14 @@ internal static class GuiThemeRuntime
   public static void Refresh()
   {
     bool changed = revision != GuiPalette.Revision;
-    bool skinChanged = skinRevision != GuiSkin.Revision || GuiSkin.HasAnyOverride;
+    bool skinRevisionChanged = skinRevision != GuiSkin.Revision;
+    bool skinChanged = skinRevisionChanged || GuiSkin.HasAnyOverride;
     if (!changed && GuiPalette.BaseRevision == 0 && !skinChanged) return;
+    // A palette or skin change re-themes every element, shown or hidden. Otherwise this runs
+    // every frame only to re-apply skins that a Gum state swapped back, so hidden subtrees
+    // (most of the upgrade tree in play) are skipped. It runs before drawing, so an element
+    // that becomes visible is skinned before its first frame.
+    visibleOnly = !changed && !skinRevisionChanged;
     Color[] next = changed ? ResolvedColors() : previous;
     if (changed)
       foreach (var binding in stateColors)
@@ -146,7 +153,7 @@ internal static class GuiThemeRuntime
 
   private static void Visit(GraphicalUiElement element, bool changed, Color[] next, bool menu = false)
   {
-    if (element == null || !visited.Add(element)) return;
+    if (element == null || (visibleOnly && !element.Visible) || !visited.Add(element)) return;
     if (element is NineSliceRuntime panel) ApplyNineSliceSkin(panel, menu);
     if (element is SpriteRuntime sprite && (element.Name is "SliderFill" or "ToggleKnob" or "CheckboxBackground" or "BackgroundSprite" ||
       (element.Name == "Background" && element.Parent?.Name == "ThumbInstance")))
@@ -169,10 +176,12 @@ internal static class GuiThemeRuntime
       }
       if (element.RenderableComponent is FontStashSharpText custom) custom.FillColor = Remap(custom.FillColor, next, menu);
     }
-    foreach (var child in element.ContainedElements) Visit(child, changed, next, menu);
-    if (element.Children != null)
-      foreach (var child in element.Children)
-        if (child is GraphicalUiElement gue) Visit(gue, changed, next, menu);
+    // Indexed loops: foreach over these interfaces boxed an enumerator per element per frame.
+    var contained = element.ContainedElements;
+    for (int i = 0; i < contained.Count; i++) Visit(contained[i], changed, next, menu);
+    var children = element.Children;
+    if (children != null)
+      for (int i = 0; i < children.Count; i++) Visit(children[i], changed, next, menu);
   }
 
   private static void ApplyNineSliceSkin(NineSliceRuntime ns, bool menu)

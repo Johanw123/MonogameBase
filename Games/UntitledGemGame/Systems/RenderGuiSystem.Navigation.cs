@@ -20,6 +20,8 @@ public partial class RenderGuiSystem
   private const float TerminalCloseSeconds = 0.21f;
   private static readonly Color TerminalAmber = new(255, 175, 55);
   private static readonly Color TerminalGreen = new(70, 235, 145);
+  private const int TabAlertSize = 34;
+  private const int TabAlertGap = 10;
 
   private static Rectangle TerminalMonitorBounds
   {
@@ -256,17 +258,20 @@ public partial class RenderGuiSystem
     batch.Draw(pixel, new Rectangle(rect.Right - thickness, rect.Top, thickness, rect.Height), color);
   }
 
-  private void DrawNavigationPanelBackground(SpriteBatch batch, Color accent)
+  private void DrawNavigationPanelBackground(SpriteBatch batch, Color accent, bool showWatermark = true)
   {
     var panel = PanelNavigationLayout.Panel;
     if (!IsDetached && !ChoosingTalents)
       DrawShipTerminalScreenFrame(batch, panel, accent);
     GuiSkin.Panel(batch, panel, header: false, accent);
-    var watermark = PanelNavigationLayout.Watermark;
-    GuiSkin.DrawScannerReticle(batch, watermark.Center, watermark.Width, accent, 0.2f);
-    var icon = PanelNavigationIcon(batch.GraphicsDevice, CurrentNavigationTab);
-    batch.Draw(icon, watermark.Center.ToVector2(), null, accent * 0.045f, 0,
-      new Vector2(icon.Width, icon.Height) / 2, 240f / Math.Max(icon.Width, icon.Height), SpriteEffects.None, 0);
+    if (showWatermark)
+    {
+      var watermark = PanelNavigationLayout.Watermark;
+      GuiSkin.DrawScannerReticle(batch, watermark.Center, watermark.Width, accent, 0.2f);
+      var icon = PanelNavigationIcon(batch.GraphicsDevice, CurrentNavigationTab);
+      batch.Draw(icon, watermark.Center.ToVector2(), null, accent * 0.045f, 0,
+        new Vector2(icon.Width, icon.Height) / 2, 240f / Math.Max(icon.Width, icon.Height), SpriteEffects.None, 0);
+    }
     if (!IsDetached && !ChoosingTalents)
       DrawShipTerminalScreenInterior(batch, panel, accent);
   }
@@ -352,12 +357,18 @@ public partial class RenderGuiSystem
   private void DrawShipTerminalScreenInterior(SpriteBatch batch, Rectangle panel, Color accent)
   {
     var pixel = GuiSkin.Pixel(batch.GraphicsDevice);
+    // The screen's top-right and bottom-left corners are cut away. Keep the
+    // rectangular CRT layers inside the corner slices, including their filtering
+    // fringe, rather than painting across the already-drawn diagonal rim.
+    const int inset = 24;
+    int width = panel.Width - inset * 2;
+    if (width <= 0 || panel.Height <= inset * 2) return;
     Color scanline = accent * 0.014f;
     for (int y = panel.Top + 6; y < panel.Bottom - 6; y += 6)
-      batch.Draw(pixel, new Rectangle(panel.X + 6, y, panel.Width - 12, 2), scanline);
+      batch.Draw(pixel, new Rectangle(panel.X + inset, y, width, 2), scanline);
 
-    batch.Draw(pixel, new Rectangle(panel.X + 6, panel.Top + 4, panel.Width - 12, 10), accent * 0.045f);
-    batch.Draw(pixel, new Rectangle(panel.X + 6, panel.Bottom - 14, panel.Width - 12, 10), accent * 0.035f);
+    batch.Draw(pixel, new Rectangle(panel.X + inset, panel.Top + 4, width, 10), accent * 0.045f);
+    batch.Draw(pixel, new Rectangle(panel.X + inset, panel.Bottom - 14, width, 10), accent * 0.035f);
   }
 
   private bool PanelNavigationShown
@@ -368,7 +379,7 @@ public partial class RenderGuiSystem
         || (IsDetached && !DrawingPopout && !IsPopoutFocused)) return false;
       return m_upgradeWindowType switch
       {
-        UpgradeTypes.Upgrades or UpgradeTypes.Abilities => true,
+        UpgradeTypes.Upgrades or UpgradeTypes.Weaponry or UpgradeTypes.Abilities => true,
         UpgradeTypes.Meta => TalentsReadOnly,
         UpgradeTypes.Shipyard => revealingModule == ShipModule.None,
         UpgradeTypes.Signals => !signalChoicesVisible && !IsSelectingSignal,
@@ -377,9 +388,20 @@ public partial class RenderGuiSystem
     }
   }
 
+  // Marked with a red ! while the tab holds something the player should look at: a bought
+  // weapon off the ship, or a run that is worth ending. A mark, not an order: it never
+  // reaches into the field, and the extraction stays the player's call.
+  private static bool TabNeedsAttention(int tab) => tab switch
+  {
+    HudLayout.UpgradesTab => UntitledGemGameGameScreen.Instance?.ExtractRecommended == true,
+    HudLayout.WeaponryTab => WeaponToAttach != null,
+    _ => false
+  };
+
   private int CurrentNavigationTab => m_upgradeWindowType switch
   {
     UpgradeTypes.Upgrades => HudLayout.UpgradesTab,
+    UpgradeTypes.Weaponry => HudLayout.WeaponryTab,
     UpgradeTypes.Meta => HudLayout.TalentsTab,
     UpgradeTypes.Abilities => HudLayout.SystemsTab,
     UpgradeTypes.Shipyard => HudLayout.ShipyardTab,
@@ -389,6 +411,7 @@ public partial class RenderGuiSystem
   private static string PanelNavigationLabel(int tab) => tab switch
   {
     HudLayout.UpgradesTab => Loc.T("Upgrades"),
+    HudLayout.WeaponryTab => Weaponry.NavigationLabel,
     HudLayout.TalentsTab => Loc.T("Talents"),
     HudLayout.SystemsTab => ShipSystems.NavigationLabel,
     HudLayout.ShipyardTab => Loc.T("Shipyard"),
@@ -398,6 +421,7 @@ public partial class RenderGuiSystem
   private Texture2D PanelNavigationIcon(GraphicsDevice graphics, int tab) => tab switch
   {
     HudLayout.UpgradesTab => AssetManager.Load<Texture2D>("Textures/scifi_icons/icon_arrow/14_arrow.png"),
+    HudLayout.WeaponryTab => AssetManager.Load<Texture2D>("Textures/scifi_icons/icon_damage/14_damage.png"),
     HudLayout.TalentsTab => GemSurfaceTexture.PrestigeOrbIcon(),
     HudLayout.SystemsTab => PowerCells.IconTexture(),
     HudLayout.ShipyardTab => GuiSkin.GetTexture(graphics, "synty_map_ship"),
@@ -489,19 +513,28 @@ public partial class RenderGuiSystem
       int topInset = selected ? 4 : hovered ? 8 : 12;
       var tabRect = new Rectangle(bounds.X, bounds.Y + topInset, bounds.Width, bounds.Height - topInset);
       string label = PanelNavigationLabel(tab);
+      bool alert = TabNeedsAttention(tab);
+      int alertWidth = alert ? TabAlertSize + TabAlertGap : 0;
       float fontSize = 28f;
       var measured = Measure2(label, Vector2.Zero, fontSize);
-      if (measured.X > tabRect.Width - 36)
+      if (measured.X > tabRect.Width - 36 - alertWidth)
       {
-        fontSize *= (tabRect.Width - 36) / measured.X;
+        fontSize *= (tabRect.Width - 36 - alertWidth) / measured.X;
         measured = Measure2(label, Vector2.Zero, fontSize);
       }
       Color textColor = selected ? GuiSkin.SelectionAccent
         : hovered ? GuiSkin.HoverAccent
         : GuiSkin.MutedTextColor;
+      float labelX = tabRect.Center.X - (measured.X + alertWidth) / 2f;
       FontManager.RenderFieldFont(SystemFont, label,
-        new Vector2(tabRect.Center.X - measured.X / 2f, tabRect.Center.Y - measured.Y / 2f + 2f),
+        new Vector2(labelX, tabRect.Center.Y - measured.Y / 2f + 2f),
         textColor, Color.Black, fontSize);
+      if (alert)
+      {
+        batch.Begin(samplerState: SamplerState.LinearClamp, transformMatrix: HudLayout.RenderTransform);
+        GuiSkin.AlertMark(batch, new Point((int)(labelX + measured.X) + TabAlertGap + TabAlertSize / 2, tabRect.Center.Y + 2), TabAlertSize);
+        batch.End();
+      }
     }
   }
 
@@ -548,6 +581,7 @@ public partial class RenderGuiSystem
   public bool CanOpenNavigation(int tab) => !ChoosingTalents && tab switch
   {
     HudLayout.UpgradesTab => true,
+    HudLayout.WeaponryTab => UpgradeManager.Instance?.UG.HomeBaseCollector == true,
     HudLayout.TalentsTab => TalentsTabShown,
     HudLayout.SystemsTab => ShipSystems.Online,
     HudLayout.ShipyardTab => UpgradeManager.Instance.UGM.ShipyardUnlocked,
@@ -565,6 +599,10 @@ public partial class RenderGuiSystem
       case HudLayout.UpgradesTab:
         SetUpgradeType(UpgradeTypes.Upgrades);
         m_animateButtonClickUpgrades = 0.001f;
+        break;
+      case HudLayout.WeaponryTab:
+        SetUpgradeType(UpgradeTypes.Weaponry);
+        m_animateButtonClickWeaponry = 0.001f;
         break;
       case HudLayout.TalentsTab:
         SetUpgradeType(UpgradeTypes.Meta);

@@ -25,10 +25,11 @@ public partial class UntitledGemGameGameScreen
   private static int CraterCap => PrestigeTalentEffects.MoltenSpotCap(MaxCraters);
   // Molten craters are drawn by MoltenCrater.fx on the planet's texel grid. A crater's
   // radius is Size * CraterRadiusPerSize world units at the base planet scale; the
-  // quad's half size must match QUAD_SCALE and QUAD_PAD in the shader.
+  // quad's half size must match QUAD_SCALE and QUAD_PAD in the shader. The shader draws
+  // nothing past 1.74 radii (see QUAD_SCALE there), so the quad stops just outside that.
   private const float CraterRadiusPerSize = 1.5f;
-  private const float CraterQuadScale = 1.6f;
-  private const float CraterQuadPad = 2f;
+  private const float CraterQuadScale = 1.75f;
+  private const float CraterQuadPad = 0.25f;
   // Mean radius of the prerendered planet (render_planet_spin in prerender.py).
   private const float CraterDiscRadius = 31f;
   private const int MaxArcs = 48;
@@ -87,7 +88,8 @@ public partial class UntitledGemGameGameScreen
     float bonus = PrestigeTalentEffects.ShardReactorBonus(m_gameState.CurrentCoreShardCount)
       + PrestigeTalentEffects.SignalResonanceBonus(stacks)
       + CoreDrill.HollowBonus(UpgradeManager.Instance.UGA, m_gameState.CoreDrillTunnels)
-      + (DrillResonating ? CoreDrill.WeaponYieldBonus(UpgradeManager.Instance.UGA) : 0f);
+      + (DrillResonating ? CoreDrill.WeaponYieldBonus(UpgradeManager.Instance.UGA) : 0f)
+      + PrestigeTalentEffects.OuroborosBonus(m_gameState.PrestigePointsEarned);
     // A shocked planet (Galvanic Shock) takes more of everything.
     weaponYieldBonus = (1f + bonus) * PrestigeTalentEffects.ShockMultiplier(ShockStacks) - 1f;
     weaponBonusLayers = PrestigeTalentEffects.SignalResonanceLayers(stacks);
@@ -138,6 +140,7 @@ public partial class UntitledGemGameGameScreen
     if (escortShells > 0 && escortTimer <= 0f && CombatActive) FireEscortShell();
     overloadCooldown = Math.Max(0f, overloadCooldown - dt);
     if (overloadPending && overloadCooldown <= 0f && CombatActive) EruptPlanet();
+    UpdateChaosTheory(dt, bounds);
   }
 
   private void ClearTalentCombos()
@@ -152,6 +155,7 @@ public partial class UntitledGemGameGameScreen
     overloadPending = false;
     overloadCooldown = escortTimer = 0f;
     escortShells = 0;
+    ClearChaosTheory();
   }
 
   // ---- Molten craters and Magma Detonation ----
@@ -331,7 +335,7 @@ public partial class UntitledGemGameGameScreen
         if (upgrades.RocketOrbitalStrike)
         {
           int orbital = AutomaticWeaponYield(
-            (int)MathF.Ceiling(MainShipWeapons.RocketGems(firePower) * MainShipWeapons.OrbitalStrikeBonus));
+            (int)MathF.Ceiling(MainShipWeapons.RocketGems(firePower) * MainShipWeapons.RocketOrbitalDamage(UpgradeManager.Instance.UG)));
           LaunchOrbitalRocket(LaserMount(), orbital, firePower, beam * perBeam + k, k * 0.12f);
           continue;
         }
@@ -447,11 +451,17 @@ public partial class UntitledGemGameGameScreen
           gems, firePower);
       }
     }
-    if (harvester.HasModule(ShipModule.LaserUplink) && UpgradeManager.Instance.UG.MiningLaser)
-      laserOvercharge = Math.Max(laserOvercharge,
-        Math.Min(ModuleCatalog.LaserUplinkMaxSeconds, cargo * ModuleCatalog.LaserUplinkSecondsPerGem));
+    if (harvester.HasModule(ShipModule.SiegeCannon))
+    {
+      // One shell carrying the fire power of many: a bigger load, a bigger shell.
+      long shells = Math.Clamp((long)cargo / ModuleCatalog.SiegeGemsPerPower, 1, ModuleCatalog.SiegeMaxPower);
+      int firePower = (int)Math.Min(int.MaxValue, SignalStats.FirePower(MainShipWeapon.Cannon) * shells);
+      int gems = AutomaticWeaponYield(firePower, arsenal: false);
+      if (gems > 0)
+        LaunchCannonShot(PlanetShotKind.Cannon, from, PlanetPos + PlanetDirection(facing) * PlanetRadius * 0.9f, gems, firePower);
+    }
     if (harvester.HasModule(ShipModule.DetonatorCharge))
-      DetonateMolten(facing, ModuleCatalog.DetonatorRadius, weaponBounds, force: true);
+      DetonateMolten(facing, MathF.PI, weaponBounds, force: true);
   }
 
   // Every weapon you own fires at once (Main Battery Relay, Shard Reactor, Planetary
@@ -547,16 +557,28 @@ public partial class UntitledGemGameGameScreen
   private void DrawMoltenSpot(Vector2 center, float texel, Vector3 normal, float radiusTexels, float life, byte seed,
     float soot = 1f)
   {
-    if (RotateWithPlanet(normal, PlanetRotation).Z <= 0.02f || life <= 0.004f) return;
-    // The shader reads the radius back from a byte; size the quad from that same value.
-    byte radiusByte = (byte)Math.Clamp(MathF.Round(radiusTexels / 32f * 255f), 1f, 255f);
-    float radius = radiusByte * 32f / 255f;
-    float quad = 2f * (radius * CraterQuadScale + CraterQuadPad) * texel;
+    if (!MoltenSpotVisible(normal, life)) return;
+    float quad = MoltenQuadSize(radiusTexels, texel, out byte radiusByte);
     m_spriteBatch.Draw(AsyncContent.AssetManager.DefaultTexture, PlanetNormalToDrawn(center, texel, normal), null,
-      new Color((byte)MathF.Round(life * 255f), seed, radiusByte, (byte)MathF.Round(Math.Clamp(soot, 0f, 1f) * 255f)),
+      new Color(MoltenLife(life), seed, radiusByte, MoltenSoot(soot)),
       0f, new Vector2(0.5f), quad,
       SpriteEffects.None, 0f);
   }
+
+  private bool MoltenSpotVisible(Vector3 normal, float life)
+    => !(RotateWithPlanet(normal, PlanetRotation).Z <= 0.02f || life <= 0.004f);
+
+  // The quad's side in world units. The shader reads the radius back from a byte, so the
+  // quad is sized from that same value.
+  private static float MoltenQuadSize(float radiusTexels, float texel, out byte radiusByte)
+  {
+    radiusByte = (byte)Math.Clamp(MathF.Round(radiusTexels / 32f * 255f), 1f, 255f);
+    float radius = radiusByte * 32f / 255f;
+    return 2f * (radius * CraterQuadScale + CraterQuadPad) * texel;
+  }
+
+  private static byte MoltenLife(float life) => (byte)MathF.Round(life * 255f);
+  private static byte MoltenSoot(float soot) => (byte)MathF.Round(Math.Clamp(soot, 0f, 1f) * 255f);
 
   // Overload pressure: called inside the additive weapon pass. Arcs are drawn with the
   // harpoon's lightning (DrawArcHarpoon).

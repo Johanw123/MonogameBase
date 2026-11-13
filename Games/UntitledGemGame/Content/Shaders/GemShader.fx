@@ -155,3 +155,28 @@ technique SpriteDrawing
         PixelShader = compile PS_SHADERMODEL MainPS();
     }
 };
+
+// Tractor Tails keep a few gem snapshots outside the loose-gem instance batch.
+// Decode the same packed surface when SpriteBatch draws those moving snapshots.
+struct TailVertexInput {
+    float4 Position : POSITION0;
+    float4 Color : COLOR0;
+    float2 TexCoord : TEXCOORD0;
+};
+
+PixelInput TailVertexShader(TailVertexInput v) {
+    PixelInput output;
+    output.Position = mul(v.Position, view_projection);
+    output.Color = float4(v.Color.rgb, 0.0f);
+    output.TexCoord = v.TexCoord;
+    return output;
+}
+
+technique TractorTailDrawing
+{
+    pass P0
+    {
+        VertexShader = compile VS_SHADERMODEL TailVertexShader();
+        PixelShader = compile PS_SHADERMODEL MainPS();
+    }
+};

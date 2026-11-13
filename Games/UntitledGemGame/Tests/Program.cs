@@ -1,5 +1,12 @@
 using UntitledGemGame;
 
+if (args.Contains("--fleet-talents-check"))
+{
+  FleetTalentChecks.Run();
+  FleetTalentChecks.CheckTree();
+  return;
+}
+
 if (args.Length == 3 && args[0] == "--thruster-preview")
 {
   using var preview = new ThrusterPreview(args[1], args[2]);
@@ -10,6 +17,13 @@ if (args.Length == 3 && args[0] == "--thruster-preview")
 if (args.Length == 2 && args[0] == "--world-polish-check")
 {
   using var check = new WorldPolishChecks(args[1]);
+  check.Run();
+  return;
+}
+
+if (args.Length >= 2 && args[0] == "--module-effects-check")
+{
+  using var check = new ModuleEffectsChecks(args[1], args.Length > 2 ? args[2] : null);
   check.Run();
   return;
 }
@@ -91,9 +105,21 @@ if (args.Contains("--upgrade-connection-check"))
   return;
 }
 
+if (args.Contains("--weapon-support-check"))
+{
+  WeaponSupportChecks.Run();
+  return;
+}
+
 if (args.Contains("--weapon-load-check"))
 {
   WeaponLoadChecks.Run();
+  return;
+}
+
+if (args.Contains("--flak-check"))
+{
+  FlakChecks.Run();
   return;
 }
 
@@ -107,7 +133,7 @@ if (args.Length == 3 && args[0] == "--click-cursor-render-check")
 if (args.Contains("--click-utility-check"))
 {
   ClickUtilityChecks.Run();
-  CursorGravityChecks.Run();
+  TractorBeltChecks.Run();
   UpgradeManager.CurrentUpgrades = new();
   var clickTree = UpgradeManager.CurrentUpgrades;
   clickTree.LoadJson(File.ReadAllText("Content/Data/upgrades.json"),
@@ -168,6 +194,7 @@ if (args.Length is 3 or 4 && args[0] == "--menu-check")
 if (args.Contains("--module-check"))
 {
   ModuleChecks.Run();
+  MothershipProtocolChecks.Run();
   return;
 }
 
@@ -238,6 +265,8 @@ if (args.Contains("--benchmark"))
   return;
 }
 ModuleChecks.Run();
+MothershipProtocolChecks.Run();
+FleetTalentChecks.Run();
 WeaponLoadChecks.Run();
 FrameCounterChecks.Run();
 ConstellationChecks.Run();
@@ -252,7 +281,7 @@ SleepingGemChecks.Run();
 ChainLifetimeChecks.Run();
 GemClaimChecks.Run();
 ClickUtilityChecks.Run();
-CursorGravityChecks.Run();
+TractorBeltChecks.Run();
 DroneChecks.Run();
 FleetDeliveryValueChecks.Run();
 if (args.Contains("--spatial-check")) return;
@@ -268,6 +297,9 @@ AbilityTreeChecks.Run();
 AbilityCapstoneChecks.Run();
 GemQualityChecks.Run();
 PlanetMiningChecks.Run();
+WeaponSupportChecks.Run();
+FlakChecks.Run();
+PlayerGuidanceChecks.Run();
 
 // HUD height is in virtual units; letterbox offsets and render scale must both survive conversion.
 var playScreen = PlayAreaBounds.GetScreenBounds(new Microsoft.Xna.Framework.Rectangle(100, 50, 1920, 1080), 132, 2160);
@@ -773,12 +805,14 @@ try
     && upgrades.UpgradeJoints["HS1"].PurchasingTime == 0f,
     "Restoring a reset tree must clear previous purchase visuals");
   var gatedDefinitions = new Upgrades();
+  // The button JSON is pretty-printed, so match the requirement whatever its whitespace.
   gatedDefinitions.LoadJson(File.ReadAllText(Path.Combine(root, "Content/Data/upgrades_meta.json")),
-    File.ReadAllText(Path.Combine(root, "Content/Data/upgrades_meta_buttons.json"))
-      .Replace("\"requiredexpandspacelevels\":[\"0\"]", "\"requiredexpandspacelevels\":[\"2\"]"),
+    System.Text.RegularExpressions.Regex.Replace(
+      File.ReadAllText(Path.Combine(root, "Content/Data/upgrades_meta_buttons.json")),
+      "\"requiredexpandspacelevels\":\\s*\\[\\s*\"0\"\\s*\\]", "\"requiredexpandspacelevels\":[\"2\"]"),
     gatedDefinitions.UpgradeButtonsMeta, gatedDefinitions.UpgradeDefinitionsMeta);
-  var gated = upgrades.UpgradeButtonsMeta["CAT1"];
-  gated.Data = gatedDefinitions.UpgradeButtonsMeta["CAT1"].Data;
+  var gated = upgrades.UpgradeButtonsMeta["BNW1"];
+  gated.Data = gatedDefinitions.UpgradeButtonsMeta["BNW1"].Data;
   Check(gated.GetNextLevelInfo().RequiredExpandSpaceLevel == 2, "Expand Space requirements must load from button JSON");
   // Expand Space is one level per talent tier reached, once the core has been extracted.
   UpgradeManager Extracted(ulong extractions, GameSave save)
@@ -792,7 +826,7 @@ try
   // Three tier-one points reach tier two: the second free Expand Space level.
   Dictionary<string, int> TierTwo(params string[] extra)
   {
-    var levels = new Dictionary<string, int> { ["TR1"] = 1, ["MHF1"] = 1, ["PRL1"] = 1 };
+    var levels = new Dictionary<string, int> { ["TR1"] = 1, ["DEY1"] = 1, ["PRL1"] = 1 };
     foreach (string id in extra) levels[id] = id == "GVM1" ? 2 : 1;
     return levels;
   }
@@ -800,7 +834,7 @@ try
   Check(manager.ExpandSpaceLevel == 1 && manager.IsExpandSpaceLocked(gated) && !gated.CanAfford,
     "Purple currency must not bypass an unmet Expand Space requirement");
   manager.Upgrade(gated);
-  Check(gated.CurrentLevel == 0 && !manager.UGM.CargoCatapult,
+  Check(gated.CurrentLevel == 0 && !manager.UGM.BeltNetwork,
     "A locked purchase must return before applying effects, changing levels, or touching the GUI");
   Check(Extracted(0, new GameSave { Meta = TierTwo() }).ExpandSpaceLevel == 0,
     "Talent tiers must not expand space before the first extraction");
@@ -812,8 +846,8 @@ try
   gated.GetNextLevelInfo().RequiredExpandSpaceLevel = 0;
   Check(!manager.IsExpandSpaceLocked(gated), "Setting the requirement to zero must remove the lock");
   gated.GetNextLevelInfo().RequiredExpandSpaceLevel = 3;
-  manager = Extracted(1, new GameSave { Meta = TierTwo("CAT1") });
-  Check(gated.CurrentLevel == 1 && manager.UGM.CargoCatapult,
+  manager = Extracted(1, new GameSave { Meta = TierTwo("BNW1") });
+  Check(gated.CurrentLevel == 1 && manager.UGM.BeltNetwork,
     "Raising a requirement must retain already purchased permanent upgrade effects");
   var perLevelDefinitions = new Upgrades();
   var perLevelButtons = System.Text.Json.Nodes.JsonNode.Parse(

@@ -12,13 +12,13 @@ public static class DebugProgressionPresets
      "Early game: clicking", "Mid game: clicking", "Late game: clicking", "Uber endgame"];
   public static readonly string[] Descriptions =
     ["Fresh run with one drifter.", "Small fleet, no permanent upgrades.",
-     "First permanent upgrades and a few ship system talents.", "Shipyard and signals with a modest collection.",
+     "First talents, opening Tier 3: a few ship system talents and a fresh Shipyard.", "Shipyard and signals with a modest collection.",
      "Cargo and propulsion preference; repeated common signals.", "Ship system preference with a different signal spread.",
      "Production preference, developed ship systems, incomplete module collection.",
      "Fleet preference, deeper permanent upgrades, still missing many signals.",
      "Click value, click radius and early chains, with a small supporting fleet.",
-     "Click combos, sustained harvesting and cursor gravity; manual collection signals and permanent bonuses.",
-     "Deep click chains, sustained harvesting and gravity upgrades with a focused signal collection.",
+     "Click combos, sustained harvesting and the tractor belt; manual collection signals and permanent bonuses.",
+     "Deep click chains, sustained harvesting and tractor belt upgrades with a focused signal collection.",
      "Everything maxed for chaos testing; deliberately unrealistic."];
   public static readonly string[] FeatureNames =
     ["Abilities: starter", "Abilities: fully upgraded", "Shipyard: Drifters", "Shipyard: Seekers",
@@ -27,9 +27,10 @@ public static class DebugProgressionPresets
 
   // Every main ship weapon node, bought to its last level by the weapon sandboxes.
   public static readonly string[] FullWeaponNodes =
-    ["AC1", "CFR1", "CFR2", "CFP1", "CFP2", "CSS1", "LZ1", "LZR1", "LZP1", "LZT1", "LZD1",
+    ["AHFC1", "AHT1", "AHE1", "ROB1", "RCS1", "ROBZ1", "RGS1", "RGM1", "RGC1", "LZS1", "LZB1", "LZV1", "LMR1", "CCP1", "CCD1", "CRN1", "CRS1", "CBR1", "CAF1", "CSE1", "AC1", "CFR1", "CFP1", "CSS1", "LZ1", "LZR1", "LZP1", "LZT1", "LZD1",
      "AH1", "AHR1", "AHP1", "AHB1", "AHD1", "AHF1", "AHDX1", "AHW1",
      "RP1", "RPR1", "RPP1", "RPC1", "RG1", "RGR1", "RGP1", "RGF1",
+     "FK1", "FKR1", "FKP1", "FKC1", "FKW1", "FKF1",
      "CRB1", "CCR1", "LZM1", "LZH1", "RCW1", "ROS1", "BTS1", "RCN1"];
 
   public static GameSave Create(int stage, Upgrades upgrades)
@@ -42,37 +43,22 @@ public static class DebugProgressionPresets
     ulong[] earnings = [100, 10_000, 150_000, 3_000_000, 450_000_000, 450_000_000,
       600_000_000_000, 30_000_000_000_000, 300_000_000_000_000];
     ulong[] permanentBudgets = [0, 0, 5, 20, 65, 65, 250, 700, 10_000];
-    // The Expand Space level each stage used to buy; it still gates legacy meta levels here.
-    // In game, Expand Space comes from the talent tiers the preset reaches.
-    int[] expansions = [0, 0, 0, 0, 0, 0, 3, 5, 5];
     // Core fractures already reached at this stage's sustained damage per minute.
     int[] fractures = [0, 0, 1, 4, 5, 5, 6, 6, 9];
     ulong total = earnings[stage];
     // Every permanent point was earned on the prestige ladder, so the next one is as far off.
-    var save = new GameSave { RedGems = total, RedGemsEarnedThisRun = total, PrestigePointsEarned = permanentBudgets[stage],
+    var save = new GameSave { HasOpenedUpgrades = true, RedGems = total, RedGemsEarnedThisRun = total, PrestigePointsEarned = permanentBudgets[stage],
       CoreExtractions = permanentBudgets[stage] > 0 ? (ulong)stage - 1 : 0,
-      CoreFractures = fractures[stage], ShellDamage = stage > 0 ? PlanetShell.Health : 0 };
+      CoreFractures = fractures[stage], CoreShards = (ulong)fractures[stage],
+      ShellDamage = stage > 0 ? PlanetShell.Health : 0 };
     save.Upgrades["HB"] = 1;
     save.Upgrades["HU1"] = 1;
     if (stage == 0) { RecordHarvesterDiscoveries(save, upgrades); return save; }
 
     ulong upgradeBudget = total * 60 / 100;
-    ulong remainder = FillBuild(upgrades.UpgradeButtons, save.Upgrades, upgradeBudget, max, int.MaxValue, clicking);
+    ulong remainder = FillBuild(upgrades.UpgradeButtons, save.Upgrades, upgradeBudget, max, clicking);
     save.RedGems -= upgradeBudget - remainder;
-    int expansion = expansions[stage];
-    ulong metaBudget = permanentBudgets[stage];
-    // Permanent feature unlocks are deliberate milestones, rather than leftover spending.
-    foreach (string id in stage >= 3 ? new[] { ShipSystems.UnlockTalent, "SYU1", "SGU1" }
-      : stage == 2 ? new[] { ShipSystems.UnlockTalent } : [])
-      if (upgrades.UpgradeButtonsMeta.TryGetValue(id, out var node)
-        && node.Data.LevelInfo[0].Cost <= metaBudget
-        && node.Data.LevelInfo[0].RequiredExpandSpaceLevel <= expansion)
-      {
-        save.Meta[id] = 1;
-        metaBudget -= node.Data.LevelInfo[0].Cost;
-      }
-    // Only the talents in the prestige tree can be bought, and they ignore legacy prerequisites.
-    save.PurpleGems = FillBuild(TreeTalents(upgrades), save.Meta, metaBudget, max, expansion, clicking, ignorePrerequisites: true);
+    save.PurpleGems = LearnTalents(upgrades, save, permanentBudgets[stage], max);
 
     // Purchase power cells at the real escalating gem price, then spend them on system talents.
     ulong pointBudget = save.Meta.ContainsKey(ShipSystems.UnlockTalent) ? total * (clicking ? 10UL : 20UL) / 100 : 0;
@@ -82,7 +68,7 @@ public static class DebugProgressionPresets
       save.RedGems -= price;
       save.AbilityPointsPurchased++;
     }
-    save.BlueGems = FillSystems(upgrades, save, save.AbilityPointsPurchased, max, expansion);
+    save.BlueGems = FillSystems(upgrades, save, save.AbilityPointsPurchased, max);
     if (max)
       save.AbilityPointsPurchased = Spent(upgrades.UpgradeButtonsAbilities, save.Abilities) + save.BlueGems;
     Equip(save);
@@ -120,8 +106,8 @@ public static class DebugProgressionPresets
           [SignalKind.SpawnCount, SignalKind.SpawnFrequency, SignalKind.GemValue, SignalKind.Capacity] ];
         SignalKind[] preferred = clicking
           ? [SignalKind.ClickValue, SignalKind.ClickRadius, SignalKind.ClickChainRange,
-             SignalKind.HoldClickFrequency, SignalKind.ClickComboWindow, SignalKind.CursorGravityRadius,
-             SignalKind.CursorGravityStrength, SignalKind.CursorGravityDuration, SignalKind.CursorGravityCooldown]
+             SignalKind.HoldClickFrequency, SignalKind.ClickComboWindow, SignalKind.TractorBeltRadius,
+             SignalKind.TractorBeltSpeed, SignalKind.TractorBeltDuration, SignalKind.TractorBeltCapacity]
           : builds[stage == 5 ? 1 : stage == 6 ? 2 : 0];
         var random = new Random(730 + stage + (clicking ? 100 : 0));
         var wallet = new GameState { CurrentRedGemCount = total * 10 / 100 };
@@ -137,6 +123,7 @@ public static class DebugProgressionPresets
         save.RedGems -= before - wallet.CurrentRedGemCount;
       }
     }
+    FitPresetWeapons(save);
     return save;
   }
 
@@ -145,22 +132,82 @@ public static class DebugProgressionPresets
     8 => 1, 9 => 4, 10 => 7, 11 => 8, _ => preset
   };
 
-  private static bool IsClickStat(JsonUpgrade definition) => definition.PropertyName == "QuantumTouch"
-    || definition.PropertyName.StartsWith("Click", StringComparison.Ordinal)
+  private static bool IsClickStat(JsonUpgrade definition) => definition.PropertyName.StartsWith("Click", StringComparison.Ordinal)
     || definition.PropertyName.StartsWith("HoldClick", StringComparison.Ordinal)
-    || definition.PropertyName.StartsWith("CursorGravity", StringComparison.Ordinal);
+    || definition.PropertyName.StartsWith("TractorBelt", StringComparison.Ordinal);
 
-  // Presets never take the talents that change how a run is played (Lone Operator docks the fleet),
-  // and take the first side of every either/or choice.
-  private static Dictionary<string, UpgradeButton> TreeTalents(Upgrades upgrades)
-    => upgrades.UpgradeButtonsMeta.Where(pair => PrestigeTalentLayout.CompatibleTalents.Contains(pair.Key)
-        && Array.IndexOf(PrestigeTalentLayout.PlaystyleTalents, pair.Key) < 0)
-      .ToDictionary(pair => pair.Key, pair => pair.Value);
+  // The order a player takes each tier's talents in: crits and the cannon's craters first, since
+  // every run has them, then the fleet and the weapons and systems bought later in a run.
+  // Unlisted talents come last, in layout order.
+  private static readonly string[] TalentPriority =
+  [
+    "DEY1", "TR1", "TT1", "DPD1", "PRL1", "BNW1",
+    "HSK1", "BR1", "LR1", "SYF1", "GVS1", "MCSN1",
+    "CRM1", "SCR1", "MD1", "EP1", "KNB1", "KNH1",
+    "IFF1", "AE1", "DG1", "FSD1", "MBR1", "RCH1", "KD1",
+    "EXE1", "CAT1", "MS1", "CHR1", "MRS1", "SR1", "CHT1",
+    "OUR1", "SGR1", "RCO1", "OVC1",
+  ];
+
+  // Weapon talents a build takes only once the run has one of their weapons. Kamikaze Drones
+  // needs none, but trades the drone swarm away, so builds leave it until nothing else is left.
+  private static readonly Dictionary<string, MainShipWeapon[]> TalentWeapons = new()
+  {
+    ["PRL1"] = [MainShipWeapon.Laser], ["BR1"] = [MainShipWeapon.Laser], ["SYF1"] = [MainShipWeapon.Laser],
+    ["LR1"] = [MainShipWeapon.Harpoon], ["GVS1"] = [MainShipWeapon.Harpoon], ["IOM1"] = [MainShipWeapon.Harpoon],
+    ["MD1"] = [MainShipWeapon.Rockets, MainShipWeapon.Railgun],
+    ["KNH1"] = [MainShipWeapon.Railgun], ["KNB1"] = [MainShipWeapon.Railgun],
+    ["MBR1"] = [MainShipWeapon.Railgun], ["RCH1"] = [MainShipWeapon.Railgun],
+    ["KD1"] = [],
+  };
+
+  // The free rewards that bring whole systems online; presets grant them for the tiers they reach.
+  private static readonly string[] SystemUnlocks = [ShipSystems.UnlockTalent, "SYU1", "SGU1"];
+
+  // Learn talents the way a player climbs the tree: each point goes to the deepest open tier
+  // with a talent this build can use, so tiers open early without buying talents for weapons
+  // the run lacks. Presets never take the talents that change how a run is played (Lone
+  // Operator docks the fleet), and take the first side of every either/or choice. Returns the
+  // points left unspent.
+  private static ulong LearnTalents(Upgrades upgrades, GameSave save, ulong points, bool max)
+  {
+    var meta = save.Meta;
+    var tiers = PrestigeTalentLayout.Tiers;
+    var spent = new ulong[tiers.Length];
+    var weapons = Weaponry.Tabs.Where(tab => save.Upgrades.GetValueOrDefault(tab.Root) > 0)
+      .Select(tab => tab.Weapon).ToHashSet();
+    bool Reached(int tier) => spent.Take(tier).Aggregate(0UL, (sum, tierSpent) => sum + tierSpent)
+      >= (ulong)tiers[tier].RequiredEarlierPoints;
+    bool Learnable(string id) => PrestigeTalentLayout.CompatibleTalents.Contains(id)
+      && Array.IndexOf(PrestigeTalentLayout.PlaystyleTalents, id) < 0
+      && upgrades.UpgradeButtonsMeta.TryGetValue(id, out var button)
+      && meta.GetValueOrDefault(id) < Math.Min(button.Data.NumLevels, button.Data.LevelInfo.Count);
+    bool Useful(string id) => !TalentWeapons.TryGetValue(id, out var needs) || needs.Any(weapons.Contains);
+    int Priority(string id) => Array.IndexOf(TalentPriority, id) is int rank && rank >= 0 ? rank : int.MaxValue;
+    while (true)
+    {
+      var (tier, id) = Enumerable.Range(0, tiers.Length).Where(Reached)
+        .SelectMany(index => tiers[index].Talents.Where(Learnable).Select(talent => (index, talent)))
+        .OrderBy(pick => !Useful(pick.talent)).ThenByDescending(pick => pick.index)
+        .ThenBy(pick => Priority(pick.talent)).FirstOrDefault();
+      if (id == null) break;
+      ulong price = upgrades.UpgradeButtonsMeta[id].Data.LevelInfo[meta.GetValueOrDefault(id)].Cost;
+      if (!max && price > points) break;
+      if (!max) points -= price;
+      meta[id] = meta.GetValueOrDefault(id) + 1;
+      spent[tier] += price;
+    }
+    for (int tier = 0; tier < tiers.Length; tier++)
+      if (Reached(tier))
+        foreach (string id in tiers[tier].FreeRewards.Intersect(SystemUnlocks))
+          meta[id] = 1;
+    return points;
+  }
 
   private static ulong FillBuild(Dictionary<string, UpgradeButton> buttons, Dictionary<string, int> levels,
-    ulong budget, bool max, int expansion, bool clicking, bool ignorePrerequisites = false)
+    ulong budget, bool max, bool clicking)
   {
-    if (!clicking) return Fill(buttons, levels, budget, max, expansion, ignorePrerequisites: ignorePrerequisites);
+    if (!clicking) return Fill(buttons, levels, budget, max);
     var focus = new HashSet<string>();
     void Include(string id)
     {
@@ -171,9 +218,8 @@ public static class DebugProgressionPresets
       if (IsClickStat(node.Data.UpgradeDefinition)) Include(id);
     // Reserve most of the tree's budget for manual collection, then develop supporting systems.
     ulong focusedBudget = budget * 75 / 100;
-    ulong remaining = Fill(buttons, levels, focusedBudget, false, expansion, focus, ignorePrerequisites);
-    return Fill(buttons, levels, budget - focusedBudget + remaining, false, expansion,
-      ignorePrerequisites: ignorePrerequisites);
+    ulong remaining = Fill(buttons, levels, focusedBudget, false, focus);
+    return Fill(buttons, levels, budget - focusedBudget + remaining, false);
   }
 
   public static GameSave CreateFeature(int feature, Upgrades upgrades)
@@ -199,6 +245,7 @@ public static class DebugProgressionPresets
     Buy(upgrades.UpgradeButtons, save.Upgrades, "CFP1", 3);
     save.CoreExtractions = 1;
     save.CoreFractures = feature is 1 or 10 ? 4 : 0;
+    save.CoreShards = (ulong)save.CoreFractures;
     if (feature is 0 or 1)
     {
       if (feature == 1)
@@ -208,7 +255,7 @@ public static class DebugProgressionPresets
           Buy(upgrades.UpgradeButtons, save.Upgrades, id, upgrades.UpgradeButtons[id].Data.NumLevels);
       }
       Buy(upgrades.UpgradeButtonsMeta, save.Meta, ShipSystems.UnlockTalent);
-      FillSystems(upgrades, save, feature == 0 ? 8UL : 0, feature == 1, 4);
+      FillSystems(upgrades, save, feature == 0 ? 8UL : 0, feature == 1);
       save.BlueGems = feature == 0 ? 3UL : 25;
       save.AbilityPointsPurchased = Spent(upgrades.UpgradeButtonsAbilities, save.Abilities) + save.BlueGems;
       Equip(save);
@@ -216,7 +263,7 @@ public static class DebugProgressionPresets
     else if (feature >= 2 && feature <= 7)
     {
       string[] unlocks = ["HU1", "AHU1", "EHU1", "UHU1", "PHU1"];
-      string[] counts = ["HC1", "AHC1", "EHC1", "UHC1", "PHC1"];
+      string[] counts = ["HC1", "AHFC1", "EHC1", "UHC1", "PHC1"];
       int type = feature == 7 ? 0 : feature - 2;
       Buy(upgrades.UpgradeButtons, save.Upgrades, unlocks[type]);
       Buy(upgrades.UpgradeButtons, save.Upgrades, counts[type], 2);
@@ -240,7 +287,7 @@ public static class DebugProgressionPresets
     else
     {
       if (feature == 9)
-        foreach (string id in new[] { "CVM1", "CLC1", "CR1", "CSC1", "CCB1", "CGE1" })
+        foreach (string id in new[] { "CVM1", "CLC1", "CR1", "CSC1", "CCB1", "TBE1" })
           Buy(upgrades.UpgradeButtons, save.Upgrades, id);
       else
         foreach (string id in FullWeaponNodes)
@@ -248,6 +295,15 @@ public static class DebugProgressionPresets
     }
     save.HarvesterUnlockAchievements.Clear();
     RecordHarvesterDiscoveries(save, upgrades);
+    if (feature == 10)
+    {
+      foreach (var module in WeaponSupportCatalog.All)
+        for (int count = 0; count < 3; count++) save.Weapons.AwardSupport(module);
+      save.Weapons.EquipSupport(WeaponSupportModule.Overcharger, 0);
+      save.Weapons.EquipSupport(WeaponSupportModule.Accelerator, 3);
+      save.Weapons.EquipSupport(WeaponSupportModule.Payload, 4);
+    }
+    FitPresetWeapons(save);
     return save;
   }
 
@@ -289,7 +345,7 @@ public static class DebugProgressionPresets
       .Aggregate(0UL, (sum, info) => sum + info.Cost));
 
   // Bring every ship system online before deepening any of them, as a player would.
-  private static ulong FillSystems(Upgrades upgrades, GameSave save, ulong cells, bool max, int expansion)
+  private static ulong FillSystems(Upgrades upgrades, GameSave save, ulong cells, bool max)
   {
     bool kamikaze = Kamikaze(save);
     foreach (var tab in ShipSystems.Tabs.Where((_, index) => ShipSystems.IsTabAvailable(index, kamikaze)))
@@ -299,7 +355,15 @@ public static class DebugProgressionPresets
         if (!max) cells -= root.Data.LevelInfo[0].Cost;
         save.Abilities[tab.Root] = 1;
       }
-    return Fill(upgrades.UpgradeButtonsAbilities, save.Abilities, cells, max, expansion, kamikazeDrones: kamikaze);
+    return Fill(upgrades.UpgradeButtonsAbilities, save.Abilities, cells, max, kamikazeDrones: kamikaze);
+  }
+
+  // Presets stage an equipped ship explicitly; ordinary blueprint purchases stay in inventory.
+  private static void FitPresetWeapons(GameSave save)
+  {
+    foreach (var tab in Weaponry.Tabs)
+      if (tab.Weapon != MainShipWeapon.Cannon && save.Upgrades.GetValueOrDefault(tab.Root) > 0)
+        save.Weapons.TryAutoFit(tab.Weapon);
   }
 
   private static bool Kamikaze(GameSave save) => save.Meta.GetValueOrDefault(PrestigeTalentEffects.KamikazeDronesTalent) > 0;
@@ -317,8 +381,7 @@ public static class DebugProgressionPresets
   }
 
   private static ulong Fill(Dictionary<string, UpgradeButton> buttons, Dictionary<string, int> levels,
-    ulong budget, bool max, int expansion, ISet<string> allowed = null, bool ignorePrerequisites = false,
-    bool kamikazeDrones = false)
+    ulong budget, bool max, ISet<string> allowed = null, bool kamikazeDrones = false)
   {
     // Buy one level at a time, cheapest first, resolving prerequisites after each purchase.
     while (true)
@@ -326,12 +389,11 @@ public static class DebugProgressionPresets
       var next = buttons.Where(pair => allowed == null || allowed.Contains(pair.Key))
         .Where(pair => !ShipSystems.IsInTree(pair.Key)
           || ShipSystems.CanLearn(buttons, pair.Key, id => levels.GetValueOrDefault(id), kamikazeDrones))
-        // Core Shards come from run objectives, which the game pays out when the preset loads.
+        // Leave the shards granted for staged fractures available for the player to spend.
         .Where(pair => max || pair.Value.Data.UpgradeDefinition.Currency != CoreShards.Currency)
-        .Where(pair => ignorePrerequisites || string.IsNullOrEmpty(pair.Value.Data.BlockedBy)
+        .Where(pair => string.IsNullOrEmpty(pair.Value.Data.BlockedBy)
           || levels.ContainsKey(pair.Value.Data.BlockedBy))
         .Where(pair => levels.GetValueOrDefault(pair.Key) < Math.Min(pair.Value.Data.NumLevels, pair.Value.Data.LevelInfo.Count))
-        .Where(pair => max || pair.Value.Data.LevelInfo[levels.GetValueOrDefault(pair.Key)].RequiredExpandSpaceLevel <= expansion)
         .OrderBy(pair => pair.Value.Data.LevelInfo[levels.GetValueOrDefault(pair.Key)].Cost)
         .ThenBy(pair => pair.Key, StringComparer.Ordinal).FirstOrDefault();
       if (next.Value == null) break;

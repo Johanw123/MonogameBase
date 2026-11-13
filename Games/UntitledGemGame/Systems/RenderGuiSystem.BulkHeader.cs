@@ -15,7 +15,8 @@ public partial class RenderGuiSystem
 #endif
 
   private bool CanBuyBulkUpgrade => UpgradeManager.CurrentUpgrades.UpgradeButtons.Values.Any(button =>
-    button.Data.UpgradeDefinition.Currency != CoreShards.Currency && button.CanAfford
+    !Weaponry.IsInTree(button.Data.ShortName)
+    && button.Data.UpgradeDefinition.Currency != CoreShards.Currency && button.CanAfford
     && button.CurrentLevel < button.Data.NumLevels && button.Button.IsEnabled);
 
   private bool UpdateUpgradesHeaderActions()

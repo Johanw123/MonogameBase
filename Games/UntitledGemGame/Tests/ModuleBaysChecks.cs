@@ -22,7 +22,7 @@ internal static class ModuleBaysChecks
       CheckCascadeBuild();
       CheckOverflowBuild();
       CheckKineticBuild();
-      Console.WriteLine("Module Bays passed: prerequisite, two ranks, locked bays, four-module loadouts, saves, trip snapshots and three combo builds.");
+      Console.WriteLine("Module Bays passed: talent, locked bays, four-module loadouts, saves, trip snapshots and three combo builds.");
     }
     finally
     {
@@ -39,35 +39,35 @@ internal static class ModuleBaysChecks
       File.ReadAllText(Path.Combine(root, "Content/Data/upgrades_meta_buttons.json")),
       definitions.UpgradeButtonsMeta, definitions.UpgradeDefinitionsMeta);
     var button = definitions.UpgradeButtonsMeta["MS1"];
-    Check(button.Data.HiddenBy == "SYU1" && button.Data.LockedBy == "SYU1" && button.Data.BlockedBy == "SYU1"
-      && button.Data.NumLevels == 2, "Module Bays is a two-rank child of Shipyard");
+    Check(button.Data.NumLevels == 1 && button.Data.LevelInfo[0].Cost == 1
+      && PrestigeTalentLayout.IsInTree("MS1")
+      && PrestigeTalentLayout.TierIndex("MS1") > PrestigeTalentLayout.TierIndex("SYU1"),
+      "Module Bays is a one-point talent in a tier after the Shipyard unlock");
     var manager = new UpgradeManager();
     ModuleChecks.GrantAll(manager.Modules);
     manager.RestoreProgress(new GameSave());
-    Check(ModuleCatalog.UnlockedSlots == 2 && button.State == UpgradeButton.UnlockState.Invisible,
-      "Start with two bays and keep the retired prestige expansion hidden");
+    Check(ModuleCatalog.UnlockedSlots == 2 && button.State != UpgradeButton.UnlockState.Invisible,
+      "Start with two bays and show the talent that adds more");
     var slots = manager.Modules;
     Check(!slots.TryEquip(0, 2, ShipModule.FinalSweep) && !slots.TryEquip(0, 3, ShipModule.FinalSweep), "Extra bays start locked");
     slots.TryEquip(0, 0, ShipModule.FinalSweep);
     Check(!slots.TryMoveSlot(0, 2) && !slots.TryMoveSlot(0, 3), "Dragging cannot bypass locked bays");
-    for (int rank = 0; rank <= 2; rank++)
+    for (int rank = 0; rank <= 1; rank++)
     {
       manager = new UpgradeManager();
       ModuleChecks.GrantAll(manager.Modules);
       manager.RestoreProgress(new GameSave { Meta = new() { ["SYU1"] = 1, ["MS1"] = rank } });
-      Check(ModuleCatalog.UnlockedSlots == 2 + rank && manager.UGM.ShipyardUnlocked, "Each rank adds exactly one bay");
-      Check(rank == 2 ? button.IsMaxLevel : button.GetNextLevelCost() == (rank == 0 ? 5UL : 15UL), "Costs are 5 then 15 purple gems, capped at two ranks");
-      if (rank == 0) Check(button.State == UpgradeButton.UnlockState.Invisible,
-        "Retired module-bay prestige nodes remain hidden");
+      Check(ModuleCatalog.UnlockedSlots == 2 + rank * 2 && manager.UGM.ShipyardUnlocked, "The talent adds both extra bays");
+      Check(button.IsMaxLevel == (rank == 1), "Module Bays is learned once");
       for (int slot = 0; slot < 4; slot++)
-        Check(manager.Modules.TryEquip(0, slot, (ShipModule)(slot + 1)) == (slot < 2 + rank), "Only unlocked bays accept equipment");
+        Check(manager.Modules.TryEquip(0, slot, (ShipModule)(slot + 1)) == (slot < 2 + rank * 2), "Only unlocked bays accept equipment");
       Check(!manager.Modules.TryEquip(0, 4, ShipModule.ProspectorLens), "No fifth bay");
     }
 
     // All five ship types have an independent four-slot row.
     manager = new UpgradeManager();
     ModuleChecks.GrantAll(manager.Modules);
-    manager.RestoreProgress(new GameSave { Meta = new() { ["SYU1"] = 1, ["MS1"] = 2 } });
+    manager.RestoreProgress(new GameSave { Meta = new() { ["SYU1"] = 1, ["MS1"] = 1 } });
     for (int type = 0; type < ModuleCatalog.Types.Length; type++)
       for (int slot = 0; slot < 4; slot++)
       {
@@ -84,7 +84,7 @@ internal static class ModuleBaysChecks
       var store = new GameSaveStore(path);
       Check(store.Save(save), "Save upgraded bays and all twenty assigned modules");
       var loaded = store.Load();
-      Check(loaded != null && loaded.Meta["MS1"] == 2 && loaded.Modules.Slots.SequenceEqual(save.Modules.Slots), "Round-trip current slot format and meta ranks");
+      Check(loaded != null && loaded.Meta["MS1"] == 1 && loaded.Modules.Slots.SequenceEqual(save.Modules.Slots), "Round-trip current slot format and meta ranks");
       manager = new UpgradeManager();
       ModuleChecks.GrantAll(manager.Modules);
       manager.RestoreProgress(loaded);
@@ -116,28 +116,17 @@ internal static class ModuleBaysChecks
 
   private static void CheckCascadeBuild()
   {
-    using var scene = new Scene(ShipModule.RiftSiphon, ShipModule.CascadeCapacitor);
+    using var scene = new Scene(ShipModule.RiftSiphon, ShipModule.EchoChamber);
     AddBays(scene, ShipModule.DeepHold, ShipModule.QuantumForge);
     var first = scene.AddGem(new Vector2(500, 500));
     var extras = Enumerable.Range(0, 40).Select(_ => scene.AddGem(new Vector2(550, 500))).ToArray();
     scene.Prepare();
     scene.Fleet.CollectGem(first, scene.Ship);
-    Check(extras.Count(g => g.PickedUp) == 10 && scene.Ship.CascadeCharges == 10
-      && !scene.Ship.ReturningToHomebase, "Rift charges Cascade; Deep Hold leaves room to trigger it next pickup");
-    for (int i = 0; i < 2; i++)
-    {
-      var next = scene.AddGem(new Vector2(500, 500));
-      scene.Prepare();
-      scene.Fleet.CollectGem(next, scene.Ship);
-      Check(extras.Count(g => g.PickedUp) == 16 + i * 6 && scene.Ship.CascadeCharges == 10,
-        "Each direct pickup triggers exactly one cascade, recharging without recursive activation");
-    }
-    Check(scene.Ship.CarryingGemCount == 25 && scene.Ship.CarryingGemBaseValue == 550
-      && scene.Ship.ReturningToHomebase, "Cascade feeds Quantum Forge and ends the trip with extra value and overflow");
-    for (int i = 0; i < 100; i++) scene.Ship.RegisterModulePickup(false);
-    Check(scene.Ship.CascadeCharges == 24, "Stored cascade charge is capped");
-    scene.Ship.BeginModuleTrip();
-    Check(scene.Ship.CascadeCharges == 0, "Cascade starts uncharged each trip");
+    Check(extras.Count(g => g.PickedUp) == 10 && scene.Ship.CarryingGemCount == 11 && !scene.Ship.ReturningToHomebase,
+      "Rift pulls its gems into the hold; Deep Hold leaves room for them");
+    // Each rift gem: 10 base, +20 from the rift, +20 from Echo Chamber. The forge fires twice.
+    Check(scene.Ship.CarryingGemBaseValue == 10 + 10 * 50 + 2 * 50,
+      "Echo Chamber adds to the rift's own bonus, and the pulls feed Quantum Forge");
   }
 
   private static void CheckRangeStack()
@@ -147,12 +136,11 @@ internal static class ModuleBaysChecks
     scene.Manager.Modules.TryEquip(0, 0, ShipModule.WidebandArray);
     scene.Manager.Modules.TryEquip(0, 1, ShipModule.CargoScanner);
     AddBays(scene, ShipModule.StellarEngine, ShipModule.VacuumNozzle);
-    scene.Ship.CarryingGemCount = (uint)((BaseStats.GetHarvesterCapacity(scene.Ship) + 1) / 2);
-    Check(MathF.Abs(BaseStats.GetHarvesterCollectionRange(scene.Ship) - (range * 1.35f + 20f)) < 0.001f,
-      "Percentage module range bonuses add and nozzle reach stays flat");
+    Check(MathF.Abs(BaseStats.GetHarvesterCollectionRange(scene.Ship) - range * 1.75f) < 0.001f,
+      "Module range bonuses add together");
     scene.Manager.UG.FleetCollectionRange *= 2f;
-    Check(MathF.Abs(BaseStats.GetHarvesterCollectionRange(scene.Ship) - (range * 2.7f + 20f)) < 0.001f,
-      "Range upgrades do not multiply the nozzle's fixed reach");
+    Check(MathF.Abs(BaseStats.GetHarvesterCollectionRange(scene.Ship) - range * 3.5f) < 0.001f,
+      "Range upgrades multiply the summed module bonus");
   }
 
   private static void CheckOverflowBuild()
@@ -162,12 +150,13 @@ internal static class ModuleBaysChecks
     float speed = BaseStats.GetHarvesterSpeed(scene.Ship), range = BaseStats.GetHarvesterCollectionRange(scene.Ship);
     for (int i = 0; i < 40; i++) scene.AddGem(new Vector2(600, 500));
     scene.Prepare();
-    scene.Ship.CarryingGemCount = 10;
+    scene.Ship.CarryingGemCount = (uint)scene.Ship.ModuleReturnCapacity;
     scene.Ship.CarryingGemBaseValue = 100;
     scene.Invoke("ClaimSupernova", scene.Ship, scene.Transform.Position);
     scene.Invoke("ResolveClaimedGems", scene.Ship);
-    Check(scene.Ship.CarryingGemCount == 42 && scene.Ship.CarryingGemBaseValue == 740,
-      "Supernova's extra cargo earns Overflow Vault's value bonus");
+    // Each blast gem: 10 base, +10 past full cargo, +25 at full pressure.
+    Check(scene.Ship.CarryingGemCount == 45 && scene.Ship.CarryingGemBaseValue == 100 + 32 * 45,
+      "Supernova's blast earns its own pressure bonus and Overflow Vault's");
     UntitledGemGameGameScreen.HomeBasePos = new Vector2(50, 50);
     Check((bool)scene.Invoke("TryActivateReturnGate", scene.Ship, scene.Transform), "Phase Anchor returns the overloaded ship instantly");
     scene.Invoke("DeliverCargo", scene.Ship);
@@ -194,13 +183,13 @@ internal static class ModuleBaysChecks
     scene.Prepare();
     foreach (var gem in gems.Take(20)) scene.Fleet.CollectGem(gem, scene.Ship);
     Check(scene.Ship.CarryingGemBaseValue == 500 && scene.Ship.CarryingGemCount == 20,
-      "Kinetic Refinery rewards active boosts and growing momentum without spending cargo space");
-    Check(MathF.Abs(BaseStats.GetHarvesterSpeed(scene.Ship) - BaseStats.HarvesterSpeed * 10.5f) < 0.001f,
+      "Kinetic Refinery pays out the capped speed bonus without spending cargo space");
+    Check(MathF.Abs(BaseStats.GetHarvesterSpeed(scene.Ship) - BaseStats.HarvesterSpeed * (1.75f * 2f * 3f * 1.15f)) < 0.01f,
       "Chrono, Overdrive and Momentum form a powerful multiplicative speed build");
     scene.Ship.AdvanceDroneTimers(5.1f);
     scene.Fleet.CollectGem(gems[20], scene.Ship);
-    Check(scene.Ship.CarryingGemBaseValue == 520, "Expired boosts stop the refinery's boost bonus while momentum remains");
+    Check(scene.Ship.CarryingGemBaseValue == 523, "With the boosts expired the refinery pays out momentum and its own speed only");
     scene.Fleet.CollectGem(gems[21], scene.Ship);
-    Check(scene.Ship.CarryingGemBaseValue == 550, "Refreshing Overdrive restores the refinery bonus");
+    Check(scene.Ship.CarryingGemBaseValue == 548, "Refreshing Overdrive takes the refinery back to its cap");
   }
 }

@@ -11,6 +11,11 @@ Local changes, all in `ShapeBatch.cs` and marked `UntitledGemGame:`:
   `SetData(_vertices)`, which rewrote the whole vertex array (up to its largest-ever size) in place
   on every `End()` and made the driver wait for the GPU. Upstream made the same change in 0.7.0.
   Measured on the endgame benchmark scene: 16.6 ms to 12.1 ms per frame.
+- `Flush()` draws each batch from the smallest power-of-two vertex buffer that holds it (at
+  least 1,024 vertices), instead of one buffer as large as the biggest batch ever drawn.
+  `Discard` orphans the whole buffer, so after one 250K-vertex batch every small batch was
+  reallocating 37 MB. Measured on the endgame benchmark scene (2026-11-09): time in
+  `VertexBuffer.SetData` 11.2 ms to 2.5 ms per frame.
 - `Flush()` caches the `view_projection` effect parameter instead of looking it up by name.
 - Solid colours (`Gradient.Shape.None`) skip the conversion of their gradient points into the
   shape's local space: the shader never reads them, so the pixels are the same.

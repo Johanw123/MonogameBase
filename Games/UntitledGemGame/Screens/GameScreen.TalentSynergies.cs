@@ -186,7 +186,7 @@ public partial class UntitledGemGameGameScreen
   {
     if (!CombatActive) return;
     int slugs = PrestigeTalentEffects.CargoCatapultSlugs(ref catapultLoad, cargo);
-    catapultSlugs = Math.Min(PrestigeTalentEffects.CargoCatapultMaxQueued, catapultSlugs + slugs);
+    catapultSlugs = Math.Min(PrestigeTalentEffects.CatapultQueueLimit, catapultSlugs + slugs);
   }
 
   // Slugs leave the homebase's nose one at a time and lob high over the field.
@@ -195,7 +195,7 @@ public partial class UntitledGemGameGameScreen
     catapultTimer = Math.Max(0f, catapultTimer - dt);
     if (catapultSlugs <= 0 || catapultTimer > 0f || !CombatActive || FracturePaused) return;
     catapultSlugs--;
-    catapultTimer = PrestigeTalentEffects.CargoCatapultInterval;
+    catapultTimer = PrestigeTalentEffects.CatapultFireInterval;
     int firePower = SignalStats.FirePower(MainShipWeapon.Cannon);
     int gems = AutomaticWeaponYield((int)Math.Min(int.MaxValue, (long)firePower * PrestigeTalentEffects.CargoCatapultPower),
       arsenal: false);
@@ -280,7 +280,9 @@ public partial class UntitledGemGameGameScreen
   // Every weapon hit with a known impact angle (KnockGemsLoose, KnockClusterLoose).
   private void OnPlanetHit(PlanetDamageSource source, float? facing, int damage, int firePower)
   {
+    TryDropWeaponSupport(source, damage);
     if (facing is not float angle || damage <= 0) return;
+    FeedChaos(source, angle, damage, firePower);
     if (weakPoints.Count > 0) BurstWeakPoints(angle, PrestigeTalentEffects.WeakPointReach, firePower);
     FeedSpottedDrills(source, angle, damage);
   }

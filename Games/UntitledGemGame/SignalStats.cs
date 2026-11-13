@@ -14,17 +14,23 @@ public static class SignalStats
   private static int Count(SignalKind kind, int value) => Signals.ScaleCount(kind, value);
   // Autoloader and Shaped Charges signals boost every main ship weapon.
   public static float FireRate(MainShipWeapon weapon)
-    => Scale(SignalKind.SpawnFrequency, MainShipWeapons.FireRate(UpgradeManager.Instance.UG, weapon));
+    => Scale(SignalKind.SpawnFrequency, MainShipWeapons.FireRate(UpgradeManager.Instance.UG, weapon))
+      * UpgradeManager.Instance.Weapons.SupportBonus(weapon).Rate;
   // Shaped Charges boosts every weapon; each weapon also has its own fire power signal.
   public static int FirePower(MainShipWeapon weapon)
-    => Count(WeaponPowerSignal(weapon), Count(SignalKind.SpawnCount, MainShipWeapons.FirePower(UpgradeManager.Instance.UG, weapon)));
-  public static SignalKind WeaponPowerSignal(MainShipWeapon weapon) => weapon switch
+  {
+    int basePower = Count(SignalKind.SpawnCount, (int)Math.Min(int.MaxValue, (long)MainShipWeapons.FirePower(UpgradeManager.Instance.UG, weapon)
+      + UpgradeManager.Instance.Weapons.SupportBonus(weapon).Power));
+    return WeaponPowerSignal(weapon) is { } sig ? Count(sig, basePower) : basePower;
+  }
+  public static SignalKind? WeaponPowerSignal(MainShipWeapon weapon) => weapon switch
   {
     MainShipWeapon.Laser => SignalKind.LaserPower,
     MainShipWeapon.Harpoon => SignalKind.HarpoonPower,
     MainShipWeapon.Rockets => SignalKind.RocketPower,
     MainShipWeapon.Railgun => SignalKind.RailgunPower,
-    _ => SignalKind.CannonPower,
+    MainShipWeapon.Cannon => SignalKind.CannonPower,
+    _ => null,
   };
   // Critical Payload raises every crit chance: Critical Shells' own (capped, so shells alone
   // never always crit) and the crit build's on every weapon (CritChance).
@@ -56,12 +62,10 @@ public static class SignalStats
   public static float HoldClickFrequency => Scale(SignalKind.HoldClickFrequency,
     UpgradeManager.Instance.UG.HoldClickFrequencyMultiplier);
   public static float ClickComboWindow => Scale(SignalKind.ClickComboWindow, UpgradeManager.Instance.UG.ClickComboWindow);
-  public static float CursorGravityRadius => Scale(SignalKind.CursorGravityRadius, UpgradeManager.Instance.UG.CursorGravityRadiusMultiplier);
-  public static float CursorGravityStrength => Scale(SignalKind.CursorGravityStrength,
-    UpgradeManager.Instance.UG.CursorGravityStrengthMultiplier);
-  public static float CursorGravityDuration => Scale(SignalKind.CursorGravityDuration,
-    UpgradeManager.Instance.UG.CursorGravityDuration);
-  public static float CursorGravityCooldown => CursorGravityWell.Cooldown(UpgradeManager.Instance.UG, Signals, UpgradeManager.Instance.UGM);
+  public static float TractorBeltRadius => Scale(SignalKind.TractorBeltRadius, UpgradeManager.Instance.UG.TractorBeltRadiusMultiplier);
+  public static float TractorBeltSpeed => Scale(SignalKind.TractorBeltSpeed, UpgradeManager.Instance.UG.TractorBeltSpeedMultiplier);
+  public static float TractorBeltDuration => Scale(SignalKind.TractorBeltDuration, UpgradeManager.Instance.UG.TractorBeltDuration);
+  public static int TractorBeltCapacity => Count(SignalKind.TractorBeltCapacity, UpgradeManager.Instance.UG.TractorBeltCapacity);
   public static int DroneCount => Count(SignalKind.DroneCount, UpgradeManager.Instance.UGA.IncreaseDroneCount);
   // Drone count signals also add bombers to the Kamikaze Wing.
   public static int KamikazeWingSize => Count(SignalKind.DroneCount, UpgradeManager.Instance.UGA.KamikazeWingSize);

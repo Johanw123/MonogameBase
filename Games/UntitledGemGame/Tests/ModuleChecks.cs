@@ -37,6 +37,7 @@ internal static class ModuleChecks
       TravelModuleChecks.Run();
       MythicModuleChecks.Run();
       ModuleBaysChecks.Run();
+      CollectionScalingChecks.Run();
       ModuleSalvageChecks.Run();
       Console.WriteLine("Module checks passed: shared inventory, saves, trip snapshots, sweep, tractor, prospecting, wake, jackpot and beacon.");
     }
@@ -166,7 +167,7 @@ internal static class ModuleChecks
     var sweepGem = AddGem(new Vector2(500 + range * 1.75f, 500), 7);
     var farGem = AddGem(new Vector2(850, 500), 100);
     var wakeGem = AddGem(new Vector2(1100, 510), 3);
-    var outsideWake = AddGem(new Vector2(1100, 550), 4);
+    var outsideWake = AddGem(new Vector2(1100, 600), 4);
     world.Update(new GameTime());
     fleet.flatSpatialHash.PrepareQueries();
     typeof(HarvesterCollectionSystem).GetField("gemCountThisFrame", Private)!.SetValue(fleet, 1);
@@ -189,7 +190,7 @@ internal static class ModuleChecks
     ship.BeginModuleTrip();
     Invoke(fleet, "ClaimWake", ship, new Vector2(1000, 500), new Vector2(1200, 500));
     Invoke(fleet, "ResolveClaimedGems", ship);
-    Check(wakeGem.PickedUp && !outsideWake.PickedUp, "Wake covers the return segment while excluding gems outside the narrow trail");
+    Check(wakeGem.PickedUp && !outsideWake.PickedUp, "Wake covers the return segment while excluding gems outside the trail");
     manager.Modules.TryEquip(0, 0, ShipModule.None);
     manager.UGA.DroneFinalSweep = true;
     var drone = new Harvester { Type = Harvester.HarvesterType.Drone };
@@ -218,7 +219,7 @@ internal static class ModuleChecks
     ship.CarryingGemCount = 10;
     var seeded = new Random(1234);
     typeof(HarvesterCollectionSystem).GetField("moduleRandom", Private)!.SetValue(fleet, new Random(1234));
-    ulong expected = seeded.NextSingle() < ModuleCatalog.JackpotChance ? 500UL : 100UL;
+    ulong expected = seeded.NextSingle() < ModuleCatalog.JackpotChance ? 800UL : 100UL;
     ulong before = UntitledGemGameGameScreen.DeliveredUncounted;
     Invoke(fleet, "DeliverCargo", ship);
     Check(transform.Position == new Vector2(700, 400) && !ship.DepartingHomeBase
@@ -226,7 +227,7 @@ internal static class ModuleChecks
     for (int i = 0; i < 500; i++)
     {
       ship.CarryingGemBaseValue = 100;
-      expected += seeded.NextSingle() < ModuleCatalog.JackpotChance ? 500UL : 100UL;
+      expected += seeded.NextSingle() < ModuleCatalog.JackpotChance ? 800UL : 100UL;
       Invoke(fleet, "DeliverCargo", ship);
     }
     Check(UntitledGemGameGameScreen.DeliveredUncounted - before == expected && expected > 50100,

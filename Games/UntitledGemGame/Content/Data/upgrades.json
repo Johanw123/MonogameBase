@@ -621,59 +621,114 @@
       "icon": "Textures/scifi_icons/icon_arrow/16_arrow.png"
     },
     {
-      "name": "Gravity Well",
-      "propname": "CursorGravityEnabled",
-      "shortname": "CGE",
+      "name": "Tractor Belt",
+      "propname": "TractorBeltEnabled",
+      "shortname": "TBE",
       "type": "bool",
       "base": "false",
-      "tooltip": "Hold right mouse to aim, then left-click to cast a gravity well that pulls gems in.",
-      "tooltip_extra": "Pulls loose gems toward the cast point for 2 seconds. Radius: 3x your click radius. Cooldown: 20 seconds. A red ring means it's still recharging.",
+      "tooltip": "Right-click the field to place an intake. A tractor belt carries the gems it catches to your home base.",
+      "tooltip_extra": "Hold right-click to drag the intake, and right-click again to place it anew. Each placement runs for 15 seconds; pods already on the belt still finish their trip. Pods carry 1 gem.",
+      "currency": "red",
+      "icon": "Textures/scifi_icons/icon_arrow/16_arrow.png"
+    },
+    {
+      "name": "Long Haul",
+      "propname": "TractorBeltDuration",
+      "shortname": "TBD",
+      "type": "float",
+      "base": "15",
+      "tooltip": "Each tractor belt placement runs longer.",
+      "tooltip_extra": "+5 seconds per rank.",
       "currency": "red",
       "icon": "Textures/scifi_icons/icon_accuracy/14_accuracy.png"
     },
     {
-      "name": "Event Horizon",
-      "propname": "CursorGravityRadiusMultiplier",
-      "shortname": "CGR",
+      "name": "Fixed Installation",
+      "propname": "TractorBeltPermanent",
+      "shortname": "TBP",
+      "type": "bool",
+      "base": "false",
+      "tooltip": "The tractor belt runs until you move it.",
+      "tooltip_extra": "Placements no longer time out. Right-click still moves the intake.",
+      "currency": "red",
+      "icon": "Textures/scifi_icons/icon_power/11_power.png"
+    },
+    {
+      "name": "Cargo Pods",
+      "propname": "TractorBeltCapacity",
+      "shortname": "TBC",
+      "type": "int",
+      "base": "1",
+      "tooltip": "Each belt pod carries more gems.",
+      "tooltip_extra": "+1 gem per pod per rank.",
+      "currency": "red",
+      "icon": "Textures/scifi_icons/icon_power/10_power.png"
+    },
+    {
+      "name": "Wide Intake",
+      "propname": "TractorBeltRadiusMultiplier",
+      "shortname": "TBR",
       "type": "float",
       "base": "3",
-      "tooltip": "A bigger gravity well.",
+      "tooltip": "The intake catches gems from farther away.",
       "tooltip_extra": "Each rank adds half your click radius.",
       "currency": "red",
       "icon": "Textures/scifi_icons/icon_heal/8_heal.png"
     },
     {
-      "name": "Deeper Gravity",
-      "propname": "CursorGravityStrengthMultiplier",
-      "shortname": "CGS",
+      "name": "Full Freight",
+      "propname": "TractorBeltFullFreight",
+      "shortname": "TBF",
+      "type": "bool",
+      "base": "false",
+      "tooltip": "Pods that reach the home base full deliver double value.",
+      "tooltip_extra": "Place the intake where gems pile up to keep pods full.",
+      "currency": "red",
+      "icon": "Textures/scifi_icons/icon_misc/17_misc.png"
+    },
+    {
+      "name": "Belt Speed",
+      "propname": "TractorBeltSpeedMultiplier",
+      "shortname": "TBS",
       "type": "float",
       "base": "1",
-      "tooltip": "The gravity well pulls harder.",
-      "tooltip_extra": "+15% pull per rank.",
+      "tooltip": "The tractor belt runs faster, sending more pods each second.",
+      "tooltip_extra": "+20% speed per rank.",
       "currency": "red",
       "icon": "Textures/scifi_icons/icon_power/4_power.png"
     },
     {
-      "name": "Lingering Singularity",
-      "propname": "CursorGravityDuration",
-      "shortname": "CGD",
-      "type": "float",
-      "base": "2",
-      "tooltip": "The gravity well lasts longer.",
-      "tooltip_extra": "+0.5 seconds per rank. The well stays where you cast it.",
+      "name": "Sweeping Rail",
+      "propname": "TractorBeltSweep",
+      "shortname": "TBW",
+      "type": "bool",
+      "base": "false",
+      "tooltip": "Pods with room pick up loose gems the belt passes over.",
+      "tooltip_extra": "Route the belt through gem fields to fill pods on the way home.",
       "currency": "red",
-      "icon": "Textures/scifi_icons/icon_accuracy/14_accuracy.png"
+      "icon": "Textures/scifi_icons/icon_power/12_power.png"
     },
     {
-      "name": "Gravity Recharge",
-      "propname": "CursorGravityFrequencyMultiplier",
-      "shortname": "CGF",
+      "name": "Polished Rails",
+      "propname": "TractorBeltValue",
+      "shortname": "TBV",
       "type": "float",
-      "base": "1",
-      "tooltip": "The gravity well recharges faster.",
-      "tooltip_extra": "At max rank the cooldown drops from 20 to 10 seconds.",
+      "base": "0",
+      "tooltip": "Gems delivered by the tractor belt are worth more.",
+      "tooltip_extra": "+10% value per rank.",
       "currency": "red",
       "icon": "Textures/scifi_icons/icon_heal/17_heal.png"
+    },
+    {
+      "name": "Branch Line",
+      "propname": "TractorBeltBranch",
+      "shortname": "TBB",
+      "type": "bool",
+      "base": "false",
+      "tooltip": "Run a second tractor belt with its own intake.",
+      "tooltip_extra": "Right-click places a new intake; past two, the oldest shuts off. Right-click an intake to move it.",
+      "currency": "red",
+      "icon": "Textures/scifi_icons/icon_arrow/18_arrow.png"
     },
     {
       "name": "Cannon Fire Rate",
@@ -990,7 +1045,7 @@
       "type": "bool",
       "base": "false",
       "currency": "gold",
-      "tooltip": "Gems you collect by hand, gravity well included, are worth twice as much.",
+      "tooltip": "Gems you collect by hand are worth twice as much.",
       "icon": "Textures/scifi_icons/icon_accuracy/14_accuracy.png"
     },
     {
@@ -1117,6 +1172,357 @@
       "tooltip_extra": "Needs the Arc Harpoon. A new slug replaces the oldest.",
       "currency": "red",
       "icon": "Textures/scifi_icons/icon_accuracy/15_accuracy.png"
+    },
+    {
+      "name": "Flak Battery",
+      "propname": "FlakBattery",
+      "shortname": "FK",
+      "type": "bool",
+      "base": "false",
+      "currency": "red",
+      "tooltip": "Fires wide shotgun bursts of shrapnel pellets across the planet surface to knock gems loose.",
+      "icon": "Textures/scifi_icons/icon_accuracy/1_accuracy.png"
+    },
+    {
+      "name": "Flak Fire Rate",
+      "propname": "FlakFireRate",
+      "shortname": "FKR",
+      "type": "float",
+      "base": "1.0",
+      "currency": "red",
+      "tooltip": "Flak battery fires bursts more often.",
+      "icon": "Textures/scifi_icons/icons_hexagon/11_hexagon.png"
+    },
+    {
+      "name": "Flak Fire Power",
+      "propname": "FlakFirePower",
+      "shortname": "FKP",
+      "type": "int",
+      "base": "1",
+      "currency": "red",
+      "tooltip": "Flak pellets deal more damage and reach deeper layers.",
+      "icon": "Textures/scifi_icons/icons_hexagon/12_hexagon.png"
+    },
+    {
+      "name": "Pellet Count",
+      "propname": "FlakPelletCount",
+      "shortname": "FKC",
+      "type": "int",
+      "base": "8",
+      "currency": "red",
+      "tooltip": "More pellets per flak burst.",
+      "icon": "Textures/scifi_icons/icons_hexagon/13_hexagon.png"
+    },
+    {
+      "name": "Wide Choke",
+      "propname": "FlakWideChoke",
+      "shortname": "FKW",
+      "type": "bool",
+      "base": "false",
+      "currency": "red",
+      "tooltip": "Widens pellet spread and fires 50% more pellets, each dealing 80% damage.",
+      "icon": "Textures/scifi_icons/icon_accuracy/8_accuracy.png"
+    },
+    {
+      "name": "Flechettes",
+      "propname": "FlakFlechettes",
+      "shortname": "FKF",
+      "type": "bool",
+      "base": "false",
+      "currency": "red",
+      "tooltip": "Pellets ricochet once into nearby crust for 40% of their gems.",
+      "icon": "Textures/scifi_icons/icon_arrow/14_arrow.png"
+    },
+    {
+      "name": "Flak Barrage",
+      "propname": "FlakBarrage",
+      "shortname": "FKS",
+      "type": "bool",
+      "base": "false",
+      "currency": "gold",
+      "tooltip": "Fires a second burst right after each cycle.",
+      "icon": "Textures/scifi_icons/icon_misc/12_misc.png"
+    },
+    {
+      "name": "Targeting Computer",
+      "propname": "CannonCritChance",
+      "shortname": "CCP",
+      "type": "float",
+      "base": "0",
+      "currency": "red",
+      "tooltip": "Adds 5 percentage points to cannon critical chance per level.",
+      "icon": "Textures/scifi_icons/icons_hexagon/12_hexagon.png"
+    },
+    {
+      "name": "Supercharged Criticals",
+      "propname": "CannonCritDamage",
+      "shortname": "CCD",
+      "type": "float",
+      "base": "0",
+      "currency": "red",
+      "tooltip": "Adds 1 to the cannon critical damage multiplier per level.",
+      "icon": "Textures/scifi_icons/icons_hexagon/12_hexagon.png"
+    },
+    {
+      "name": "Rebound Chambers",
+      "propname": "CannonExtraBounces",
+      "shortname": "CRN",
+      "type": "int",
+      "base": "0",
+      "currency": "red",
+      "tooltip": "Ricochet rounds bounce once more per level.",
+      "icon": "Textures/scifi_icons/icons_hexagon/12_hexagon.png"
+    },
+    {
+      "name": "Plasma Retention",
+      "propname": "CannonBounceRetention",
+      "shortname": "CRS",
+      "type": "float",
+      "base": "0",
+      "currency": "red",
+      "tooltip": "Ricochets retain 15 percentage points more of the original damage per level.",
+      "icon": "Textures/scifi_icons/icons_hexagon/12_hexagon.png"
+    },
+    {
+      "name": "Explosive Shells",
+      "propname": "CannonBlastRadius",
+      "shortname": "CBR",
+      "type": "float",
+      "base": "0",
+      "currency": "red",
+      "tooltip": "Adds a wider impact blast dealing 20% of shell damage per level.",
+      "icon": "Textures/scifi_icons/icons_hexagon/12_hexagon.png"
+    },
+    {
+      "name": "Aftershock",
+      "propname": "CannonAftershock",
+      "shortname": "CAF",
+      "type": "bool",
+      "base": "false",
+      "currency": "red",
+      "tooltip": "Shell impacts explode again after 0.4 seconds for 50% damage.",
+      "icon": "Textures/scifi_icons/icons_hexagon/12_hexagon.png"
+    },
+    {
+      "name": "Seismic Shells",
+      "propname": "CannonSeismic",
+      "shortname": "CSE",
+      "type": "bool",
+      "base": "false",
+      "currency": "gold",
+      "tooltip": "Each shell impact sends a damaging shockwave around the planet for 50% of shell damage.",
+      "icon": "Textures/scifi_icons/icons_hexagon/12_hexagon.png"
+    },
+    {
+      "name": "Heat Capacitors",
+      "propname": "LaserSurgeDuration",
+      "shortname": "LZS",
+      "type": "float",
+      "base": "0",
+      "currency": "red",
+      "tooltip": "Overheat surges last 0.5 seconds longer per level.",
+      "icon": "Textures/scifi_icons/icon_accuracy/6_accuracy.png"
+    },
+    {
+      "name": "Deep Melting",
+      "propname": "LaserScarDamage",
+      "shortname": "LZB",
+      "type": "float",
+      "base": "0",
+      "currency": "red",
+      "tooltip": "Magma scars deal 25% more base damage per level.",
+      "icon": "Textures/scifi_icons/icon_accuracy/6_accuracy.png"
+    },
+    {
+      "name": "Crystal Refinement",
+      "propname": "LaserThermalValue",
+      "shortname": "LZV",
+      "type": "float",
+      "base": "0",
+      "currency": "red",
+      "tooltip": "Thermal Lance adds another 25% of base gem value per level.",
+      "icon": "Textures/scifi_icons/icon_accuracy/6_accuracy.png"
+    },
+    {
+      "name": "Magma Reactor",
+      "propname": "LaserMagmaReactor",
+      "shortname": "LMR",
+      "type": "bool",
+      "base": "false",
+      "currency": "gold",
+      "tooltip": "Doubles magma scar damage, including Deep Melting bonuses.",
+      "icon": "Textures/scifi_icons/icon_accuracy/6_accuracy.png"
+    },
+    {
+      "name": "Branching Current",
+      "propname": "HarpoonForkBonus",
+      "shortname": "AHFC",
+      "type": "float",
+      "base": "0",
+      "currency": "red",
+      "tooltip": "Forked Current deals another 25% of pulse damage per level.",
+      "icon": "Textures/scifi_icons/icons_hexagon/12_hexagon.png"
+    },
+    {
+      "name": "Reinforced Winch",
+      "propname": "HarpoonWinchBonus",
+      "shortname": "AHT",
+      "type": "int",
+      "base": "0",
+      "currency": "red",
+      "tooltip": "Tectonic Winch tears out one additional pulse of damage per level.",
+      "icon": "Textures/scifi_icons/icons_hexagon/12_hexagon.png"
+    },
+    {
+      "name": "Crust Ripper",
+      "propname": "HarpoonExtraction",
+      "shortname": "AHE",
+      "type": "bool",
+      "base": "false",
+      "currency": "gold",
+      "tooltip": "Doubles Tectonic Winch extraction damage, including Reinforced Winch bonuses.",
+      "icon": "Textures/scifi_icons/icons_hexagon/12_hexagon.png"
+    },
+    {
+      "name": "Gravity Assist",
+      "propname": "RocketOrbitBonus",
+      "shortname": "ROB",
+      "type": "float",
+      "base": "0",
+      "currency": "red",
+      "tooltip": "Orbital strikes deal another 15% of base rocket damage per level.",
+      "icon": "Textures/scifi_icons/icons_hexagon/12_hexagon.png"
+    },
+    {
+      "name": "Dense Submunitions",
+      "propname": "RocketClusterBonus",
+      "shortname": "RCS",
+      "type": "float",
+      "base": "0",
+      "currency": "red",
+      "tooltip": "Each cluster mini-rocket deals another 10% of base rocket damage per level.",
+      "icon": "Textures/scifi_icons/icons_hexagon/12_hexagon.png"
+    },
+    {
+      "name": "Orbital Overload",
+      "propname": "RocketOrbitalOverload",
+      "shortname": "ROBZ",
+      "type": "bool",
+      "base": "false",
+      "currency": "gold",
+      "tooltip": "Doubles orbital strike damage, including Gravity Assist bonuses.",
+      "icon": "Textures/scifi_icons/icons_hexagon/12_hexagon.png"
+    },
+    {
+      "name": "Seismic Amplifier",
+      "propname": "RailgunWaveBonus",
+      "shortname": "RGS",
+      "type": "float",
+      "base": "0",
+      "currency": "red",
+      "tooltip": "Tectonic Shockwave deals another 25% of the round damage per level.",
+      "icon": "Textures/scifi_icons/icons_hexagon/12_hexagon.png"
+    },
+    {
+      "name": "Dense Slugs",
+      "propname": "RailgunPayloadBonus",
+      "shortname": "RGM",
+      "type": "float",
+      "base": "0",
+      "currency": "red",
+      "tooltip": "Railgun rounds deal 20% more base damage per level.",
+      "icon": "Textures/scifi_icons/icons_hexagon/12_hexagon.png"
+    },
+    {
+      "name": "Superconductor",
+      "propname": "RailgunSuperconductor",
+      "shortname": "RGC",
+      "type": "bool",
+      "base": "false",
+      "currency": "gold",
+      "tooltip": "Doubles damage from harpoon pulses arcing to lodged conductor slugs. Requires Arc Harpoon.",
+      "icon": "Textures/scifi_icons/icons_hexagon/12_hexagon.png"
+    },
+    {
+      "name": "Deep Scoops",
+      "propname": "FleetDig",
+      "shortname": "FDG",
+      "type": "int",
+      "base": "0",
+      "tooltip": "Fleet ships dig up buried gems with every gem they collect.",
+      "tooltip_extra": "When the field is full, the gems your weapons knock loose are buried instead of lost. Each rank digs up more per pickup.",
+      "currency": "red",
+      "icon": "Textures/scifi_icons/icon_power/10_power.png"
+    },
+    {
+      "name": "Deep Grip",
+      "propname": "ClickDig",
+      "shortname": "CDG",
+      "type": "int",
+      "base": "0",
+      "tooltip": "Gems you send home by hand bring buried gems with them.",
+      "tooltip_extra": "When the field is full, the gems your weapons knock loose are buried instead of lost. Each rank digs up more per gem.",
+      "currency": "red",
+      "icon": "Textures/scifi_icons/icon_power/4_power.png"
+    },
+    {
+      "name": "Deep Rails",
+      "propname": "BeltDig",
+      "shortname": "BDG",
+      "type": "int",
+      "base": "0",
+      "tooltip": "Gems on the tractor belt bring buried gems with them.",
+      "tooltip_extra": "When the field is full, the gems your weapons knock loose are buried instead of lost. Each rank digs up more per gem.",
+      "currency": "red",
+      "icon": "Textures/scifi_icons/icon_power/10_power.png"
+    },
+    {
+      "name": "Fleet Afterburners",
+      "propname": "FleetSpeedBoost",
+      "shortname": "FAB",
+      "type": "float",
+      "base": "1.0",
+      "tooltip": "Every fleet ship flies faster.",
+      "icon": "Textures/scifi_icons/icon_arrow/16_arrow.png"
+    },
+    {
+      "name": "Bulk Holds",
+      "propname": "FleetCapacityBoost",
+      "shortname": "FBH",
+      "type": "float",
+      "base": "1.0",
+      "tooltip": "Every fleet ship carries more gems.",
+      "icon": "Textures/scifi_icons/icon_shield/4_shield.png"
+    },
+    {
+      "name": "Magnet Cursor",
+      "propname": "MagnetCursor",
+      "shortname": "MGN",
+      "type": "bool",
+      "base": "false",
+      "currency": "gold",
+      "tooltip": "Your cursor collects the gems it passes over, without clicking.",
+      "icon": "Textures/scifi_icons/icon_accuracy/14_accuracy.png"
+    },
+    {
+      "name": "Tidal Pull",
+      "propname": "TidalPull",
+      "shortname": "TDP",
+      "type": "bool",
+      "base": "false",
+      "currency": "gold",
+      "tooltip": "Every 8 seconds the home base pulls in the gems around it.",
+      "icon": "Textures/scifi_icons/icon_misc/12_misc.png"
+    },
+    {
+      "name": "Express Line",
+      "propname": "ExpressLine",
+      "shortname": "XPL",
+      "type": "bool",
+      "base": "false",
+      "currency": "gold",
+      "tooltip": "The tractor belt runs three times as fast, with pods three times the size.",
+      "icon": "Textures/scifi_icons/icon_power/10_power.png"
     }
   ]
 }

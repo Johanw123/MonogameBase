@@ -29,9 +29,23 @@ import sfx
 
 DLL = BUILD / 'UntitledGemGame.dll'
 ENV = dict(os.environ, SDL_VIDEODRIVER='offscreen', ALSOFT_DRIVERS='null')
+# BTB_CAPTURE_SNAPSHOT=<dir>: run a private copy of bin/Debug/net10.0 through CaptureLauncher.dll
+# (sets Demo.IsDev, which capture mode requires, and exits with code 3 when the game loop stops
+# ticking). Other sessions rebuild the shared bin mid-batch, so batches should use a snapshot.
+# BTB_GPU_LOCK=<file>: hold an flock on <file> while a capture runs, so parallel jobs take turns.
+SNAPSHOT = Path(os.environ['BTB_CAPTURE_SNAPSHOT']) if os.environ.get('BTB_CAPTURE_SNAPSHOT') else None
+
+
+def game_command() -> list[str]:
+    if SNAPSHOT is None:
+        return ['dotnet', str(DLL)]
+    return ['dotnet', 'exec', '--depsfile', str(SNAPSHOT / 'UntitledGemGame.deps.json'),
+            '--runtimeconfig', str(SNAPSHOT / 'launcher.runtimeconfig.json'), str(SNAPSHOT / 'CaptureLauncher.dll')]
 
 
 def ensure_build(skip: bool) -> None:
+    if SNAPSHOT is not None:
+        return
     sources = [p for pattern in ('**/*.cs', 'Content/Data/*.json', '*.csproj') for p in GAME_ROOT.glob(pattern)
                if '/obj/' not in str(p) and '/bin/' not in str(p) and '/Tests/' not in str(p)]
     newest = max(p.stat().st_mtime for p in sources)
@@ -49,9 +63,28 @@ def ensure_build(skip: bool) -> None:
 
 
 def run_game(args: list[str], log: Path, limit: float = 900) -> int:
+    """Run the game (retrying a watchdog exit twice), holding the GPU lock when one is configured."""
+    lock = os.environ.get('BTB_GPU_LOCK')
+    handle = open(lock, 'a') if lock else None
+    try:
+        if handle:
+            import fcntl
+            fcntl.flock(handle, fcntl.LOCK_EX)
+        for attempt in (1, 2, 3):
+            code = run_game_once(args, log, limit)
+            if code != 3 or 'WATCHDOG:' not in log.read_text(errors='replace') or attempt == 3:
+                return code
+            print(f'  note: the game stopped ticking (watchdog); retry {attempt} of 2', file=sys.stderr)
+            time.sleep(5)
+    finally:
+        if handle:
+            handle.close()
+
+
+def run_game_once(args: list[str], log: Path, limit: float) -> int:
     """Run the game; stop it if it hangs on shutdown after finishing (seen rarely) or overall."""
     with log.open('w') as handle:
-        process = subprocess.Popen(['dotnet', str(DLL), *args], cwd=GAME_ROOT, env=ENV, stdout=handle,
+        process = subprocess.Popen([*game_command(), *args], cwd=GAME_ROOT, env=ENV, stdout=handle,
                                    stderr=subprocess.STDOUT)
         started, finished = time.time(), None
         while process.poll() is None:

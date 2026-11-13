@@ -1,1680 +1,2484 @@
-{ 
+{
   "windowwidth": "20000",
   "windowheight": "20000",
   "buttons": [
     {
-      "shortname":"SSU1",
-      "upgrade":"SSU",
-      "numlevels":"1",
-      "hiddenby":"",
-      "lockedby":"",
-      "blockedby":"",
-      "cost":["0"],
-      "value":["true"],
-      "posx":"0",
-      "posy":"0",
-      "addmidpoint":"False",
-      "swapmidpointaxis":"False",
-      "lockedindemo":"False",
-      "requiredexpandspacelevels":["0"],
-      "tooltippercentage":"False",
-      "buttonsizescale":"1"
-    },
-    {
-      "shortname":"CC1",
-      "upgrade":"CC",
-      "numlevels":"1",
-      "hiddenby":"",
-      "lockedby":"",
-      "blockedby":"",
-      "cost":["0"],
-      "value":["true"],
-      "posx":"2000",
-      "posy":"1000",
-      "addmidpoint":"False",
-      "swapmidpointaxis":"False",
-      "lockedindemo":"False",
-      "requiredexpandspacelevels":["0"],
-      "tooltippercentage":"False",
-      "buttonsizescale":"1"
-    },
-    {
-      "shortname":"OH1",
-      "upgrade":"OH",
-      "numlevels":"1",
-      "hiddenby":"",
-      "lockedby":"",
-      "blockedby":"",
-      "cost":["1"],
-      "value":["true"],
-      "posx":"2000",
-      "posy":"1000",
-      "addmidpoint":"False",
-      "swapmidpointaxis":"False",
-      "lockedindemo":"False",
-      "requiredexpandspacelevels":["0"],
-      "tooltippercentage":"False",
-      "buttonsizescale":"1"
-    },
-    {
-      "shortname":"FLR1",
-      "upgrade":"FLR",
-      "numlevels":"1",
-      "hiddenby":"",
-      "lockedby":"",
-      "blockedby":"",
-      "cost":["1"],
-      "value":["true"],
-      "posx":"2000",
-      "posy":"1000",
-      "addmidpoint":"False",
-      "swapmidpointaxis":"False",
-      "lockedindemo":"False",
-      "requiredexpandspacelevels":["0"],
-      "tooltippercentage":"False",
-      "buttonsizescale":"1"
-    },
-    {
-      "shortname":"DCM1",
-      "upgrade":"DCM",
-      "numlevels":"1",
-      "hiddenby":"",
-      "lockedby":"",
-      "blockedby":"",
-      "cost":["1"],
-      "value":["true"],
-      "posx":"2000",
-      "posy":"1000",
-      "addmidpoint":"False",
-      "swapmidpointaxis":"False",
-      "lockedindemo":"False",
-      "requiredexpandspacelevels":["0"],
-      "tooltippercentage":"False",
-      "buttonsizescale":"1"
-    },
-    {
-      "shortname":"TPM1",
-      "upgrade":"TPM",
-      "numlevels":"1",
-      "hiddenby":"",
-      "lockedby":"",
-      "blockedby":"",
-      "cost":["1"],
-      "value":["true"],
-      "posx":"2000",
-      "posy":"1000",
-      "addmidpoint":"False",
-      "swapmidpointaxis":"False",
-      "lockedindemo":"False",
-      "requiredexpandspacelevels":["0"],
-      "tooltippercentage":"False",
-      "buttonsizescale":"1"
-    },
-    {
-      "shortname":"GM1",
-      "upgrade":"GM",
-      "numlevels":"1",
-      "hiddenby":"",
-      "lockedby":"",
-      "blockedby":"",
-      "cost":["1"],
-      "value":["true"],
-      "posx":"2000",
-      "posy":"1000",
-      "addmidpoint":"False",
-      "swapmidpointaxis":"False",
-      "lockedindemo":"False",
-      "requiredexpandspacelevels":["0"],
-      "tooltippercentage":"False",
-      "buttonsizescale":"1"
-    },
-    {
-      "shortname":"CAT1",
-      "upgrade":"CAT",
-      "numlevels":"1",
-      "hiddenby":"",
-      "lockedby":"",
-      "blockedby":"",
-      "cost":["1"],
-      "value":["true"],
-      "posx":"2000",
-      "posy":"1000",
-      "addmidpoint":"False",
-      "swapmidpointaxis":"False",
-      "lockedindemo":"False",
-      "requiredexpandspacelevels":["0"],
-      "tooltippercentage":"False",
-      "buttonsizescale":"1"
-    },
-    {
-      "shortname":"CA1",
-      "upgrade":"CA",
-      "numlevels":"1",
-      "hiddenby":"",
-      "lockedby":"",
-      "blockedby":"",
-      "cost":["1"],
-      "value":["true"],
-      "posx":"2000",
-      "posy":"1000",
-      "addmidpoint":"False",
-      "swapmidpointaxis":"False",
-      "lockedindemo":"False",
-      "requiredexpandspacelevels":["0"],
-      "tooltippercentage":"False",
-      "buttonsizescale":"1"
-    },
-    {
-      "shortname":"PCO1",
-      "upgrade":"PCO",
-      "numlevels":"1",
-      "hiddenby":"",
-      "lockedby":"",
-      "blockedby":"",
-      "cost":["1"],
-      "value":["true"],
-      "posx":"2000",
-      "posy":"1000",
-      "addmidpoint":"False",
-      "swapmidpointaxis":"False",
-      "lockedindemo":"False",
-      "requiredexpandspacelevels":["0"],
-      "tooltippercentage":"False",
-      "buttonsizescale":"1"
-    },
-    {
-      "shortname":"CCN1",
-      "upgrade":"CCN",
-      "numlevels":"1",
-      "hiddenby":"",
-      "lockedby":"",
-      "blockedby":"",
-      "cost":["1"],
-      "value":["true"],
-      "posx":"2000",
-      "posy":"1000",
-      "addmidpoint":"False",
-      "swapmidpointaxis":"False",
-      "lockedindemo":"False",
-      "requiredexpandspacelevels":["0"],
-      "tooltippercentage":"False",
-      "buttonsizescale":"1"
-    },
-    {
-      "shortname":"HICM1",
-      "upgrade":"HICM",
-      "numlevels":"1",
-      "hiddenby":"",
-      "lockedby":"",
-      "blockedby":"",
-      "cost":["1"],
-      "value":["true"],
-      "posx":"2000",
-      "posy":"1000",
-      "addmidpoint":"False",
-      "swapmidpointaxis":"False",
-      "lockedindemo":"False",
-      "requiredexpandspacelevels":["0"],
-      "tooltippercentage":"False",
-      "buttonsizescale":"1"
-    },
-    {
-      "shortname":"MM1",
-      "upgrade":"MM",
-      "numlevels":"1",
-      "hiddenby":"",
-      "lockedby":"",
-      "blockedby":"",
-      "cost":["1"],
-      "value":["true"],
-      "posx":"2000",
-      "posy":"1000",
-      "addmidpoint":"False",
-      "swapmidpointaxis":"False",
-      "lockedindemo":"False",
-      "requiredexpandspacelevels":["0"],
-      "tooltippercentage":"False",
-      "buttonsizescale":"1"
-    },
-    {
-      "shortname":"CN1",
-      "upgrade":"CN",
-      "numlevels":"1",
-      "hiddenby":"",
-      "lockedby":"",
-      "blockedby":"",
-      "cost":["1"],
-      "value":["true"],
-      "posx":"2000",
-      "posy":"1000",
-      "addmidpoint":"False",
-      "swapmidpointaxis":"False",
-      "lockedindemo":"False",
-      "requiredexpandspacelevels":["0"],
-      "tooltippercentage":"False",
-      "buttonsizescale":"1"
-    },
-    {
-      "shortname":"WCM1",
-      "upgrade":"WCM",
-      "numlevels":"1",
-      "hiddenby":"",
-      "lockedby":"",
-      "blockedby":"",
-      "cost":["1"],
-      "value":["true"],
-      "posx":"2000",
-      "posy":"1000",
-      "addmidpoint":"False",
-      "swapmidpointaxis":"False",
-      "lockedindemo":"False",
-      "requiredexpandspacelevels":["0"],
-      "tooltippercentage":"False",
-      "buttonsizescale":"1"
-    },
-    {
-      "shortname":"AACM1",
-      "upgrade":"AACM",
-      "numlevels":"5",
-      "hiddenby":"MA1",
-      "lockedby":"MA1",
-      "blockedby":"MA1",
-      "cost":["1", "3", "5", "8", "13"],
-      "value":["0.2", "0.2", "0.2", "0.2", "0.2"],
-      "posx":"2188",
-      "posy":"1432",
-      "addmidpoint":"False",
-      "swapmidpointaxis":"False",
-      "lockedindemo":"False",
-      "requiredexpandspacelevels":["1", "1", "2", "3", "4"],
-      "tooltippercentage":"True",
-      "buttonsizescale":"1"
-    },
-    {
-      "shortname":"GVM1",
-      "upgrade":"GVM",
-      "numlevels":"5",
-      "hiddenby":"",
-      "lockedby":"",
-      "blockedby":"",
-      "cost":["1", "3", "5", "7", "11"],
-      "value":["15", "35", "55", "100", "500"],
-      "posx":"1691",
-      "posy":"1255",
-      "addmidpoint":"False",
-      "swapmidpointaxis":"False",
-      "lockedindemo":"False",
-      "requiredexpandspacelevels":["0", "1", "2", "2", "3"],
-      "tooltippercentage":"False",
-      "buttonsizescale":"1"
-    },
-    {
-      "shortname":"GVMM1",
-      "upgrade":"GVMM",
-      "numlevels":"5",
-      "hiddenby":"GVM1",
-      "lockedby":"GVM1",
-      "blockedby":"GVM1",
-      "cost":["1", "3", "5", "7", "10"],
-      "value":["2", "3", "6", "12", "24"],
-      "posx":"1567",
-      "posy":"1414",
-      "addmidpoint":"False",
-      "swapmidpointaxis":"False",
-      "lockedindemo":"False",
-      "requiredexpandspacelevels":["1", "1", "2", "3", "4"],
-      "tooltippercentage":"False",
-      "buttonsizescale":"1"
-    },
-    {
-      "shortname":"AHSM1",
-      "upgrade":"AHSM",
-      "numlevels":"5",
-      "hiddenby":"",
-      "lockedby":"",
-      "blockedby":"",
-      "cost":["1", "1", "1", "1", "1"],
-      "value":["0.5", "0.5", "0.5", "0.5", "0.5"],
-      "posx":"2009",
-      "posy":"823",
-      "addmidpoint":"False",
-      "swapmidpointaxis":"False",
-      "lockedindemo":"False",
-      "requiredexpandspacelevels":["1", "2", "2", "3", "3"],
-      "tooltippercentage":"True",
-      "buttonsizescale":"1"
-    },
-    {
-      "shortname":"AHCM1",
-      "upgrade":"AHCM",
-      "numlevels":"5",
-      "hiddenby":"AHSM1",
-      "lockedby":"AHSM1",
-      "blockedby":"AHSM1",
-      "cost":["1", "3", "5", "8", "13"],
-      "value":["0.5", "0.5", "0.5", "0.5", "0.5"],
-      "posx":"2176",
-      "posy":"703",
-      "addmidpoint":"False",
-      "swapmidpointaxis":"False",
-      "lockedindemo":"False",
-      "requiredexpandspacelevels":["1", "1", "2", "2", "3"],
-      "tooltippercentage":"True",
-      "buttonsizescale":"1"
-    },
-    {
-      "shortname":"AHCRM1",
-      "upgrade":"AHCRM",
-      "numlevels":"5",
-      "hiddenby":"AHCM1",
-      "lockedby":"AHCM1",
-      "blockedby":"AHCM1",
-      "cost":["1", "3", "8", "13", "21"],
-      "value":["0.15", "0.15", "0.15", "0.15", "0.15"],
-      "posx":"2324",
-      "posy":"595",
-      "addmidpoint":"False",
-      "swapmidpointaxis":"False",
-      "lockedindemo":"False",
-      "requiredexpandspacelevels":["1", "1", "2", "3", "3"],
-      "tooltippercentage":"True",
-      "buttonsizescale":"1"
-    },
-    {
-      "shortname":"AHVM1",
-      "upgrade":"AHVM",
-      "numlevels":"5",
-      "hiddenby":"AHCRM1",
-      "lockedby":"AHCRM1",
-      "blockedby":"AHCRM1",
-      "cost":["1", "3", "13", "21", "34"],
-      "value":["0.5", "0.75", "1.25", "2", "3"],
-      "posx":"2472",
-      "posy":"487",
-      "addmidpoint":"False",
-      "swapmidpointaxis":"False",
-      "lockedindemo":"False",
-      "requiredexpandspacelevels":["1", "1", "2", "3", "3"],
-      "tooltippercentage":"True",
-      "buttonsizescale":"1"
-    },
-    {
-      "shortname":"AHMFM1",
-      "upgrade":"AHMFM",
-      "numlevels":"5",
-      "hiddenby":"AHSM1",
-      "lockedby":"AHSM1",
-      "blockedby":"AHSM1",
-      "cost":["1", "3", "5", "8", "13"],
-      "value":["0.5", "0.5", "0.5", "0.5", "0.5"],
-      "posx":"1838",
-      "posy":"703",
-      "addmidpoint":"False",
-      "swapmidpointaxis":"False",
-      "lockedindemo":"False",
-      "requiredexpandspacelevels":["1", "1", "2", "3", "3"],
-      "tooltippercentage":"True",
-      "buttonsizescale":"1"
-    },
-    {
-      "shortname":"AHFEM1",
-      "upgrade":"AHFEM",
-      "numlevels":"5",
-      "hiddenby":"AHMFM1",
-      "lockedby":"AHMFM1",
-      "blockedby":"AHMFM1",
-      "cost":["1", "3", "8", "13", "21"],
-      "value":["0.4", "0.4", "0.4", "0.4", "0.4"],
-      "posx":"1690",
-      "posy":"595",
-      "addmidpoint":"False",
-      "swapmidpointaxis":"False",
-      "lockedindemo":"False",
-      "requiredexpandspacelevels":["1", "1", "2", "3", "3"],
-      "tooltippercentage":"True",
-      "buttonsizescale":"1"
-    },
-    {
-      "shortname":"AHRSM1",
-      "upgrade":"AHRSM",
-      "numlevels":"5",
-      "hiddenby":"AHFEM1",
-      "lockedby":"AHFEM1",
-      "blockedby":"AHFEM1",
-      "cost":["1", "5", "13", "21", "34"],
-      "value":["0.6", "0.6", "0.6", "0.6", "0.6"],
-      "posx":"1541",
-      "posy":"487",
-      "addmidpoint":"False",
-      "swapmidpointaxis":"False",
-      "lockedindemo":"False",
-      "requiredexpandspacelevels":["1", "1", "2", "3", "3"],
-      "tooltippercentage":"True",
-      "buttonsizescale":"1"
-    },
-    {
-      "shortname":"JHM1",
-      "upgrade":"JHM",
-      "numlevels":"1",
-      "hiddenby":"AHVM1",
-      "lockedby":"AHVM1",
-      "blockedby":"AHVM1",
-      "cost":["1"],
-      "value":["true"],
-      "posx":"2621",
-      "posy":"379",
-      "addmidpoint":"False",
-      "swapmidpointaxis":"False",
-      "lockedindemo":"False",
-      "requiredexpandspacelevels":["0"],
-      "tooltippercentage":"False",
-      "buttonsizescale":"1.15"
-    },
-    {
-      "shortname":"RCM1",
-      "upgrade":"RCM",
-      "numlevels":"1",
-      "hiddenby":"AHRSM1",
-      "lockedby":"AHRSM1",
-      "blockedby":"AHRSM1",
-      "cost":["1"],
-      "value":["true"],
-      "posx":"1392",
-      "posy":"379",
-      "addmidpoint":"False",
-      "swapmidpointaxis":"False",
-      "lockedindemo":"False",
-      "requiredexpandspacelevels":["0"],
-      "tooltippercentage":"False",
-      "buttonsizescale":"1.15"
-    },
-    {
-      "shortname":"QEM1",
-      "upgrade":"QEM",
-      "numlevels":"1",
-      "hiddenby":"AHSM1",
-      "lockedby":"AHSM1",
-      "blockedby":"AHSM1",
-      "cost":["1"],
-      "value":["true"],
-      "posx":"2009",
-      "posy":"487",
-      "addmidpoint":"False",
-      "swapmidpointaxis":"False",
-      "lockedindemo":"False",
-      "requiredexpandspacelevels":["0"],
-      "tooltippercentage":"False",
-      "buttonsizescale":"1.15"
-    },
-    {
-      "shortname":"MA1",
-      "upgrade":"MA",
-      "numlevels":"1",
-      "hiddenby":"",
-      "lockedby":"",
-      "blockedby":"",
-      "cost":["1"],
-      "value":["true"],
-      "posx":"2188",
-      "posy":"1209",
-      "addmidpoint":"False",
-      "swapmidpointaxis":"False",
-      "lockedindemo":"False",
-      "requiredexpandspacelevels":["0"],
-      "tooltippercentage":"False",
-      "buttonsizescale":"1"
-    },
-    {
-      "shortname":"MAC1",
-      "upgrade":"MAC",
-      "numlevels":"10",
-      "hiddenby":"MA1",
-      "lockedby":"MA1",
-      "blockedby":"MA1",
-      "cost":["1", "1", "1", "1", "1", "1", "1", "1", "1", "1"],
-      "value":["1", "1", "1", "1", "1", "1", "1", "1", "1", "1"],
-      "posx":"2405",
-      "posy":"1209",
-      "addmidpoint":"False",
-      "swapmidpointaxis":"False",
-      "lockedindemo":"False",
-      "requiredexpandspacelevels":["1", "1", "1", "2", "2", "2", "3", "3", "4", "4"],
-      "tooltippercentage":"False",
-      "buttonsizescale":"1"
-    },
-    {
-      "shortname":"SYU1",
-      "upgrade":"SYU",
-      "numlevels":"1",
-      "hiddenby":"",
-      "lockedby":"",
-      "blockedby":"",
-      "cost":["0"],
-      "value":["true"],
-      "posx":"2526",
-      "posy":"973",
-      "addmidpoint":"False",
-      "swapmidpointaxis":"False",
-      "lockedindemo":"False",
-      "requiredexpandspacelevels":["0"],
-      "tooltippercentage":"False",
-      "buttonsizescale":"1.15"
-    },
-    {
-      "shortname":"MS1",
-      "upgrade":"MS",
-      "numlevels":"2",
-      "hiddenby":"SYU1",
-      "lockedby":"SYU1",
-      "blockedby":"SYU1",
-      "cost":["5", "15"],
-      "value":["1", "1"],
-      "posx":"2526",
-      "posy":"730",
-      "addmidpoint":"False",
-      "swapmidpointaxis":"False",
-      "lockedindemo":"False",
-      "requiredexpandspacelevels":["0", "0"],
-      "tooltippercentage":"False",
-      "buttonsizescale":"1.15"
-    },
-    {
-      "shortname":"SGU1",
-      "upgrade":"SGU",
-      "numlevels":"1",
-      "hiddenby":"",
-      "lockedby":"",
-      "blockedby":"",
-      "cost":["0"],
-      "value":["true"],
-      "posx":"2824",
-      "posy":"973",
-      "addmidpoint":"False",
-      "swapmidpointaxis":"False",
-      "lockedindemo":"False",
-      "requiredexpandspacelevels":["0"],
-      "tooltippercentage":"False",
-      "buttonsizescale":"1.15"
-    },
-    {
-      "shortname":"CAM1",
-      "upgrade":"CAM",
-      "numlevels":"5",
-      "hiddenby":"",
-      "lockedby":"",
-      "blockedby":"",
-      "cost":["2", "5", "10", "20", "40"],
-      "value":["0.2", "0.2", "0.2", "0.2", "0.2"],
-      "posx":"2270",
-      "posy":"730",
-      "addmidpoint":"False",
-      "swapmidpointaxis":"False",
-      "lockedindemo":"False",
-      "requiredexpandspacelevels":["0", "0", "0", "0", "0"],
-      "tooltippercentage":"True",
-      "buttonsizescale":"1.15"
-    },
-    {
-      "shortname":"MCV1",
-      "upgrade":"MCV",
-      "numlevels":"2",
-      "hiddenby":"",
-      "lockedby":"",
-      "blockedby":"",
-      "cost":["2", "5"],
-      "value":["1", "1"],
-      "posx":"1703",
-      "posy":"1040",
-      "addmidpoint":"False",
-      "swapmidpointaxis":"False",
-      "lockedindemo":"False",
-      "requiredexpandspacelevels":["0", "1"],
-      "tooltippercentage":"True",
-      "buttonsizescale":"1"
-    },
-    {
-      "shortname":"MCR1",
-      "upgrade":"MCR",
-      "numlevels":"1",
-      "hiddenby":"MCV1",
-      "lockedby":"MCV1",
-      "blockedby":"MCV1",
-      "cost":["3"],
-      "value":["1"],
-      "posx":"1460",
-      "posy":"1040",
-      "addmidpoint":"False",
-      "swapmidpointaxis":"False",
-      "lockedindemo":"False",
-      "requiredexpandspacelevels":["0"],
-      "tooltippercentage":"True",
-      "buttonsizescale":"1"
-    },
-    {
-      "shortname":"MHF1",
-      "upgrade":"MHF",
-      "numlevels":"1",
-      "hiddenby":"MCR1",
-      "lockedby":"MCR1",
-      "blockedby":"MCR1",
-      "cost":["1"],
-      "value":["true"],
-      "posx":"1217",
-      "posy":"1040",
-      "addmidpoint":"False",
-      "swapmidpointaxis":"False",
-      "lockedindemo":"False",
-      "requiredexpandspacelevels":["0"],
-      "tooltippercentage":"False",
-      "buttonsizescale":"1.3"
-    },
-    {
-      "shortname":"MGS1",
-      "upgrade":"MGS",
-      "numlevels":"1",
-      "hiddenby":"MCR1",
-      "lockedby":"MCR1",
-      "blockedby":"MCR1",
-      "cost":["1"],
-      "value":["true"],
-      "posx":"1460",
-      "posy":"1256",
-      "addmidpoint":"False",
-      "swapmidpointaxis":"False",
-      "lockedindemo":"False",
-      "requiredexpandspacelevels":["0"],
-      "tooltippercentage":"False",
-      "buttonsizescale":"1.3"
-    },
-    {
-      "shortname":"MGD1",
-      "upgrade":"MGD",
-      "numlevels":"1",
-      "hiddenby":"MGS1",
-      "lockedby":"MGS1",
-      "blockedby":"MGS1",
-      "cost":["1"],
-      "value":["true"],
-      "posx":"1217",
-      "posy":"1256",
-      "addmidpoint":"False",
-      "swapmidpointaxis":"False",
-      "lockedindemo":"False",
-      "requiredexpandspacelevels":["0"],
-      "tooltippercentage":"False",
-      "buttonsizescale":"1.3"
-    },
-    {
-      "shortname":"MGF1",
-      "upgrade":"MGF",
-      "numlevels":"1",
-      "hiddenby":"MGD1",
-      "lockedby":"MGD1",
-      "blockedby":"MGD1",
-      "cost":["1"],
-      "value":["true"],
-      "posx":"974",
-      "posy":"1256",
-      "addmidpoint":"False",
-      "swapmidpointaxis":"False",
-      "lockedindemo":"False",
-      "requiredexpandspacelevels":["0"],
-      "tooltippercentage":"False",
-      "buttonsizescale":"1.3"
-    },
-    {
-      "shortname":"PCB1",
-      "upgrade":"PCB",
-      "numlevels":"5",
-      "hiddenby":"",
-      "lockedby":"",
-      "blockedby":"",
-      "cost":["2", "4", "7", "11", "17"],
-      "value":["0.1", "0.1", "0.1", "0.1", "0.1"],
-      "posx":"1840",
-      "posy":"1420",
-      "addmidpoint":"False",
-      "swapmidpointaxis":"False",
-      "lockedindemo":"False",
-      "requiredexpandspacelevels":["0", "1", "2", "3", "4"],
-      "tooltippercentage":"True",
-      "buttonsizescale":"1"
-    },
-    {
-      "shortname":"MCSN1",
-      "upgrade":"MCSN",
-      "numlevels":"1",
-      "hiddenby":"MHF1",
-      "lockedby":"MHF1",
-      "blockedby":"MHF1",
-      "cost":["1"],
-      "value":["true"],
-      "posx":"974",
-      "posy":"1040",
-      "addmidpoint":"False",
-      "swapmidpointaxis":"False",
-      "lockedindemo":"False",
-      "requiredexpandspacelevels":["0"],
-      "tooltippercentage":"False",
-      "buttonsizescale":"1.3"
-    },
-    {
-      "shortname":"TR1",
-      "upgrade":"TR",
-      "numlevels":"1",
-      "hiddenby":"",
-      "lockedby":"",
-      "blockedby":"",
-      "cost":["1"],
-      "value":["true"],
-      "posx":"0",
-      "posy":"0",
-      "addmidpoint":"False",
-      "swapmidpointaxis":"False",
-      "lockedindemo":"False",
-      "requiredexpandspacelevels":["0"],
-      "tooltippercentage":"False",
-      "buttonsizescale":"1"
-    },
-    {
-      "shortname":"LR1",
-      "upgrade":"LR",
-      "numlevels":"1",
-      "hiddenby":"",
-      "lockedby":"",
-      "blockedby":"",
-      "cost":["1"],
-      "value":["true"],
-      "posx":"0",
-      "posy":"0",
-      "addmidpoint":"False",
-      "swapmidpointaxis":"False",
-      "lockedindemo":"False",
-      "requiredexpandspacelevels":["0"],
-      "tooltippercentage":"False",
-      "buttonsizescale":"1"
-    },
-    {
-      "shortname":"BR1",
-      "upgrade":"BR",
-      "numlevels":"1",
-      "hiddenby":"",
-      "lockedby":"",
-      "blockedby":"",
-      "cost":["1"],
-      "value":["true"],
-      "posx":"0",
-      "posy":"0",
-      "addmidpoint":"False",
-      "swapmidpointaxis":"False",
-      "lockedindemo":"False",
-      "requiredexpandspacelevels":["0"],
-      "tooltippercentage":"False",
-      "buttonsizescale":"1"
-    },
-    {
-      "shortname":"MD1",
-      "upgrade":"MD",
-      "numlevels":"1",
-      "hiddenby":"",
-      "lockedby":"",
-      "blockedby":"",
-      "cost":["1"],
-      "value":["true"],
-      "posx":"0",
-      "posy":"0",
-      "addmidpoint":"False",
-      "swapmidpointaxis":"False",
-      "lockedindemo":"False",
-      "requiredexpandspacelevels":["0"],
-      "tooltippercentage":"False",
-      "buttonsizescale":"1"
-    },
-    {
-      "shortname":"EP1",
-      "upgrade":"EP",
-      "numlevels":"1",
-      "hiddenby":"",
-      "lockedby":"",
-      "blockedby":"",
-      "cost":["1"],
-      "value":["true"],
-      "posx":"0",
-      "posy":"0",
-      "addmidpoint":"False",
-      "swapmidpointaxis":"False",
-      "lockedindemo":"False",
-      "requiredexpandspacelevels":["0"],
-      "tooltippercentage":"False",
-      "buttonsizescale":"1"
-    },
-    {
-      "shortname":"MBR1",
-      "upgrade":"MBR",
-      "numlevels":"1",
-      "hiddenby":"",
-      "lockedby":"",
-      "blockedby":"",
-      "cost":["1"],
-      "value":["true"],
-      "posx":"0",
-      "posy":"0",
-      "addmidpoint":"False",
-      "swapmidpointaxis":"False",
-      "lockedindemo":"False",
-      "requiredexpandspacelevels":["0"],
-      "tooltippercentage":"False",
-      "buttonsizescale":"1"
-    },
-    {
-      "shortname":"DG1",
-      "upgrade":"DG",
-      "numlevels":"1",
-      "hiddenby":"",
-      "lockedby":"",
-      "blockedby":"",
-      "cost":["1"],
-      "value":["true"],
-      "posx":"0",
-      "posy":"0",
-      "addmidpoint":"False",
-      "swapmidpointaxis":"False",
-      "lockedindemo":"False",
-      "requiredexpandspacelevels":["0"],
-      "tooltippercentage":"False",
-      "buttonsizescale":"1"
-    },
-    {
-      "shortname":"KD1",
-      "upgrade":"KD",
-      "numlevels":"1",
-      "hiddenby":"",
-      "lockedby":"",
-      "blockedby":"",
-      "cost":["1"],
-      "value":["true"],
-      "posx":"0",
-      "posy":"0",
-      "addmidpoint":"False",
-      "swapmidpointaxis":"False",
-      "lockedindemo":"False",
-      "requiredexpandspacelevels":["0"],
-      "tooltippercentage":"False",
-      "buttonsizescale":"1"
-    },
-    {
-      "shortname":"SR1",
-      "upgrade":"SR",
-      "numlevels":"1",
-      "hiddenby":"",
-      "lockedby":"",
-      "blockedby":"",
-      "cost":["1"],
-      "value":["true"],
-      "posx":"0",
-      "posy":"0",
-      "addmidpoint":"False",
-      "swapmidpointaxis":"False",
-      "lockedindemo":"False",
-      "requiredexpandspacelevels":["0"],
-      "tooltippercentage":"False",
-      "buttonsizescale":"1"
-    },
-    {
-      "shortname":"SGR1",
-      "upgrade":"SGR",
-      "numlevels":"1",
-      "hiddenby":"",
-      "lockedby":"",
-      "blockedby":"",
-      "cost":["1"],
-      "value":["true"],
-      "posx":"0",
-      "posy":"0",
-      "addmidpoint":"False",
-      "swapmidpointaxis":"False",
-      "lockedindemo":"False",
-      "requiredexpandspacelevels":["0"],
-      "tooltippercentage":"False",
-      "buttonsizescale":"1"
-    },
-    {
-      "shortname":"PO1",
-      "upgrade":"PO",
-      "numlevels":"1",
-      "hiddenby":"",
-      "lockedby":"",
-      "blockedby":"",
-      "cost":["1"],
-      "value":["true"],
-      "posx":"0",
-      "posy":"0",
-      "addmidpoint":"False",
-      "swapmidpointaxis":"False",
-      "lockedindemo":"False",
-      "requiredexpandspacelevels":["0"],
-      "tooltippercentage":"False",
-      "buttonsizescale":"1"
-    },
-    {
-      "shortname":"AE1",
-      "upgrade":"AE",
-      "numlevels":"1",
-      "hiddenby":"",
-      "lockedby":"",
-      "blockedby":"",
-      "cost":["1"],
-      "value":["true"],
-      "posx":"0",
-      "posy":"0",
-      "addmidpoint":"False",
-      "swapmidpointaxis":"False",
-      "lockedindemo":"False",
-      "requiredexpandspacelevels":["0"],
-      "tooltippercentage":"False",
-      "buttonsizescale":"1"
-    },
-    {
-      "shortname":"PRL1",
-      "upgrade":"PRL",
-      "numlevels":"1",
-      "hiddenby":"",
-      "lockedby":"",
-      "blockedby":"",
-      "cost":["1"],
-      "value":["true"],
-      "posx":"0",
-      "posy":"0",
-      "addmidpoint":"False",
-      "swapmidpointaxis":"False",
-      "lockedindemo":"False",
-      "requiredexpandspacelevels":["0"],
-      "tooltippercentage":"False",
-      "buttonsizescale":"1"
-    },
-    {
-      "shortname":"SHS1",
-      "upgrade":"SHS",
-      "numlevels":"1",
-      "hiddenby":"",
-      "lockedby":"",
-      "blockedby":"",
-      "cost":["1"],
-      "value":["true"],
-      "posx":"0",
-      "posy":"0",
-      "addmidpoint":"False",
-      "swapmidpointaxis":"False",
-      "lockedindemo":"False",
-      "requiredexpandspacelevels":["0"],
-      "tooltippercentage":"False",
-      "buttonsizescale":"1"
-    },
-    {
-      "shortname":"ODP1",
-      "upgrade":"ODP",
-      "numlevels":"1",
-      "hiddenby":"",
-      "lockedby":"",
-      "blockedby":"",
-      "cost":["1"],
-      "value":["true"],
-      "posx":"0",
-      "posy":"0",
-      "addmidpoint":"False",
-      "swapmidpointaxis":"False",
-      "lockedindemo":"False",
-      "requiredexpandspacelevels":["0"],
-      "tooltippercentage":"False",
-      "buttonsizescale":"1"
-    },
-    {
-      "shortname":"SYF1",
-      "upgrade":"SYF",
-      "numlevels":"1",
-      "hiddenby":"",
-      "lockedby":"",
-      "blockedby":"",
-      "cost":["1"],
-      "value":["true"],
-      "posx":"0",
-      "posy":"0",
-      "addmidpoint":"False",
-      "swapmidpointaxis":"False",
-      "lockedindemo":"False",
-      "requiredexpandspacelevels":["0"],
-      "tooltippercentage":"False",
-      "buttonsizescale":"1"
-    },
-    {
-      "shortname":"KNH1",
-      "upgrade":"KNH",
-      "numlevels":"1",
-      "hiddenby":"",
-      "lockedby":"",
-      "blockedby":"",
-      "cost":["1"],
-      "value":["true"],
-      "posx":"0",
-      "posy":"0",
-      "addmidpoint":"False",
-      "swapmidpointaxis":"False",
-      "lockedindemo":"False",
-      "requiredexpandspacelevels":["0"],
-      "tooltippercentage":"False",
-      "buttonsizescale":"1"
-    },
-    {
-      "shortname":"IOM1",
-      "upgrade":"IOM",
-      "numlevels":"1",
-      "hiddenby":"",
-      "lockedby":"",
-      "blockedby":"",
-      "cost":["1"],
-      "value":["true"],
-      "posx":"0",
-      "posy":"0",
-      "addmidpoint":"False",
-      "swapmidpointaxis":"False",
-      "lockedindemo":"False",
-      "requiredexpandspacelevels":["0"],
-      "tooltippercentage":"False",
-      "buttonsizescale":"1"
-    },
-    {
-      "shortname":"DEY1",
-      "upgrade":"DEY",
-      "numlevels":"1",
-      "hiddenby":"",
-      "lockedby":"",
-      "blockedby":"",
-      "cost":["1"],
-      "value":["true"],
-      "posx":"0",
-      "posy":"0",
-      "addmidpoint":"False",
-      "swapmidpointaxis":"False",
-      "lockedindemo":"False",
-      "requiredexpandspacelevels":["0"],
-      "tooltippercentage":"False",
-      "buttonsizescale":"1"
-    },
-    {
-      "shortname":"HSK1",
-      "upgrade":"HSK",
-      "numlevels":"1",
-      "hiddenby":"",
-      "lockedby":"",
-      "blockedby":"",
-      "cost":["1"],
-      "value":["true"],
-      "posx":"0",
-      "posy":"0",
-      "addmidpoint":"False",
-      "swapmidpointaxis":"False",
-      "lockedindemo":"False",
-      "requiredexpandspacelevels":["0"],
-      "tooltippercentage":"False",
-      "buttonsizescale":"1"
-    },
-    {
-      "shortname":"CRM1",
-      "upgrade":"CRM",
-      "numlevels":"1",
-      "hiddenby":"",
-      "lockedby":"",
-      "blockedby":"",
-      "cost":["1"],
-      "value":["true"],
-      "posx":"0",
-      "posy":"0",
-      "addmidpoint":"False",
-      "swapmidpointaxis":"False",
-      "lockedindemo":"False",
-      "requiredexpandspacelevels":["0"],
-      "tooltippercentage":"False",
-      "buttonsizescale":"1"
-    },
-    {
-      "shortname":"EXE1",
-      "upgrade":"EXE",
-      "numlevels":"1",
-      "hiddenby":"",
-      "lockedby":"",
-      "blockedby":"",
-      "cost":["1"],
-      "value":["true"],
-      "posx":"0",
-      "posy":"0",
-      "addmidpoint":"False",
-      "swapmidpointaxis":"False",
-      "lockedindemo":"False",
-      "requiredexpandspacelevels":["0"],
-      "tooltippercentage":"False",
-      "buttonsizescale":"1"
-    },
-    {
-      "shortname":"JKP1",
-      "upgrade":"JKP",
-      "numlevels":"1",
-      "hiddenby":"",
-      "lockedby":"",
-      "blockedby":"",
-      "cost":["1"],
-      "value":["true"],
-      "posx":"0",
-      "posy":"0",
-      "addmidpoint":"False",
-      "swapmidpointaxis":"False",
-      "lockedindemo":"False",
-      "requiredexpandspacelevels":["0"],
-      "tooltippercentage":"False",
-      "buttonsizescale":"1"
-    },
-    {
-      "shortname":"MRS1",
-      "upgrade":"MRS",
-      "numlevels":"1",
-      "hiddenby":"",
-      "lockedby":"",
-      "blockedby":"",
-      "cost":["1"],
-      "value":["true"],
-      "posx":"0",
-      "posy":"0",
-      "addmidpoint":"False",
-      "swapmidpointaxis":"False",
-      "lockedindemo":"False",
-      "requiredexpandspacelevels":["0"],
-      "tooltippercentage":"False",
-      "buttonsizescale":"1"
-    },
-    {
-      "shortname":"RCH1",
-      "upgrade":"RCH",
-      "numlevels":"1",
-      "hiddenby":"",
-      "lockedby":"",
-      "blockedby":"",
-      "cost":["1"],
-      "value":["true"],
-      "posx":"0",
-      "posy":"0",
-      "addmidpoint":"False",
-      "swapmidpointaxis":"False",
-      "lockedindemo":"False",
-      "requiredexpandspacelevels":["0"],
-      "tooltippercentage":"False",
-      "buttonsizescale":"1"
-    },
-    {
-      "shortname":"KNB1",
-      "upgrade":"KNB",
-      "numlevels":"1",
-      "hiddenby":"",
-      "lockedby":"",
-      "blockedby":"",
-      "cost":["1"],
-      "value":["true"],
-      "posx":"0",
-      "posy":"0",
-      "addmidpoint":"False",
-      "swapmidpointaxis":"False",
-      "lockedindemo":"False",
-      "requiredexpandspacelevels":["0"],
-      "tooltippercentage":"False",
-      "buttonsizescale":"1"
-    },
-    {
-      "shortname":"GVS1",
-      "upgrade":"GVS",
-      "numlevels":"1",
-      "hiddenby":"",
-      "lockedby":"",
-      "blockedby":"",
-      "cost":["1"],
-      "value":["true"],
-      "posx":"0",
-      "posy":"0",
-      "addmidpoint":"False",
-      "swapmidpointaxis":"False",
-      "lockedindemo":"False",
-      "requiredexpandspacelevels":["0"],
-      "tooltippercentage":"False",
-      "buttonsizescale":"1"
-    },
-    {
-      "shortname":"FSD1",
-      "upgrade":"FSD",
-      "numlevels":"1",
-      "hiddenby":"",
-      "lockedby":"",
-      "blockedby":"",
-      "cost":["1"],
-      "value":["true"],
-      "posx":"0",
-      "posy":"0",
-      "addmidpoint":"False",
-      "swapmidpointaxis":"False",
-      "lockedindemo":"False",
-      "requiredexpandspacelevels":["0"],
-      "tooltippercentage":"False",
-      "buttonsizescale":"1"
-    },
-    {
-      "shortname":"DSP1",
-      "upgrade":"DSP",
-      "numlevels":"1",
-      "hiddenby":"",
-      "lockedby":"",
-      "blockedby":"",
-      "cost":["1"],
-      "value":["true"],
-      "posx":"0",
-      "posy":"0",
-      "addmidpoint":"False",
-      "swapmidpointaxis":"False",
-      "lockedindemo":"False",
-      "requiredexpandspacelevels":["0"],
-      "tooltippercentage":"False",
-      "buttonsizescale":"1"
-    },
-    {
-      "shortname":"CHR1",
-      "upgrade":"CHR",
-      "numlevels":"1",
-      "hiddenby":"",
-      "lockedby":"",
-      "blockedby":"",
-      "cost":["1"],
-      "value":["true"],
-      "posx":"0",
-      "posy":"0",
-      "addmidpoint":"False",
-      "swapmidpointaxis":"False",
-      "lockedindemo":"False",
-      "requiredexpandspacelevels":["0"],
-      "tooltippercentage":"False",
-      "buttonsizescale":"1"
-    },
-    {
-      "shortname":"MLC1",
-      "upgrade":"MLC",
-      "numlevels":"1",
-      "hiddenby":"",
-      "lockedby":"",
-      "blockedby":"",
-      "cost":["1"],
-      "value":["true"],
-      "posx":"0",
-      "posy":"0",
-      "addmidpoint":"False",
-      "swapmidpointaxis":"False",
-      "lockedindemo":"False",
-      "requiredexpandspacelevels":["0"],
-      "tooltippercentage":"False",
-      "buttonsizescale":"1"
-    },
-    {
-      "shortname":"OVC1",
-      "upgrade":"OVC",
-      "numlevels":"1",
-      "hiddenby":"",
-      "lockedby":"",
-      "blockedby":"",
-      "cost":["1"],
-      "value":["true"],
-      "posx":"0",
-      "posy":"0",
-      "addmidpoint":"False",
-      "swapmidpointaxis":"False",
-      "lockedindemo":"False",
-      "requiredexpandspacelevels":["0"],
-      "tooltippercentage":"False",
-      "buttonsizescale":"1"
-    },
-    {
-      "shortname":"HVO1",
-      "upgrade":"HVO",
-      "numlevels":"1",
-      "hiddenby":"",
-      "lockedby":"",
-      "blockedby":"",
-      "cost":["1"],
-      "value":["true"],
-      "posx":"0",
-      "posy":"0",
-      "addmidpoint":"False",
-      "swapmidpointaxis":"False",
-      "lockedindemo":"False",
-      "requiredexpandspacelevels":["0"],
-      "tooltippercentage":"False",
-      "buttonsizescale":"1"
-    },
-    {
-      "shortname":"LOP1",
-      "upgrade":"LOP",
-      "numlevels":"1",
-      "hiddenby":"",
-      "lockedby":"",
-      "blockedby":"",
-      "cost":["1"],
-      "value":["true"],
-      "posx":"0",
-      "posy":"0",
-      "addmidpoint":"False",
-      "swapmidpointaxis":"False",
-      "lockedindemo":"False",
-      "requiredexpandspacelevels":["0"],
-      "tooltippercentage":"False",
-      "buttonsizescale":"1"
-    },
-    {
-      "shortname":"RCO1",
-      "upgrade":"RCO",
-      "numlevels":"1",
-      "hiddenby":"",
-      "lockedby":"",
-      "blockedby":"",
-      "cost":["1"],
-      "value":["true"],
-      "posx":"0",
-      "posy":"0",
-      "addmidpoint":"False",
-      "swapmidpointaxis":"False",
-      "lockedindemo":"False",
-      "requiredexpandspacelevels":["0"],
-      "tooltippercentage":"False",
-      "buttonsizescale":"1"
-    },
-    {
-      "shortname":"CBK1",
-      "upgrade":"CBK",
-      "numlevels":"1",
-      "hiddenby":"",
-      "lockedby":"",
-      "blockedby":"",
-      "cost":["1"],
-      "value":["true"],
-      "posx":"0",
-      "posy":"0",
-      "addmidpoint":"False",
-      "swapmidpointaxis":"False",
-      "lockedindemo":"False",
-      "requiredexpandspacelevels":["0"],
-      "tooltippercentage":"False",
-      "buttonsizescale":"1"
-    },
-    {
-      "shortname":"XSP1",
-      "upgrade":"XSP",
-      "numlevels":"1",
-      "hiddenby":"",
-      "lockedby":"",
-      "blockedby":"",
-      "cost":["0"],
-      "value":["true"],
-      "posx":"0",
-      "posy":"0",
-      "addmidpoint":"False",
-      "swapmidpointaxis":"False",
-      "lockedindemo":"False",
-      "requiredexpandspacelevels":["0"],
-      "tooltippercentage":"False",
-      "buttonsizescale":"1"
-    },
-    {
-      "shortname":"XSP2",
-      "upgrade":"XSP",
-      "numlevels":"1",
-      "hiddenby":"",
-      "lockedby":"",
-      "blockedby":"",
-      "cost":["0"],
-      "value":["true"],
-      "posx":"0",
-      "posy":"0",
-      "addmidpoint":"False",
-      "swapmidpointaxis":"False",
-      "lockedindemo":"False",
-      "requiredexpandspacelevels":["0"],
-      "tooltippercentage":"False",
-      "buttonsizescale":"1"
-    },
-    {
-      "shortname":"XSP3",
-      "upgrade":"XSP",
-      "numlevels":"1",
-      "hiddenby":"",
-      "lockedby":"",
-      "blockedby":"",
-      "cost":["0"],
-      "value":["true"],
-      "posx":"0",
-      "posy":"0",
-      "addmidpoint":"False",
-      "swapmidpointaxis":"False",
-      "lockedindemo":"False",
-      "requiredexpandspacelevels":["0"],
-      "tooltippercentage":"False",
-      "buttonsizescale":"1"
-    },
-    {
-      "shortname":"XSP4",
-      "upgrade":"XSP",
-      "numlevels":"1",
-      "hiddenby":"",
-      "lockedby":"",
-      "blockedby":"",
-      "cost":["0"],
-      "value":["true"],
-      "posx":"0",
-      "posy":"0",
-      "addmidpoint":"False",
-      "swapmidpointaxis":"False",
-      "lockedindemo":"False",
-      "requiredexpandspacelevels":["0"],
-      "tooltippercentage":"False",
-      "buttonsizescale":"1"
-    },
-    {
-      "shortname":"XSP5",
-      "upgrade":"XSP",
-      "numlevels":"1",
-      "hiddenby":"",
-      "lockedby":"",
-      "blockedby":"",
-      "cost":["0"],
-      "value":["true"],
-      "posx":"0",
-      "posy":"0",
-      "addmidpoint":"False",
-      "swapmidpointaxis":"False",
-      "lockedindemo":"False",
-      "requiredexpandspacelevels":["0"],
-      "tooltippercentage":"False",
-      "buttonsizescale":"1"
-    },
-    {
-      "shortname":"SPC1",
-      "upgrade":"SPC",
-      "numlevels":"1",
-      "hiddenby":"",
-      "lockedby":"",
-      "blockedby":"",
-      "cost":["0"],
-      "value":["true"],
-      "posx":"0",
-      "posy":"0",
-      "addmidpoint":"False",
-      "swapmidpointaxis":"False",
-      "lockedindemo":"False",
-      "requiredexpandspacelevels":["0"],
-      "tooltippercentage":"False",
-      "buttonsizescale":"1"
-    },
-    {
-      "shortname":"HST1",
-      "upgrade":"HST",
-      "numlevels":"1",
-      "hiddenby":"",
-      "lockedby":"",
-      "blockedby":"",
-      "cost":["0"],
-      "value":["true"],
-      "posx":"0",
-      "posy":"0",
-      "addmidpoint":"False",
-      "swapmidpointaxis":"False",
-      "lockedindemo":"False",
-      "requiredexpandspacelevels":["0"],
-      "tooltippercentage":"False",
-      "buttonsizescale":"1"
-    },
-    {
-      "shortname":"SCH1",
-      "upgrade":"SCH",
-      "numlevels":"1",
-      "hiddenby":"",
-      "lockedby":"",
-      "blockedby":"",
-      "cost":["0"],
-      "value":["true"],
-      "posx":"0",
-      "posy":"0",
-      "addmidpoint":"False",
-      "swapmidpointaxis":"False",
-      "lockedindemo":"False",
-      "requiredexpandspacelevels":["0"],
-      "tooltippercentage":"False",
-      "buttonsizescale":"1"
-    },
-    {
-      "shortname":"CMY1",
-      "upgrade":"CMY",
-      "numlevels":"1",
-      "hiddenby":"",
-      "lockedby":"",
-      "blockedby":"",
-      "cost":["0"],
-      "value":["true"],
-      "posx":"0",
-      "posy":"0",
-      "addmidpoint":"False",
-      "swapmidpointaxis":"False",
-      "lockedindemo":"False",
-      "requiredexpandspacelevels":["0"],
-      "tooltippercentage":"False",
-      "buttonsizescale":"1"
-    },
-    {
-      "shortname":"GLO1",
-      "upgrade":"GLO",
-      "numlevels":"1",
-      "hiddenby":"",
-      "lockedby":"",
-      "blockedby":"",
-      "cost":["0"],
-      "value":["true"],
-      "posx":"0",
-      "posy":"0",
-      "addmidpoint":"False",
-      "swapmidpointaxis":"False",
-      "lockedindemo":"False",
-      "requiredexpandspacelevels":["0"],
-      "tooltippercentage":"False",
-      "buttonsizescale":"1"
-    },
-    {
-      "shortname":"GLO2",
-      "upgrade":"GLO",
-      "numlevels":"1",
-      "hiddenby":"",
-      "lockedby":"",
-      "blockedby":"",
-      "cost":["0"],
-      "value":["true"],
-      "posx":"0",
-      "posy":"0",
-      "addmidpoint":"False",
-      "swapmidpointaxis":"False",
-      "lockedindemo":"False",
-      "requiredexpandspacelevels":["0"],
-      "tooltippercentage":"False",
-      "buttonsizescale":"1"
-    },
-    {
-      "shortname":"GLO3",
-      "upgrade":"GLO",
-      "numlevels":"1",
-      "hiddenby":"",
-      "lockedby":"",
-      "blockedby":"",
-      "cost":["0"],
-      "value":["true"],
-      "posx":"0",
-      "posy":"0",
-      "addmidpoint":"False",
-      "swapmidpointaxis":"False",
-      "lockedindemo":"False",
-      "requiredexpandspacelevels":["0"],
-      "tooltippercentage":"False",
-      "buttonsizescale":"1"
-    },
-    {
-      "shortname":"GLO4",
-      "upgrade":"GLO",
-      "numlevels":"1",
-      "hiddenby":"",
-      "lockedby":"",
-      "blockedby":"",
-      "cost":["0"],
-      "value":["true"],
-      "posx":"0",
-      "posy":"0",
-      "addmidpoint":"False",
-      "swapmidpointaxis":"False",
-      "lockedindemo":"False",
-      "requiredexpandspacelevels":["0"],
-      "tooltippercentage":"False",
-      "buttonsizescale":"1"
-    },
-    {
-      "shortname":"GLO5",
-      "upgrade":"GLO",
-      "numlevels":"1",
-      "hiddenby":"",
-      "lockedby":"",
-      "blockedby":"",
-      "cost":["0"],
-      "value":["true"],
-      "posx":"0",
-      "posy":"0",
-      "addmidpoint":"False",
-      "swapmidpointaxis":"False",
-      "lockedindemo":"False",
-      "requiredexpandspacelevels":["0"],
-      "tooltippercentage":"False",
-      "buttonsizescale":"1"
-    },
-    {
-      "shortname":"GLO6",
-      "upgrade":"GLO",
-      "numlevels":"1",
-      "hiddenby":"",
-      "lockedby":"",
-      "blockedby":"",
-      "cost":["0"],
-      "value":["true"],
-      "posx":"0",
-      "posy":"0",
-      "addmidpoint":"False",
-      "swapmidpointaxis":"False",
-      "lockedindemo":"False",
-      "requiredexpandspacelevels":["0"],
-      "tooltippercentage":"False",
-      "buttonsizescale":"1"
+      "shortname": "SSU1",
+      "upgrade": "SSU",
+      "numlevels": "1",
+      "hiddenby": "",
+      "lockedby": "",
+      "blockedby": "",
+      "cost": [
+        "0"
+      ],
+      "value": [
+        "true"
+      ],
+      "posx": "0",
+      "posy": "0",
+      "addmidpoint": "False",
+      "swapmidpointaxis": "False",
+      "lockedindemo": "False",
+      "requiredexpandspacelevels": [
+        "0"
+      ],
+      "tooltippercentage": "False",
+      "buttonsizescale": "1"
+    },
+    {
+      "shortname": "CC1",
+      "upgrade": "CC",
+      "numlevels": "1",
+      "hiddenby": "",
+      "lockedby": "",
+      "blockedby": "",
+      "cost": [
+        "0"
+      ],
+      "value": [
+        "true"
+      ],
+      "posx": "2000",
+      "posy": "1000",
+      "addmidpoint": "False",
+      "swapmidpointaxis": "False",
+      "lockedindemo": "False",
+      "requiredexpandspacelevels": [
+        "0"
+      ],
+      "tooltippercentage": "False",
+      "buttonsizescale": "1"
+    },
+    {
+      "shortname": "OH1",
+      "upgrade": "OH",
+      "numlevels": "1",
+      "hiddenby": "",
+      "lockedby": "",
+      "blockedby": "",
+      "cost": [
+        "1"
+      ],
+      "value": [
+        "true"
+      ],
+      "posx": "2000",
+      "posy": "1000",
+      "addmidpoint": "False",
+      "swapmidpointaxis": "False",
+      "lockedindemo": "False",
+      "requiredexpandspacelevels": [
+        "0"
+      ],
+      "tooltippercentage": "False",
+      "buttonsizescale": "1"
+    },
+    {
+      "shortname": "FLR1",
+      "upgrade": "FLR",
+      "numlevels": "1",
+      "hiddenby": "",
+      "lockedby": "",
+      "blockedby": "",
+      "cost": [
+        "1"
+      ],
+      "value": [
+        "true"
+      ],
+      "posx": "2000",
+      "posy": "1000",
+      "addmidpoint": "False",
+      "swapmidpointaxis": "False",
+      "lockedindemo": "False",
+      "requiredexpandspacelevels": [
+        "0"
+      ],
+      "tooltippercentage": "False",
+      "buttonsizescale": "1"
+    },
+    {
+      "shortname": "DCM1",
+      "upgrade": "DCM",
+      "numlevels": "1",
+      "hiddenby": "",
+      "lockedby": "",
+      "blockedby": "",
+      "cost": [
+        "1"
+      ],
+      "value": [
+        "true"
+      ],
+      "posx": "2000",
+      "posy": "1000",
+      "addmidpoint": "False",
+      "swapmidpointaxis": "False",
+      "lockedindemo": "False",
+      "requiredexpandspacelevels": [
+        "0"
+      ],
+      "tooltippercentage": "False",
+      "buttonsizescale": "1"
+    },
+    {
+      "shortname": "TPM1",
+      "upgrade": "TPM",
+      "numlevels": "1",
+      "hiddenby": "",
+      "lockedby": "",
+      "blockedby": "",
+      "cost": [
+        "1"
+      ],
+      "value": [
+        "true"
+      ],
+      "posx": "2000",
+      "posy": "1000",
+      "addmidpoint": "False",
+      "swapmidpointaxis": "False",
+      "lockedindemo": "False",
+      "requiredexpandspacelevels": [
+        "0"
+      ],
+      "tooltippercentage": "False",
+      "buttonsizescale": "1"
+    },
+    {
+      "shortname": "GM1",
+      "upgrade": "GM",
+      "numlevels": "1",
+      "hiddenby": "",
+      "lockedby": "",
+      "blockedby": "",
+      "cost": [
+        "1"
+      ],
+      "value": [
+        "true"
+      ],
+      "posx": "2000",
+      "posy": "1000",
+      "addmidpoint": "False",
+      "swapmidpointaxis": "False",
+      "lockedindemo": "False",
+      "requiredexpandspacelevels": [
+        "0"
+      ],
+      "tooltippercentage": "False",
+      "buttonsizescale": "1"
+    },
+    {
+      "shortname": "CAT1",
+      "upgrade": "CAT",
+      "numlevels": "1",
+      "hiddenby": "",
+      "lockedby": "",
+      "blockedby": "",
+      "cost": [
+        "1"
+      ],
+      "value": [
+        "true"
+      ],
+      "posx": "2000",
+      "posy": "1000",
+      "addmidpoint": "False",
+      "swapmidpointaxis": "False",
+      "lockedindemo": "False",
+      "requiredexpandspacelevels": [
+        "0"
+      ],
+      "tooltippercentage": "False",
+      "buttonsizescale": "1"
+    },
+    {
+      "shortname": "BNW1",
+      "upgrade": "BNW",
+      "numlevels": "1",
+      "hiddenby": "",
+      "lockedby": "",
+      "blockedby": "",
+      "cost": [
+        "1"
+      ],
+      "value": [
+        "true"
+      ],
+      "posx": "2000",
+      "posy": "1000",
+      "addmidpoint": "False",
+      "swapmidpointaxis": "False",
+      "lockedindemo": "False",
+      "requiredexpandspacelevels": [
+        "0"
+      ],
+      "tooltippercentage": "False",
+      "buttonsizescale": "1"
+    },
+    {
+      "shortname": "CA1",
+      "upgrade": "CA",
+      "numlevels": "1",
+      "hiddenby": "",
+      "lockedby": "",
+      "blockedby": "",
+      "cost": [
+        "1"
+      ],
+      "value": [
+        "true"
+      ],
+      "posx": "2000",
+      "posy": "1000",
+      "addmidpoint": "False",
+      "swapmidpointaxis": "False",
+      "lockedindemo": "False",
+      "requiredexpandspacelevels": [
+        "0"
+      ],
+      "tooltippercentage": "False",
+      "buttonsizescale": "1"
+    },
+    {
+      "shortname": "PCO1",
+      "upgrade": "PCO",
+      "numlevels": "1",
+      "hiddenby": "",
+      "lockedby": "",
+      "blockedby": "",
+      "cost": [
+        "1"
+      ],
+      "value": [
+        "true"
+      ],
+      "posx": "2000",
+      "posy": "1000",
+      "addmidpoint": "False",
+      "swapmidpointaxis": "False",
+      "lockedindemo": "False",
+      "requiredexpandspacelevels": [
+        "0"
+      ],
+      "tooltippercentage": "False",
+      "buttonsizescale": "1"
+    },
+    {
+      "shortname": "CCN1",
+      "upgrade": "CCN",
+      "numlevels": "1",
+      "hiddenby": "",
+      "lockedby": "",
+      "blockedby": "",
+      "cost": [
+        "1"
+      ],
+      "value": [
+        "true"
+      ],
+      "posx": "2000",
+      "posy": "1000",
+      "addmidpoint": "False",
+      "swapmidpointaxis": "False",
+      "lockedindemo": "False",
+      "requiredexpandspacelevels": [
+        "0"
+      ],
+      "tooltippercentage": "False",
+      "buttonsizescale": "1"
+    },
+    {
+      "shortname": "MM1",
+      "upgrade": "MM",
+      "numlevels": "1",
+      "hiddenby": "",
+      "lockedby": "",
+      "blockedby": "",
+      "cost": [
+        "1"
+      ],
+      "value": [
+        "true"
+      ],
+      "posx": "2000",
+      "posy": "1000",
+      "addmidpoint": "False",
+      "swapmidpointaxis": "False",
+      "lockedindemo": "False",
+      "requiredexpandspacelevels": [
+        "0"
+      ],
+      "tooltippercentage": "False",
+      "buttonsizescale": "1"
+    },
+    {
+      "shortname": "CN1",
+      "upgrade": "CN",
+      "numlevels": "1",
+      "hiddenby": "",
+      "lockedby": "",
+      "blockedby": "",
+      "cost": [
+        "1"
+      ],
+      "value": [
+        "true"
+      ],
+      "posx": "2000",
+      "posy": "1000",
+      "addmidpoint": "False",
+      "swapmidpointaxis": "False",
+      "lockedindemo": "False",
+      "requiredexpandspacelevels": [
+        "0"
+      ],
+      "tooltippercentage": "False",
+      "buttonsizescale": "1"
+    },
+    {
+      "shortname": "WCM1",
+      "upgrade": "WCM",
+      "numlevels": "1",
+      "hiddenby": "",
+      "lockedby": "",
+      "blockedby": "",
+      "cost": [
+        "1"
+      ],
+      "value": [
+        "true"
+      ],
+      "posx": "2000",
+      "posy": "1000",
+      "addmidpoint": "False",
+      "swapmidpointaxis": "False",
+      "lockedindemo": "False",
+      "requiredexpandspacelevels": [
+        "0"
+      ],
+      "tooltippercentage": "False",
+      "buttonsizescale": "1"
+    },
+    {
+      "shortname": "AACM1",
+      "upgrade": "AACM",
+      "numlevels": "5",
+      "hiddenby": "MA1",
+      "lockedby": "MA1",
+      "blockedby": "MA1",
+      "cost": [
+        "1",
+        "3",
+        "5",
+        "8",
+        "13"
+      ],
+      "value": [
+        "0.2",
+        "0.2",
+        "0.2",
+        "0.2",
+        "0.2"
+      ],
+      "posx": "2188",
+      "posy": "1432",
+      "addmidpoint": "False",
+      "swapmidpointaxis": "False",
+      "lockedindemo": "False",
+      "requiredexpandspacelevels": [
+        "1",
+        "1",
+        "2",
+        "3",
+        "4"
+      ],
+      "tooltippercentage": "True",
+      "buttonsizescale": "1"
+    },
+    {
+      "shortname": "GVM1",
+      "upgrade": "GVM",
+      "numlevels": "5",
+      "hiddenby": "",
+      "lockedby": "",
+      "blockedby": "",
+      "cost": [
+        "1",
+        "3",
+        "5",
+        "7",
+        "11"
+      ],
+      "value": [
+        "15",
+        "35",
+        "55",
+        "100",
+        "500"
+      ],
+      "posx": "1691",
+      "posy": "1255",
+      "addmidpoint": "False",
+      "swapmidpointaxis": "False",
+      "lockedindemo": "False",
+      "requiredexpandspacelevels": [
+        "0",
+        "1",
+        "2",
+        "2",
+        "3"
+      ],
+      "tooltippercentage": "False",
+      "buttonsizescale": "1"
+    },
+    {
+      "shortname": "GVMM1",
+      "upgrade": "GVMM",
+      "numlevels": "5",
+      "hiddenby": "GVM1",
+      "lockedby": "GVM1",
+      "blockedby": "GVM1",
+      "cost": [
+        "1",
+        "3",
+        "5",
+        "7",
+        "10"
+      ],
+      "value": [
+        "2",
+        "3",
+        "6",
+        "12",
+        "24"
+      ],
+      "posx": "1567",
+      "posy": "1414",
+      "addmidpoint": "False",
+      "swapmidpointaxis": "False",
+      "lockedindemo": "False",
+      "requiredexpandspacelevels": [
+        "1",
+        "1",
+        "2",
+        "3",
+        "4"
+      ],
+      "tooltippercentage": "False",
+      "buttonsizescale": "1"
+    },
+    {
+      "shortname": "AHSM1",
+      "upgrade": "AHSM",
+      "numlevels": "5",
+      "hiddenby": "",
+      "lockedby": "",
+      "blockedby": "",
+      "cost": [
+        "1",
+        "1",
+        "1",
+        "1",
+        "1"
+      ],
+      "value": [
+        "0.5",
+        "0.5",
+        "0.5",
+        "0.5",
+        "0.5"
+      ],
+      "posx": "2009",
+      "posy": "823",
+      "addmidpoint": "False",
+      "swapmidpointaxis": "False",
+      "lockedindemo": "False",
+      "requiredexpandspacelevels": [
+        "1",
+        "2",
+        "2",
+        "3",
+        "3"
+      ],
+      "tooltippercentage": "True",
+      "buttonsizescale": "1"
+    },
+    {
+      "shortname": "AHCM1",
+      "upgrade": "AHCM",
+      "numlevels": "5",
+      "hiddenby": "AHSM1",
+      "lockedby": "AHSM1",
+      "blockedby": "AHSM1",
+      "cost": [
+        "1",
+        "3",
+        "5",
+        "8",
+        "13"
+      ],
+      "value": [
+        "0.5",
+        "0.5",
+        "0.5",
+        "0.5",
+        "0.5"
+      ],
+      "posx": "2176",
+      "posy": "703",
+      "addmidpoint": "False",
+      "swapmidpointaxis": "False",
+      "lockedindemo": "False",
+      "requiredexpandspacelevels": [
+        "1",
+        "1",
+        "2",
+        "2",
+        "3"
+      ],
+      "tooltippercentage": "True",
+      "buttonsizescale": "1"
+    },
+    {
+      "shortname": "AHCRM1",
+      "upgrade": "AHCRM",
+      "numlevels": "5",
+      "hiddenby": "AHCM1",
+      "lockedby": "AHCM1",
+      "blockedby": "AHCM1",
+      "cost": [
+        "1",
+        "3",
+        "8",
+        "13",
+        "21"
+      ],
+      "value": [
+        "0.15",
+        "0.15",
+        "0.15",
+        "0.15",
+        "0.15"
+      ],
+      "posx": "2324",
+      "posy": "595",
+      "addmidpoint": "False",
+      "swapmidpointaxis": "False",
+      "lockedindemo": "False",
+      "requiredexpandspacelevels": [
+        "1",
+        "1",
+        "2",
+        "3",
+        "3"
+      ],
+      "tooltippercentage": "True",
+      "buttonsizescale": "1"
+    },
+    {
+      "shortname": "AHVM1",
+      "upgrade": "AHVM",
+      "numlevels": "5",
+      "hiddenby": "AHCRM1",
+      "lockedby": "AHCRM1",
+      "blockedby": "AHCRM1",
+      "cost": [
+        "1",
+        "3",
+        "13",
+        "21",
+        "34"
+      ],
+      "value": [
+        "0.5",
+        "0.75",
+        "1.25",
+        "2",
+        "3"
+      ],
+      "posx": "2472",
+      "posy": "487",
+      "addmidpoint": "False",
+      "swapmidpointaxis": "False",
+      "lockedindemo": "False",
+      "requiredexpandspacelevels": [
+        "1",
+        "1",
+        "2",
+        "3",
+        "3"
+      ],
+      "tooltippercentage": "True",
+      "buttonsizescale": "1"
+    },
+    {
+      "shortname": "AHMFM1",
+      "upgrade": "AHMFM",
+      "numlevels": "5",
+      "hiddenby": "AHSM1",
+      "lockedby": "AHSM1",
+      "blockedby": "AHSM1",
+      "cost": [
+        "1",
+        "3",
+        "5",
+        "8",
+        "13"
+      ],
+      "value": [
+        "0.5",
+        "0.5",
+        "0.5",
+        "0.5",
+        "0.5"
+      ],
+      "posx": "1838",
+      "posy": "703",
+      "addmidpoint": "False",
+      "swapmidpointaxis": "False",
+      "lockedindemo": "False",
+      "requiredexpandspacelevels": [
+        "1",
+        "1",
+        "2",
+        "3",
+        "3"
+      ],
+      "tooltippercentage": "True",
+      "buttonsizescale": "1"
+    },
+    {
+      "shortname": "AHFEM1",
+      "upgrade": "AHFEM",
+      "numlevels": "5",
+      "hiddenby": "AHMFM1",
+      "lockedby": "AHMFM1",
+      "blockedby": "AHMFM1",
+      "cost": [
+        "1",
+        "3",
+        "8",
+        "13",
+        "21"
+      ],
+      "value": [
+        "0.4",
+        "0.4",
+        "0.4",
+        "0.4",
+        "0.4"
+      ],
+      "posx": "1690",
+      "posy": "595",
+      "addmidpoint": "False",
+      "swapmidpointaxis": "False",
+      "lockedindemo": "False",
+      "requiredexpandspacelevels": [
+        "1",
+        "1",
+        "2",
+        "3",
+        "3"
+      ],
+      "tooltippercentage": "True",
+      "buttonsizescale": "1"
+    },
+    {
+      "shortname": "AHRSM1",
+      "upgrade": "AHRSM",
+      "numlevels": "5",
+      "hiddenby": "AHFEM1",
+      "lockedby": "AHFEM1",
+      "blockedby": "AHFEM1",
+      "cost": [
+        "1",
+        "5",
+        "13",
+        "21",
+        "34"
+      ],
+      "value": [
+        "0.6",
+        "0.6",
+        "0.6",
+        "0.6",
+        "0.6"
+      ],
+      "posx": "1541",
+      "posy": "487",
+      "addmidpoint": "False",
+      "swapmidpointaxis": "False",
+      "lockedindemo": "False",
+      "requiredexpandspacelevels": [
+        "1",
+        "1",
+        "2",
+        "3",
+        "3"
+      ],
+      "tooltippercentage": "True",
+      "buttonsizescale": "1"
+    },
+    {
+      "shortname": "JHM1",
+      "upgrade": "JHM",
+      "numlevels": "1",
+      "hiddenby": "AHVM1",
+      "lockedby": "AHVM1",
+      "blockedby": "AHVM1",
+      "cost": [
+        "1"
+      ],
+      "value": [
+        "true"
+      ],
+      "posx": "2621",
+      "posy": "379",
+      "addmidpoint": "False",
+      "swapmidpointaxis": "False",
+      "lockedindemo": "False",
+      "requiredexpandspacelevels": [
+        "0"
+      ],
+      "tooltippercentage": "False",
+      "buttonsizescale": "1.15"
+    },
+    {
+      "shortname": "RCM1",
+      "upgrade": "RCM",
+      "numlevels": "1",
+      "hiddenby": "AHRSM1",
+      "lockedby": "AHRSM1",
+      "blockedby": "AHRSM1",
+      "cost": [
+        "1"
+      ],
+      "value": [
+        "true"
+      ],
+      "posx": "1392",
+      "posy": "379",
+      "addmidpoint": "False",
+      "swapmidpointaxis": "False",
+      "lockedindemo": "False",
+      "requiredexpandspacelevels": [
+        "0"
+      ],
+      "tooltippercentage": "False",
+      "buttonsizescale": "1.15"
+    },
+    {
+      "shortname": "QEM1",
+      "upgrade": "QEM",
+      "numlevels": "1",
+      "hiddenby": "AHSM1",
+      "lockedby": "AHSM1",
+      "blockedby": "AHSM1",
+      "cost": [
+        "1"
+      ],
+      "value": [
+        "true"
+      ],
+      "posx": "2009",
+      "posy": "487",
+      "addmidpoint": "False",
+      "swapmidpointaxis": "False",
+      "lockedindemo": "False",
+      "requiredexpandspacelevels": [
+        "0"
+      ],
+      "tooltippercentage": "False",
+      "buttonsizescale": "1.15"
+    },
+    {
+      "shortname": "MA1",
+      "upgrade": "MA",
+      "numlevels": "1",
+      "hiddenby": "",
+      "lockedby": "",
+      "blockedby": "",
+      "cost": [
+        "1"
+      ],
+      "value": [
+        "true"
+      ],
+      "posx": "2188",
+      "posy": "1209",
+      "addmidpoint": "False",
+      "swapmidpointaxis": "False",
+      "lockedindemo": "False",
+      "requiredexpandspacelevels": [
+        "0"
+      ],
+      "tooltippercentage": "False",
+      "buttonsizescale": "1"
+    },
+    {
+      "shortname": "MAC1",
+      "upgrade": "MAC",
+      "numlevels": "10",
+      "hiddenby": "MA1",
+      "lockedby": "MA1",
+      "blockedby": "MA1",
+      "cost": [
+        "1",
+        "1",
+        "1",
+        "1",
+        "1",
+        "1",
+        "1",
+        "1",
+        "1",
+        "1"
+      ],
+      "value": [
+        "1",
+        "1",
+        "1",
+        "1",
+        "1",
+        "1",
+        "1",
+        "1",
+        "1",
+        "1"
+      ],
+      "posx": "2405",
+      "posy": "1209",
+      "addmidpoint": "False",
+      "swapmidpointaxis": "False",
+      "lockedindemo": "False",
+      "requiredexpandspacelevels": [
+        "1",
+        "1",
+        "1",
+        "2",
+        "2",
+        "2",
+        "3",
+        "3",
+        "4",
+        "4"
+      ],
+      "tooltippercentage": "False",
+      "buttonsizescale": "1"
+    },
+    {
+      "shortname": "SYU1",
+      "upgrade": "SYU",
+      "numlevels": "1",
+      "hiddenby": "",
+      "lockedby": "",
+      "blockedby": "",
+      "cost": [
+        "0"
+      ],
+      "value": [
+        "true"
+      ],
+      "posx": "2526",
+      "posy": "973",
+      "addmidpoint": "False",
+      "swapmidpointaxis": "False",
+      "lockedindemo": "False",
+      "requiredexpandspacelevels": [
+        "0"
+      ],
+      "tooltippercentage": "False",
+      "buttonsizescale": "1.15"
+    },
+    {
+      "shortname": "MS1",
+      "upgrade": "MS",
+      "numlevels": "1",
+      "hiddenby": "",
+      "lockedby": "",
+      "blockedby": "",
+      "cost": [
+        "1"
+      ],
+      "value": [
+        "2"
+      ],
+      "posx": "2526",
+      "posy": "730",
+      "addmidpoint": "False",
+      "swapmidpointaxis": "False",
+      "lockedindemo": "False",
+      "requiredexpandspacelevels": [
+        "0"
+      ],
+      "tooltippercentage": "False",
+      "buttonsizescale": "1.15"
+    },
+    {
+      "shortname": "SGU1",
+      "upgrade": "SGU",
+      "numlevels": "1",
+      "hiddenby": "",
+      "lockedby": "",
+      "blockedby": "",
+      "cost": [
+        "0"
+      ],
+      "value": [
+        "true"
+      ],
+      "posx": "2824",
+      "posy": "973",
+      "addmidpoint": "False",
+      "swapmidpointaxis": "False",
+      "lockedindemo": "False",
+      "requiredexpandspacelevels": [
+        "0"
+      ],
+      "tooltippercentage": "False",
+      "buttonsizescale": "1.15"
+    },
+    {
+      "shortname": "CAM1",
+      "upgrade": "CAM",
+      "numlevels": "5",
+      "hiddenby": "",
+      "lockedby": "",
+      "blockedby": "",
+      "cost": [
+        "2",
+        "5",
+        "10",
+        "20",
+        "40"
+      ],
+      "value": [
+        "0.2",
+        "0.2",
+        "0.2",
+        "0.2",
+        "0.2"
+      ],
+      "posx": "2270",
+      "posy": "730",
+      "addmidpoint": "False",
+      "swapmidpointaxis": "False",
+      "lockedindemo": "False",
+      "requiredexpandspacelevels": [
+        "0",
+        "0",
+        "0",
+        "0",
+        "0"
+      ],
+      "tooltippercentage": "True",
+      "buttonsizescale": "1.15"
+    },
+    {
+      "shortname": "MCV1",
+      "upgrade": "MCV",
+      "numlevels": "2",
+      "hiddenby": "",
+      "lockedby": "",
+      "blockedby": "",
+      "cost": [
+        "2",
+        "5"
+      ],
+      "value": [
+        "1",
+        "1"
+      ],
+      "posx": "1703",
+      "posy": "1040",
+      "addmidpoint": "False",
+      "swapmidpointaxis": "False",
+      "lockedindemo": "False",
+      "requiredexpandspacelevels": [
+        "0",
+        "1"
+      ],
+      "tooltippercentage": "True",
+      "buttonsizescale": "1"
+    },
+    {
+      "shortname": "MCR1",
+      "upgrade": "MCR",
+      "numlevels": "1",
+      "hiddenby": "MCV1",
+      "lockedby": "MCV1",
+      "blockedby": "MCV1",
+      "cost": [
+        "3"
+      ],
+      "value": [
+        "1"
+      ],
+      "posx": "1460",
+      "posy": "1040",
+      "addmidpoint": "False",
+      "swapmidpointaxis": "False",
+      "lockedindemo": "False",
+      "requiredexpandspacelevels": [
+        "0"
+      ],
+      "tooltippercentage": "True",
+      "buttonsizescale": "1"
+    },
+    {
+      "shortname": "PCB1",
+      "upgrade": "PCB",
+      "numlevels": "5",
+      "hiddenby": "",
+      "lockedby": "",
+      "blockedby": "",
+      "cost": [
+        "2",
+        "4",
+        "7",
+        "11",
+        "17"
+      ],
+      "value": [
+        "0.1",
+        "0.1",
+        "0.1",
+        "0.1",
+        "0.1"
+      ],
+      "posx": "1840",
+      "posy": "1420",
+      "addmidpoint": "False",
+      "swapmidpointaxis": "False",
+      "lockedindemo": "False",
+      "requiredexpandspacelevels": [
+        "0",
+        "1",
+        "2",
+        "3",
+        "4"
+      ],
+      "tooltippercentage": "True",
+      "buttonsizescale": "1"
+    },
+    {
+      "shortname": "MCSN1",
+      "upgrade": "MCSN",
+      "numlevels": "1",
+      "hiddenby": "MCR1",
+      "lockedby": "MCR1",
+      "blockedby": "MCR1",
+      "cost": [
+        "1"
+      ],
+      "value": [
+        "true"
+      ],
+      "posx": "974",
+      "posy": "1040",
+      "addmidpoint": "False",
+      "swapmidpointaxis": "False",
+      "lockedindemo": "False",
+      "requiredexpandspacelevels": [
+        "0"
+      ],
+      "tooltippercentage": "False",
+      "buttonsizescale": "1.3"
+    },
+    {
+      "shortname": "TR1",
+      "upgrade": "TR",
+      "numlevels": "1",
+      "hiddenby": "",
+      "lockedby": "",
+      "blockedby": "",
+      "cost": [
+        "1"
+      ],
+      "value": [
+        "true"
+      ],
+      "posx": "0",
+      "posy": "0",
+      "addmidpoint": "False",
+      "swapmidpointaxis": "False",
+      "lockedindemo": "False",
+      "requiredexpandspacelevels": [
+        "0"
+      ],
+      "tooltippercentage": "False",
+      "buttonsizescale": "1"
+    },
+    {
+      "shortname": "LR1",
+      "upgrade": "LR",
+      "numlevels": "1",
+      "hiddenby": "",
+      "lockedby": "",
+      "blockedby": "",
+      "cost": [
+        "1"
+      ],
+      "value": [
+        "true"
+      ],
+      "posx": "0",
+      "posy": "0",
+      "addmidpoint": "False",
+      "swapmidpointaxis": "False",
+      "lockedindemo": "False",
+      "requiredexpandspacelevels": [
+        "0"
+      ],
+      "tooltippercentage": "False",
+      "buttonsizescale": "1"
+    },
+    {
+      "shortname": "BR1",
+      "upgrade": "BR",
+      "numlevels": "1",
+      "hiddenby": "",
+      "lockedby": "",
+      "blockedby": "",
+      "cost": [
+        "1"
+      ],
+      "value": [
+        "true"
+      ],
+      "posx": "0",
+      "posy": "0",
+      "addmidpoint": "False",
+      "swapmidpointaxis": "False",
+      "lockedindemo": "False",
+      "requiredexpandspacelevels": [
+        "0"
+      ],
+      "tooltippercentage": "False",
+      "buttonsizescale": "1"
+    },
+    {
+      "shortname": "MD1",
+      "upgrade": "MD",
+      "numlevels": "1",
+      "hiddenby": "",
+      "lockedby": "",
+      "blockedby": "",
+      "cost": [
+        "1"
+      ],
+      "value": [
+        "true"
+      ],
+      "posx": "0",
+      "posy": "0",
+      "addmidpoint": "False",
+      "swapmidpointaxis": "False",
+      "lockedindemo": "False",
+      "requiredexpandspacelevels": [
+        "0"
+      ],
+      "tooltippercentage": "False",
+      "buttonsizescale": "1"
+    },
+    {
+      "shortname": "EP1",
+      "upgrade": "EP",
+      "numlevels": "1",
+      "hiddenby": "",
+      "lockedby": "",
+      "blockedby": "",
+      "cost": [
+        "1"
+      ],
+      "value": [
+        "true"
+      ],
+      "posx": "0",
+      "posy": "0",
+      "addmidpoint": "False",
+      "swapmidpointaxis": "False",
+      "lockedindemo": "False",
+      "requiredexpandspacelevels": [
+        "0"
+      ],
+      "tooltippercentage": "False",
+      "buttonsizescale": "1"
+    },
+    {
+      "shortname": "MBR1",
+      "upgrade": "MBR",
+      "numlevels": "1",
+      "hiddenby": "",
+      "lockedby": "",
+      "blockedby": "",
+      "cost": [
+        "1"
+      ],
+      "value": [
+        "true"
+      ],
+      "posx": "0",
+      "posy": "0",
+      "addmidpoint": "False",
+      "swapmidpointaxis": "False",
+      "lockedindemo": "False",
+      "requiredexpandspacelevels": [
+        "0"
+      ],
+      "tooltippercentage": "False",
+      "buttonsizescale": "1"
+    },
+    {
+      "shortname": "DG1",
+      "upgrade": "DG",
+      "numlevels": "1",
+      "hiddenby": "",
+      "lockedby": "",
+      "blockedby": "",
+      "cost": [
+        "1"
+      ],
+      "value": [
+        "true"
+      ],
+      "posx": "0",
+      "posy": "0",
+      "addmidpoint": "False",
+      "swapmidpointaxis": "False",
+      "lockedindemo": "False",
+      "requiredexpandspacelevels": [
+        "0"
+      ],
+      "tooltippercentage": "False",
+      "buttonsizescale": "1"
+    },
+    {
+      "shortname": "KD1",
+      "upgrade": "KD",
+      "numlevels": "1",
+      "hiddenby": "",
+      "lockedby": "",
+      "blockedby": "",
+      "cost": [
+        "1"
+      ],
+      "value": [
+        "true"
+      ],
+      "posx": "0",
+      "posy": "0",
+      "addmidpoint": "False",
+      "swapmidpointaxis": "False",
+      "lockedindemo": "False",
+      "requiredexpandspacelevels": [
+        "0"
+      ],
+      "tooltippercentage": "False",
+      "buttonsizescale": "1"
+    },
+    {
+      "shortname": "SR1",
+      "upgrade": "SR",
+      "numlevels": "1",
+      "hiddenby": "",
+      "lockedby": "",
+      "blockedby": "",
+      "cost": [
+        "1"
+      ],
+      "value": [
+        "true"
+      ],
+      "posx": "0",
+      "posy": "0",
+      "addmidpoint": "False",
+      "swapmidpointaxis": "False",
+      "lockedindemo": "False",
+      "requiredexpandspacelevels": [
+        "0"
+      ],
+      "tooltippercentage": "False",
+      "buttonsizescale": "1"
+    },
+    {
+      "shortname": "SGR1",
+      "upgrade": "SGR",
+      "numlevels": "1",
+      "hiddenby": "",
+      "lockedby": "",
+      "blockedby": "",
+      "cost": [
+        "1"
+      ],
+      "value": [
+        "true"
+      ],
+      "posx": "0",
+      "posy": "0",
+      "addmidpoint": "False",
+      "swapmidpointaxis": "False",
+      "lockedindemo": "False",
+      "requiredexpandspacelevels": [
+        "0"
+      ],
+      "tooltippercentage": "False",
+      "buttonsizescale": "1"
+    },
+    {
+      "shortname": "PO1",
+      "upgrade": "PO",
+      "numlevels": "1",
+      "hiddenby": "",
+      "lockedby": "",
+      "blockedby": "",
+      "cost": [
+        "1"
+      ],
+      "value": [
+        "true"
+      ],
+      "posx": "0",
+      "posy": "0",
+      "addmidpoint": "False",
+      "swapmidpointaxis": "False",
+      "lockedindemo": "False",
+      "requiredexpandspacelevels": [
+        "0"
+      ],
+      "tooltippercentage": "False",
+      "buttonsizescale": "1"
+    },
+    {
+      "shortname": "AE1",
+      "upgrade": "AE",
+      "numlevels": "1",
+      "hiddenby": "",
+      "lockedby": "",
+      "blockedby": "",
+      "cost": [
+        "1"
+      ],
+      "value": [
+        "true"
+      ],
+      "posx": "0",
+      "posy": "0",
+      "addmidpoint": "False",
+      "swapmidpointaxis": "False",
+      "lockedindemo": "False",
+      "requiredexpandspacelevels": [
+        "0"
+      ],
+      "tooltippercentage": "False",
+      "buttonsizescale": "1"
+    },
+    {
+      "shortname": "PRL1",
+      "upgrade": "PRL",
+      "numlevels": "1",
+      "hiddenby": "",
+      "lockedby": "",
+      "blockedby": "",
+      "cost": [
+        "1"
+      ],
+      "value": [
+        "true"
+      ],
+      "posx": "0",
+      "posy": "0",
+      "addmidpoint": "False",
+      "swapmidpointaxis": "False",
+      "lockedindemo": "False",
+      "requiredexpandspacelevels": [
+        "0"
+      ],
+      "tooltippercentage": "False",
+      "buttonsizescale": "1"
+    },
+    {
+      "shortname": "SHS1",
+      "upgrade": "SHS",
+      "numlevels": "1",
+      "hiddenby": "",
+      "lockedby": "",
+      "blockedby": "",
+      "cost": [
+        "1"
+      ],
+      "value": [
+        "true"
+      ],
+      "posx": "0",
+      "posy": "0",
+      "addmidpoint": "False",
+      "swapmidpointaxis": "False",
+      "lockedindemo": "False",
+      "requiredexpandspacelevels": [
+        "0"
+      ],
+      "tooltippercentage": "False",
+      "buttonsizescale": "1"
+    },
+    {
+      "shortname": "ODP1",
+      "upgrade": "ODP",
+      "numlevels": "1",
+      "hiddenby": "",
+      "lockedby": "",
+      "blockedby": "",
+      "cost": [
+        "1"
+      ],
+      "value": [
+        "true"
+      ],
+      "posx": "0",
+      "posy": "0",
+      "addmidpoint": "False",
+      "swapmidpointaxis": "False",
+      "lockedindemo": "False",
+      "requiredexpandspacelevels": [
+        "0"
+      ],
+      "tooltippercentage": "False",
+      "buttonsizescale": "1"
+    },
+    {
+      "shortname": "SYF1",
+      "upgrade": "SYF",
+      "numlevels": "1",
+      "hiddenby": "",
+      "lockedby": "",
+      "blockedby": "",
+      "cost": [
+        "1"
+      ],
+      "value": [
+        "true"
+      ],
+      "posx": "0",
+      "posy": "0",
+      "addmidpoint": "False",
+      "swapmidpointaxis": "False",
+      "lockedindemo": "False",
+      "requiredexpandspacelevels": [
+        "0"
+      ],
+      "tooltippercentage": "False",
+      "buttonsizescale": "1"
+    },
+    {
+      "shortname": "KNH1",
+      "upgrade": "KNH",
+      "numlevels": "1",
+      "hiddenby": "",
+      "lockedby": "",
+      "blockedby": "",
+      "cost": [
+        "1"
+      ],
+      "value": [
+        "true"
+      ],
+      "posx": "0",
+      "posy": "0",
+      "addmidpoint": "False",
+      "swapmidpointaxis": "False",
+      "lockedindemo": "False",
+      "requiredexpandspacelevels": [
+        "0"
+      ],
+      "tooltippercentage": "False",
+      "buttonsizescale": "1"
+    },
+    {
+      "shortname": "IOM1",
+      "upgrade": "IOM",
+      "numlevels": "1",
+      "hiddenby": "",
+      "lockedby": "",
+      "blockedby": "",
+      "cost": [
+        "1"
+      ],
+      "value": [
+        "true"
+      ],
+      "posx": "0",
+      "posy": "0",
+      "addmidpoint": "False",
+      "swapmidpointaxis": "False",
+      "lockedindemo": "False",
+      "requiredexpandspacelevels": [
+        "0"
+      ],
+      "tooltippercentage": "False",
+      "buttonsizescale": "1"
+    },
+    {
+      "shortname": "DEY1",
+      "upgrade": "DEY",
+      "numlevels": "1",
+      "hiddenby": "",
+      "lockedby": "",
+      "blockedby": "",
+      "cost": [
+        "1"
+      ],
+      "value": [
+        "true"
+      ],
+      "posx": "0",
+      "posy": "0",
+      "addmidpoint": "False",
+      "swapmidpointaxis": "False",
+      "lockedindemo": "False",
+      "requiredexpandspacelevels": [
+        "0"
+      ],
+      "tooltippercentage": "False",
+      "buttonsizescale": "1"
+    },
+    {
+      "shortname": "HSK1",
+      "upgrade": "HSK",
+      "numlevels": "1",
+      "hiddenby": "",
+      "lockedby": "",
+      "blockedby": "",
+      "cost": [
+        "1"
+      ],
+      "value": [
+        "true"
+      ],
+      "posx": "0",
+      "posy": "0",
+      "addmidpoint": "False",
+      "swapmidpointaxis": "False",
+      "lockedindemo": "False",
+      "requiredexpandspacelevels": [
+        "0"
+      ],
+      "tooltippercentage": "False",
+      "buttonsizescale": "1"
+    },
+    {
+      "shortname": "FCL1",
+      "upgrade": "FCL",
+      "numlevels": "1",
+      "hiddenby": "",
+      "lockedby": "",
+      "blockedby": "",
+      "cost": [
+        "1"
+      ],
+      "value": [
+        "true"
+      ],
+      "posx": "0",
+      "posy": "0",
+      "addmidpoint": "False",
+      "swapmidpointaxis": "False",
+      "lockedindemo": "False",
+      "requiredexpandspacelevels": [
+        "0"
+      ],
+      "tooltippercentage": "False",
+      "buttonsizescale": "1"
+    },
+    {
+      "shortname": "CRM1",
+      "upgrade": "CRM",
+      "numlevels": "1",
+      "hiddenby": "",
+      "lockedby": "",
+      "blockedby": "",
+      "cost": [
+        "1"
+      ],
+      "value": [
+        "true"
+      ],
+      "posx": "0",
+      "posy": "0",
+      "addmidpoint": "False",
+      "swapmidpointaxis": "False",
+      "lockedindemo": "False",
+      "requiredexpandspacelevels": [
+        "0"
+      ],
+      "tooltippercentage": "False",
+      "buttonsizescale": "1"
+    },
+    {
+      "shortname": "EXE1",
+      "upgrade": "EXE",
+      "numlevels": "1",
+      "hiddenby": "",
+      "lockedby": "",
+      "blockedby": "",
+      "cost": [
+        "1"
+      ],
+      "value": [
+        "true"
+      ],
+      "posx": "0",
+      "posy": "0",
+      "addmidpoint": "False",
+      "swapmidpointaxis": "False",
+      "lockedindemo": "False",
+      "requiredexpandspacelevels": [
+        "0"
+      ],
+      "tooltippercentage": "False",
+      "buttonsizescale": "1"
+    },
+    {
+      "shortname": "MSP1",
+      "upgrade": "MSP",
+      "numlevels": "1",
+      "hiddenby": "",
+      "lockedby": "",
+      "blockedby": "",
+      "cost": [
+        "1"
+      ],
+      "value": [
+        "true"
+      ],
+      "posx": "0",
+      "posy": "0",
+      "addmidpoint": "False",
+      "swapmidpointaxis": "False",
+      "lockedindemo": "False",
+      "requiredexpandspacelevels": [
+        "0"
+      ],
+      "tooltippercentage": "False",
+      "buttonsizescale": "1"
+    },
+    {
+      "shortname": "SCR1",
+      "upgrade": "SCR",
+      "numlevels": "1",
+      "hiddenby": "",
+      "lockedby": "",
+      "blockedby": "",
+      "cost": [
+        "1"
+      ],
+      "value": [
+        "true"
+      ],
+      "posx": "0",
+      "posy": "0",
+      "addmidpoint": "False",
+      "swapmidpointaxis": "False",
+      "lockedindemo": "False",
+      "requiredexpandspacelevels": [
+        "0"
+      ],
+      "tooltippercentage": "False",
+      "buttonsizescale": "1"
+    },
+    {
+      "shortname": "CHT1",
+      "upgrade": "CHT",
+      "numlevels": "1",
+      "hiddenby": "",
+      "lockedby": "",
+      "blockedby": "",
+      "cost": [
+        "1"
+      ],
+      "value": [
+        "true"
+      ],
+      "posx": "0",
+      "posy": "0",
+      "addmidpoint": "False",
+      "swapmidpointaxis": "False",
+      "lockedindemo": "False",
+      "requiredexpandspacelevels": [
+        "0"
+      ],
+      "tooltippercentage": "False",
+      "buttonsizescale": "1"
+    },
+    {
+      "shortname": "OUR1",
+      "upgrade": "OUR",
+      "numlevels": "1",
+      "hiddenby": "",
+      "lockedby": "",
+      "blockedby": "",
+      "cost": [
+        "1"
+      ],
+      "value": [
+        "true"
+      ],
+      "posx": "0",
+      "posy": "0",
+      "addmidpoint": "False",
+      "swapmidpointaxis": "False",
+      "lockedindemo": "False",
+      "requiredexpandspacelevels": [
+        "0"
+      ],
+      "tooltippercentage": "False",
+      "buttonsizescale": "1"
+    },
+    {
+      "shortname": "MRS1",
+      "upgrade": "MRS",
+      "numlevels": "1",
+      "hiddenby": "",
+      "lockedby": "",
+      "blockedby": "",
+      "cost": [
+        "1"
+      ],
+      "value": [
+        "true"
+      ],
+      "posx": "0",
+      "posy": "0",
+      "addmidpoint": "False",
+      "swapmidpointaxis": "False",
+      "lockedindemo": "False",
+      "requiredexpandspacelevels": [
+        "0"
+      ],
+      "tooltippercentage": "False",
+      "buttonsizescale": "1"
+    },
+    {
+      "shortname": "RCH1",
+      "upgrade": "RCH",
+      "numlevels": "1",
+      "hiddenby": "",
+      "lockedby": "",
+      "blockedby": "",
+      "cost": [
+        "1"
+      ],
+      "value": [
+        "true"
+      ],
+      "posx": "0",
+      "posy": "0",
+      "addmidpoint": "False",
+      "swapmidpointaxis": "False",
+      "lockedindemo": "False",
+      "requiredexpandspacelevels": [
+        "0"
+      ],
+      "tooltippercentage": "False",
+      "buttonsizescale": "1"
+    },
+    {
+      "shortname": "KNB1",
+      "upgrade": "KNB",
+      "numlevels": "1",
+      "hiddenby": "",
+      "lockedby": "",
+      "blockedby": "",
+      "cost": [
+        "1"
+      ],
+      "value": [
+        "true"
+      ],
+      "posx": "0",
+      "posy": "0",
+      "addmidpoint": "False",
+      "swapmidpointaxis": "False",
+      "lockedindemo": "False",
+      "requiredexpandspacelevels": [
+        "0"
+      ],
+      "tooltippercentage": "False",
+      "buttonsizescale": "1"
+    },
+    {
+      "shortname": "GVS1",
+      "upgrade": "GVS",
+      "numlevels": "1",
+      "hiddenby": "",
+      "lockedby": "",
+      "blockedby": "",
+      "cost": [
+        "1"
+      ],
+      "value": [
+        "true"
+      ],
+      "posx": "0",
+      "posy": "0",
+      "addmidpoint": "False",
+      "swapmidpointaxis": "False",
+      "lockedindemo": "False",
+      "requiredexpandspacelevels": [
+        "0"
+      ],
+      "tooltippercentage": "False",
+      "buttonsizescale": "1"
+    },
+    {
+      "shortname": "FSD1",
+      "upgrade": "FSD",
+      "numlevels": "1",
+      "hiddenby": "",
+      "lockedby": "",
+      "blockedby": "",
+      "cost": [
+        "1"
+      ],
+      "value": [
+        "true"
+      ],
+      "posx": "0",
+      "posy": "0",
+      "addmidpoint": "False",
+      "swapmidpointaxis": "False",
+      "lockedindemo": "False",
+      "requiredexpandspacelevels": [
+        "0"
+      ],
+      "tooltippercentage": "False",
+      "buttonsizescale": "1"
+    },
+    {
+      "shortname": "DSP1",
+      "upgrade": "DSP",
+      "numlevels": "1",
+      "hiddenby": "",
+      "lockedby": "",
+      "blockedby": "",
+      "cost": [
+        "1"
+      ],
+      "value": [
+        "true"
+      ],
+      "posx": "0",
+      "posy": "0",
+      "addmidpoint": "False",
+      "swapmidpointaxis": "False",
+      "lockedindemo": "False",
+      "requiredexpandspacelevels": [
+        "0"
+      ],
+      "tooltippercentage": "False",
+      "buttonsizescale": "1"
+    },
+    {
+      "shortname": "CHR1",
+      "upgrade": "CHR",
+      "numlevels": "1",
+      "hiddenby": "",
+      "lockedby": "",
+      "blockedby": "",
+      "cost": [
+        "1"
+      ],
+      "value": [
+        "true"
+      ],
+      "posx": "0",
+      "posy": "0",
+      "addmidpoint": "False",
+      "swapmidpointaxis": "False",
+      "lockedindemo": "False",
+      "requiredexpandspacelevels": [
+        "0"
+      ],
+      "tooltippercentage": "False",
+      "buttonsizescale": "1"
+    },
+    {
+      "shortname": "MLC1",
+      "upgrade": "MLC",
+      "numlevels": "1",
+      "hiddenby": "",
+      "lockedby": "",
+      "blockedby": "",
+      "cost": [
+        "1"
+      ],
+      "value": [
+        "true"
+      ],
+      "posx": "0",
+      "posy": "0",
+      "addmidpoint": "False",
+      "swapmidpointaxis": "False",
+      "lockedindemo": "False",
+      "requiredexpandspacelevels": [
+        "0"
+      ],
+      "tooltippercentage": "False",
+      "buttonsizescale": "1"
+    },
+    {
+      "shortname": "OVC1",
+      "upgrade": "OVC",
+      "numlevels": "1",
+      "hiddenby": "",
+      "lockedby": "",
+      "blockedby": "",
+      "cost": [
+        "1"
+      ],
+      "value": [
+        "true"
+      ],
+      "posx": "0",
+      "posy": "0",
+      "addmidpoint": "False",
+      "swapmidpointaxis": "False",
+      "lockedindemo": "False",
+      "requiredexpandspacelevels": [
+        "0"
+      ],
+      "tooltippercentage": "False",
+      "buttonsizescale": "1"
+    },
+    {
+      "shortname": "HVO1",
+      "upgrade": "HVO",
+      "numlevels": "1",
+      "hiddenby": "",
+      "lockedby": "",
+      "blockedby": "",
+      "cost": [
+        "1"
+      ],
+      "value": [
+        "true"
+      ],
+      "posx": "0",
+      "posy": "0",
+      "addmidpoint": "False",
+      "swapmidpointaxis": "False",
+      "lockedindemo": "False",
+      "requiredexpandspacelevels": [
+        "0"
+      ],
+      "tooltippercentage": "False",
+      "buttonsizescale": "1"
+    },
+    {
+      "shortname": "LOP1",
+      "upgrade": "LOP",
+      "numlevels": "1",
+      "hiddenby": "",
+      "lockedby": "",
+      "blockedby": "",
+      "cost": [
+        "1"
+      ],
+      "value": [
+        "true"
+      ],
+      "posx": "0",
+      "posy": "0",
+      "addmidpoint": "False",
+      "swapmidpointaxis": "False",
+      "lockedindemo": "False",
+      "requiredexpandspacelevels": [
+        "0"
+      ],
+      "tooltippercentage": "False",
+      "buttonsizescale": "1"
+    },
+    {
+      "shortname": "RCO1",
+      "upgrade": "RCO",
+      "numlevels": "1",
+      "hiddenby": "",
+      "lockedby": "",
+      "blockedby": "",
+      "cost": [
+        "1"
+      ],
+      "value": [
+        "true"
+      ],
+      "posx": "0",
+      "posy": "0",
+      "addmidpoint": "False",
+      "swapmidpointaxis": "False",
+      "lockedindemo": "False",
+      "requiredexpandspacelevels": [
+        "0"
+      ],
+      "tooltippercentage": "False",
+      "buttonsizescale": "1"
+    },
+    {
+      "shortname": "CBK1",
+      "upgrade": "CBK",
+      "numlevels": "1",
+      "hiddenby": "",
+      "lockedby": "",
+      "blockedby": "",
+      "cost": [
+        "1"
+      ],
+      "value": [
+        "true"
+      ],
+      "posx": "0",
+      "posy": "0",
+      "addmidpoint": "False",
+      "swapmidpointaxis": "False",
+      "lockedindemo": "False",
+      "requiredexpandspacelevels": [
+        "0"
+      ],
+      "tooltippercentage": "False",
+      "buttonsizescale": "1"
+    },
+    {
+      "shortname": "XSP1",
+      "upgrade": "XSP",
+      "numlevels": "1",
+      "hiddenby": "",
+      "lockedby": "",
+      "blockedby": "",
+      "cost": [
+        "0"
+      ],
+      "value": [
+        "true"
+      ],
+      "posx": "0",
+      "posy": "0",
+      "addmidpoint": "False",
+      "swapmidpointaxis": "False",
+      "lockedindemo": "False",
+      "requiredexpandspacelevels": [
+        "0"
+      ],
+      "tooltippercentage": "False",
+      "buttonsizescale": "1"
+    },
+    {
+      "shortname": "XSP2",
+      "upgrade": "XSP",
+      "numlevels": "1",
+      "hiddenby": "",
+      "lockedby": "",
+      "blockedby": "",
+      "cost": [
+        "0"
+      ],
+      "value": [
+        "true"
+      ],
+      "posx": "0",
+      "posy": "0",
+      "addmidpoint": "False",
+      "swapmidpointaxis": "False",
+      "lockedindemo": "False",
+      "requiredexpandspacelevels": [
+        "0"
+      ],
+      "tooltippercentage": "False",
+      "buttonsizescale": "1"
+    },
+    {
+      "shortname": "XSP3",
+      "upgrade": "XSP",
+      "numlevels": "1",
+      "hiddenby": "",
+      "lockedby": "",
+      "blockedby": "",
+      "cost": [
+        "0"
+      ],
+      "value": [
+        "true"
+      ],
+      "posx": "0",
+      "posy": "0",
+      "addmidpoint": "False",
+      "swapmidpointaxis": "False",
+      "lockedindemo": "False",
+      "requiredexpandspacelevels": [
+        "0"
+      ],
+      "tooltippercentage": "False",
+      "buttonsizescale": "1"
+    },
+    {
+      "shortname": "XSP4",
+      "upgrade": "XSP",
+      "numlevels": "1",
+      "hiddenby": "",
+      "lockedby": "",
+      "blockedby": "",
+      "cost": [
+        "0"
+      ],
+      "value": [
+        "true"
+      ],
+      "posx": "0",
+      "posy": "0",
+      "addmidpoint": "False",
+      "swapmidpointaxis": "False",
+      "lockedindemo": "False",
+      "requiredexpandspacelevels": [
+        "0"
+      ],
+      "tooltippercentage": "False",
+      "buttonsizescale": "1"
+    },
+    {
+      "shortname": "XSP5",
+      "upgrade": "XSP",
+      "numlevels": "1",
+      "hiddenby": "",
+      "lockedby": "",
+      "blockedby": "",
+      "cost": [
+        "0"
+      ],
+      "value": [
+        "true"
+      ],
+      "posx": "0",
+      "posy": "0",
+      "addmidpoint": "False",
+      "swapmidpointaxis": "False",
+      "lockedindemo": "False",
+      "requiredexpandspacelevels": [
+        "0"
+      ],
+      "tooltippercentage": "False",
+      "buttonsizescale": "1"
+    },
+    {
+      "shortname": "SPC1",
+      "upgrade": "SPC",
+      "numlevels": "1",
+      "hiddenby": "",
+      "lockedby": "",
+      "blockedby": "",
+      "cost": [
+        "0"
+      ],
+      "value": [
+        "true"
+      ],
+      "posx": "0",
+      "posy": "0",
+      "addmidpoint": "False",
+      "swapmidpointaxis": "False",
+      "lockedindemo": "False",
+      "requiredexpandspacelevels": [
+        "0"
+      ],
+      "tooltippercentage": "False",
+      "buttonsizescale": "1"
+    },
+    {
+      "shortname": "HST1",
+      "upgrade": "HST",
+      "numlevels": "1",
+      "hiddenby": "",
+      "lockedby": "",
+      "blockedby": "",
+      "cost": [
+        "0"
+      ],
+      "value": [
+        "true"
+      ],
+      "posx": "0",
+      "posy": "0",
+      "addmidpoint": "False",
+      "swapmidpointaxis": "False",
+      "lockedindemo": "False",
+      "requiredexpandspacelevels": [
+        "0"
+      ],
+      "tooltippercentage": "False",
+      "buttonsizescale": "1"
+    },
+    {
+      "shortname": "SCH1",
+      "upgrade": "SCH",
+      "numlevels": "1",
+      "hiddenby": "",
+      "lockedby": "",
+      "blockedby": "",
+      "cost": [
+        "0"
+      ],
+      "value": [
+        "true"
+      ],
+      "posx": "0",
+      "posy": "0",
+      "addmidpoint": "False",
+      "swapmidpointaxis": "False",
+      "lockedindemo": "False",
+      "requiredexpandspacelevels": [
+        "0"
+      ],
+      "tooltippercentage": "False",
+      "buttonsizescale": "1"
+    },
+    {
+      "shortname": "CMY1",
+      "upgrade": "CMY",
+      "numlevels": "1",
+      "hiddenby": "",
+      "lockedby": "",
+      "blockedby": "",
+      "cost": [
+        "0"
+      ],
+      "value": [
+        "true"
+      ],
+      "posx": "0",
+      "posy": "0",
+      "addmidpoint": "False",
+      "swapmidpointaxis": "False",
+      "lockedindemo": "False",
+      "requiredexpandspacelevels": [
+        "0"
+      ],
+      "tooltippercentage": "False",
+      "buttonsizescale": "1"
+    },
+    {
+      "shortname": "GLO1",
+      "upgrade": "GLO",
+      "numlevels": "1",
+      "hiddenby": "",
+      "lockedby": "",
+      "blockedby": "",
+      "cost": [
+        "0"
+      ],
+      "value": [
+        "true"
+      ],
+      "posx": "0",
+      "posy": "0",
+      "addmidpoint": "False",
+      "swapmidpointaxis": "False",
+      "lockedindemo": "False",
+      "requiredexpandspacelevels": [
+        "0"
+      ],
+      "tooltippercentage": "False",
+      "buttonsizescale": "1"
+    },
+    {
+      "shortname": "GLO2",
+      "upgrade": "GLO",
+      "numlevels": "1",
+      "hiddenby": "",
+      "lockedby": "",
+      "blockedby": "",
+      "cost": [
+        "0"
+      ],
+      "value": [
+        "true"
+      ],
+      "posx": "0",
+      "posy": "0",
+      "addmidpoint": "False",
+      "swapmidpointaxis": "False",
+      "lockedindemo": "False",
+      "requiredexpandspacelevels": [
+        "0"
+      ],
+      "tooltippercentage": "False",
+      "buttonsizescale": "1"
+    },
+    {
+      "shortname": "GLO3",
+      "upgrade": "GLO",
+      "numlevels": "1",
+      "hiddenby": "",
+      "lockedby": "",
+      "blockedby": "",
+      "cost": [
+        "0"
+      ],
+      "value": [
+        "true"
+      ],
+      "posx": "0",
+      "posy": "0",
+      "addmidpoint": "False",
+      "swapmidpointaxis": "False",
+      "lockedindemo": "False",
+      "requiredexpandspacelevels": [
+        "0"
+      ],
+      "tooltippercentage": "False",
+      "buttonsizescale": "1"
+    },
+    {
+      "shortname": "GLO4",
+      "upgrade": "GLO",
+      "numlevels": "1",
+      "hiddenby": "",
+      "lockedby": "",
+      "blockedby": "",
+      "cost": [
+        "0"
+      ],
+      "value": [
+        "true"
+      ],
+      "posx": "0",
+      "posy": "0",
+      "addmidpoint": "False",
+      "swapmidpointaxis": "False",
+      "lockedindemo": "False",
+      "requiredexpandspacelevels": [
+        "0"
+      ],
+      "tooltippercentage": "False",
+      "buttonsizescale": "1"
+    },
+    {
+      "shortname": "GLO5",
+      "upgrade": "GLO",
+      "numlevels": "1",
+      "hiddenby": "",
+      "lockedby": "",
+      "blockedby": "",
+      "cost": [
+        "0"
+      ],
+      "value": [
+        "true"
+      ],
+      "posx": "0",
+      "posy": "0",
+      "addmidpoint": "False",
+      "swapmidpointaxis": "False",
+      "lockedindemo": "False",
+      "requiredexpandspacelevels": [
+        "0"
+      ],
+      "tooltippercentage": "False",
+      "buttonsizescale": "1"
+    },
+    {
+      "shortname": "GLO6",
+      "upgrade": "GLO",
+      "numlevels": "1",
+      "hiddenby": "",
+      "lockedby": "",
+      "blockedby": "",
+      "cost": [
+        "0"
+      ],
+      "value": [
+        "true"
+      ],
+      "posx": "0",
+      "posy": "0",
+      "addmidpoint": "False",
+      "swapmidpointaxis": "False",
+      "lockedindemo": "False",
+      "requiredexpandspacelevels": [
+        "0"
+      ],
+      "tooltippercentage": "False",
+      "buttonsizescale": "1"
+    },
+    {
+      "shortname": "TT1",
+      "upgrade": "TT",
+      "numlevels": "1",
+      "hiddenby": "",
+      "lockedby": "",
+      "blockedby": "",
+      "cost": [
+        "1"
+      ],
+      "value": [
+        "true"
+      ],
+      "posx": "0",
+      "posy": "0",
+      "addmidpoint": "False",
+      "swapmidpointaxis": "False",
+      "lockedindemo": "False",
+      "requiredexpandspacelevels": [
+        "0"
+      ],
+      "tooltippercentage": "False",
+      "buttonsizescale": "1"
+    },
+    {
+      "shortname": "DPD1",
+      "upgrade": "DPD",
+      "numlevels": "1",
+      "hiddenby": "",
+      "lockedby": "",
+      "blockedby": "",
+      "cost": [
+        "1"
+      ],
+      "value": [
+        "true"
+      ],
+      "posx": "0",
+      "posy": "0",
+      "addmidpoint": "False",
+      "swapmidpointaxis": "False",
+      "lockedindemo": "False",
+      "requiredexpandspacelevels": [
+        "0"
+      ],
+      "tooltippercentage": "False",
+      "buttonsizescale": "1"
+    },
+    {
+      "shortname": "IFF1",
+      "upgrade": "IFF",
+      "numlevels": "1",
+      "hiddenby": "",
+      "lockedby": "",
+      "blockedby": "",
+      "cost": [
+        "1"
+      ],
+      "value": [
+        "true"
+      ],
+      "posx": "0",
+      "posy": "0",
+      "addmidpoint": "False",
+      "swapmidpointaxis": "False",
+      "lockedindemo": "False",
+      "requiredexpandspacelevels": [
+        "0"
+      ],
+      "tooltippercentage": "False",
+      "buttonsizescale": "1"
     }
   ]
 }

@@ -19,7 +19,10 @@ public static class SoundMix
         or SoundEvent.SignalDecodeFirst or SoundEvent.SignalDecodeSecond or SoundEvent.SignalDecodeThird
         or SoundEvent.SignalRevealCommon or SoundEvent.SignalRevealUncommon or SoundEvent.SignalRevealRare
         or SoundEvent.SignalRevealEpic or SoundEvent.SignalRevealLegendary
-        or SoundEvent.GemClick or SoundEvent.CursorGravityCollapse or SoundEvent.RefuelStart
+        or SoundEvent.GemClick or SoundEvent.TractorBeltPlace or SoundEvent.RefuelStart
+        // The belt shutting off is the cue to place it again: the railgun can fill the
+        // milestone voices, so it sits with the player's own sounds.
+        or SoundEvent.TractorBeltExpire
         or SoundEvent.ModuleRevealStart or SoundEvent.ModuleRevealCommon or SoundEvent.ModuleRevealEpic
         or SoundEvent.ModuleRevealLegendary or SoundEvent.ModuleEquip or SoundEvent.ModuleUnequip
         or SoundEvent.CannonFireManual or SoundEvent.CoreShardClick => new(SoundBus.Player, 0.025f),
@@ -31,12 +34,19 @@ public static class SoundMix
         or SoundEvent.PlanetCrackerStart or SoundEvent.PlanetShellShatterStart or SoundEvent.PlanetShellBurst
         or SoundEvent.CoreFractureStart or SoundEvent.CoreFractureHeartbeat or SoundEvent.CoreFractureSwallow
         or SoundEvent.CoreFractureEruption or SoundEvent.CoreShardRelease or SoundEvent.CoreShardCollect
+        // Fault Cells land with the fracture's rewards; on the busy Automation bus they went unheard.
+        or SoundEvent.PowerCellLanded
         or SoundEvent.CoreExtractionStart or SoundEvent.TimeLoopCollapseBuildup or SoundEvent.TimeLoopCollapseImplode
         or SoundEvent.TimeLoopPlanetSwallowed or SoundEvent.TimeLoopRestart => new(SoundBus.Milestone, 0.12f),
 
+      // The railgun's wind-up and shot are rare and its effects follow them, so they
+      // are never dropped or ducked behind the rest of the arsenal.
+      SoundEvent.RailgunWindUp or SoundEvent.RailgunFire
+        or SoundEvent.SupercriticalBurst or SoundEvent.ChaosTheoryStart
+        or SoundEvent.CarrierDelivery => new(SoundBus.Milestone, 0.12f),
       SoundEvent.RefuelRequest or SoundEvent.RefuelComplete => new(SoundBus.Automation, 0.8f),
-      SoundEvent.UpgradeComplete or SoundEvent.ModuleSalvageReady or SoundEvent.CursorGravityReady
-        or SoundEvent.JackpotHaul or SoundEvent.WeaponJackpot or SoundEvent.PrestigePointEarned
+      SoundEvent.UpgradeComplete or SoundEvent.ModuleSalvageReady
+        or SoundEvent.JackpotHaul or SoundEvent.PrestigePointEarned
         or SoundEvent.PrestigePointLanded => new(SoundBus.Automation, 0.65f),
       SoundEvent.CannonFireAuto or SoundEvent.CannonImpact or SoundEvent.RocketMiniImpact
         or SoundEvent.KamikazeBombletImpact or SoundEvent.ArcHarpoonPulse => new(SoundBus.Automation, 0.18f),

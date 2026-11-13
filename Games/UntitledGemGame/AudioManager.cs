@@ -39,8 +39,8 @@ public enum SoundEvent
   GemPickup,
   GemClick,
   GemMerge,
-  CursorGravityCollapse,
-  CursorGravityReady,
+  TractorBeltPlace,
+  TractorBeltExpire,
 
   // Harvesters & Refueling
   RefuelRequest,
@@ -50,6 +50,7 @@ public enum SoundEvent
   HarvesterDeliverCargo,
   HarvesterWarpDrive,
   JackpotHaul,
+  CarrierDelivery,
 
   // Shipyard & Module Salvage
   ModuleSalvageReady,
@@ -87,11 +88,13 @@ public enum SoundEvent
   ArcHarpoonLaunch,
   ArcHarpoonPulse,
   ArcHarpoonRelease,
+  FlakFire,
 
   // Weapons — Planet Impacts & Combos
   CannonImpact,
   CannonCriticalImpact,
   CannonRicochet,
+  FlakImpact,
   RocketImpact,
   RocketMiniImpact,
   ArcHarpoonImpact,
@@ -103,7 +106,8 @@ public enum SoundEvent
   MagmaDetonation,
   PlanetaryOverloadErupt,
   WeakPointBurst,
-  WeaponJackpot,
+  SupercriticalBurst,
+  ChaosTheoryStart,
 
   // Planet Shell
   PlanetShellShatterStart,
@@ -117,6 +121,7 @@ public enum SoundEvent
   CoreShardRelease,
   CoreShardClick,
   CoreShardCollect,
+  PowerCellLanded,
 
   // Prestige & Time Loop
   PrestigePointEarned,
@@ -229,11 +234,12 @@ public partial class AudioManager
     [SoundEvent.SignalHover]           = [new(SfxMenuHover, Volume: 0.6f, Preload: false, Type: SoundType.UI)],
 
     // Gems & Cursor
-    [SoundEvent.GemPickup]             = [new(SfxGemPickup, PitchJitter: 0.2f, Priority: 0.5f, Type: SoundType.GemCollect)],
+    // Not preloaded: the settings menu previews the effects volume with this cue.
+    [SoundEvent.GemPickup]             = [new(SfxGemPickup, PitchJitter: 0.2f, Priority: 0.5f, Type: SoundType.GemCollect, Preload: false)],
     [SoundEvent.GemClick]              = [new(SfxGemClick, PitchJitter: 0.15f)],
     [SoundEvent.GemMerge]              = [new(SfxMerge, Volume: 0.28f, PitchJitter: 0.06f)],
-    [SoundEvent.CursorGravityCollapse] = [new(SfxGemClick)],
-    [SoundEvent.CursorGravityReady]    = [new(SfxBlip, Pitch: 0.25f)],
+    [SoundEvent.TractorBeltPlace]      = [new(SfxServoRise, Volume: 0.35f, Pitch: 0.2f)],
+    [SoundEvent.TractorBeltExpire]     = [new(SfxServoFall, Volume: 0.3f, Pitch: 0.15f)],
 
     // Harvesters & Refueling
     [SoundEvent.RefuelRequest]         = [new(SfxBlip)],
@@ -243,6 +249,7 @@ public partial class AudioManager
     [SoundEvent.HarvesterDeliverCargo] = [new(SfxCargo, Volume: 0.25f, PitchJitter: 0.08f)],
     [SoundEvent.HarvesterWarpDrive]    = [new(SfxWarp, Volume: 0.25f, PitchJitter: 0.06f)],
     [SoundEvent.JackpotHaul]           = [new(SfxJackpot, Volume: 0.55f)],
+    [SoundEvent.CarrierDelivery]       = [new(SfxJackpot, Volume: 0.6f, Pitch: -0.25f), new(SfxHeavyImpact, Volume: 0.3f)],
 
     // Shipyard & Module Salvage
     [SoundEvent.ModuleSalvageReady]    = [new(SfxBlip)],
@@ -280,11 +287,13 @@ public partial class AudioManager
     [SoundEvent.ArcHarpoonLaunch]   = [new(SfxEquip, Volume: 0.5f, Pitch: -0.2f)],
     [SoundEvent.ArcHarpoonPulse]    = [new(SfxElectric, Volume: 0.22f, PitchJitter: 0.06f, Priority: 0.3f)],
     [SoundEvent.ArcHarpoonRelease]  = [new(SfxServoFall, Volume: 0.3f)],
+    [SoundEvent.FlakFire]           = [new(SfxCannon, Volume: 0.35f, Pitch: 0.2f, PitchJitter: 0.08f, Priority: 0.5f)],
 
     // Weapons — Planet Impacts & Combos
     [SoundEvent.CannonImpact]           = [new(SfxCannonImpact, Volume: 0.4f, PitchJitter: 0.08f, Priority: 0.4f)],
     [SoundEvent.CannonCriticalImpact]   = [new(SfxHeavyImpact, Volume: 0.5f, PitchJitter: 0.06f, Priority: 0.7f)],
     [SoundEvent.CannonRicochet]         = [new(SfxRicochet, Volume: 0.25f, PitchJitter: 0.1f, Priority: 0.3f)],
+    [SoundEvent.FlakImpact]             = [new(SfxCannonImpact, Volume: 0.22f, Pitch: 0.25f, PitchJitter: 0.1f, Priority: 0.3f)],
     [SoundEvent.RocketImpact]           = [new(SfxExplosion, Volume: 0.5f, PitchJitter: 0.08f, Priority: 0.6f)],
     [SoundEvent.RocketMiniImpact]       = [new(SfxExplosion, Volume: 0.22f, Pitch: 0.3f, PitchJitter: 0.08f, Priority: 0.3f)],
     [SoundEvent.ArcHarpoonImpact]       = [new(SfxCoreTap, Volume: 0.35f)],
@@ -296,7 +305,9 @@ public partial class AudioManager
     [SoundEvent.MagmaDetonation]        = [new(SfxExplosion, Volume: 0.45f, Pitch: -0.15f)],
     [SoundEvent.PlanetaryOverloadErupt] = [new(SfxEnergyRelease, Volume: 0.4f, Priority: 1.2f)],
     [SoundEvent.WeakPointBurst]         = [new(SfxDebris, Volume: 0.35f, Pitch: 0.2f)],
-    [SoundEvent.WeaponJackpot]          = [new(SfxJackpot, Volume: 0.5f, Pitch: 0.15f)],
+    [SoundEvent.SupercriticalBurst]     = [new(SfxEnergyRelease, Volume: 0.45f, Pitch: 0.2f, Priority: 1.2f),
+                                           new(SfxJackpot, Volume: 0.35f, Pitch: 0.3f)],
+    [SoundEvent.ChaosTheoryStart]       = [new(SfxSurge, Volume: 0.45f, Pitch: -0.25f, Priority: 1.2f)],
 
     // Planet Shell
     [SoundEvent.PlanetShellShatterStart] = [new(SfxImpact, Pitch: -0.3f)],
@@ -310,6 +321,7 @@ public partial class AudioManager
     [SoundEvent.CoreShardRelease]      = [new(SfxUpgradeDone, Volume: 2.0f, Pitch: 0.3f)],
     [SoundEvent.CoreShardClick]        = [new(SfxGemClick, Pitch: 0.4f)],
     [SoundEvent.CoreShardCollect]      = [new(SfxUpgradeDone, Volume: 2.0f)],
+    [SoundEvent.PowerCellLanded]       = [new(SfxGemClick, Pitch: 0.3f)],
 
     // Prestige & Time Loop
     [SoundEvent.PrestigePointEarned]     = [new(SfxUpgradeDone, Volume: 2.0f, Pitch: 0.5f)],
@@ -326,6 +338,7 @@ public partial class AudioManager
   private const float RefuelFadeSeconds = 0.06f;
   private const float RefuelPitchMin = -0.15f;
   private const float RefuelPitchMax = 0.25f;
+  private const float VolumePreviewSfxInterval = 0.5f;
 
   // ============================================================================
 
@@ -341,6 +354,7 @@ public partial class AudioManager
   private RadioPlayer music;
   private readonly Dictionary<SoundEvent, SoundCue[]> _eventCues = new(EventCues);
   private long _soundTrigger;
+  private float volumePreviewSfxDelay;
 
   // Every sound that actually plays; capture sessions log these to rebuild the game audio offline.
   public static event Action<SoundEffect, float, float, float> SoundPlayed;
@@ -531,9 +545,25 @@ public partial class AudioManager
 #if KNI_WEB
     if (!UntitledGemGame.Web.WebBootstrap.AudioActivated) return;
 #endif
-    music?.Update(musicInMenu, m_settings?.MusicVolume ?? 0f, musicPaused);
+    bool previewing = GameMain.VolumeSliderHeld;
+    music?.Update(musicInMenu, m_settings?.MusicVolume ?? 0f, musicPaused && !previewing);
+    UpdateVolumePreviewSfx(gameTime, previewing);
 
     m_soundManager.ProcessQueue(gameTime);
+  }
+
+  private void UpdateVolumePreviewSfx(GameTime gameTime, bool previewing)
+  {
+    if (!previewing)
+    {
+      volumePreviewSfxDelay = 0f;
+      return;
+    }
+    volumePreviewSfxDelay -= (float)gameTime.ElapsedGameTime.TotalSeconds;
+    if (volumePreviewSfxDelay > 0f) return;
+    volumePreviewSfxDelay = VolumePreviewSfxInterval;
+    // On the player's bus, so the slider's own clicks cannot duck the level being judged.
+    PlaySound(SoundEvent.GemPickup, playerInitiated: true);
   }
 
   public void PlaySound(SoundEvent soundEvent, float pitchOffset = 0f, float pan = 0f, float volumeScale = 1f, bool playerInitiated = false)

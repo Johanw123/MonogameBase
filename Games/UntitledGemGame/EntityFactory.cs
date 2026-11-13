@@ -146,6 +146,9 @@ namespace UntitledGemGame
     public Dictionary<int, Entity> UltimateHarvesters = new();
     public Dictionary<int, Entity> Beacons = new();
     public Dictionary<int, Entity> Drones = new();
+    // Mothership Protocol's carriers, one per fleet type with ships; they are not ships of
+    // their fleet, which holds the shuttles.
+    public Dictionary<Harvester.HarvesterType, Entity> Carriers = new();
 
     public void RemoveHarvester(Dictionary<int, Entity> collection, int id)
     {
@@ -162,7 +165,60 @@ namespace UntitledGemGame
       foreach (var collection in new[] { Harvesters, AdvancedHarvesters, PerimeterHarvesters, ExpertHarvesters,
         UltimateHarvesters, Drones })
         while (collection.Count > 0) RemoveRandomHarvester(collection);
+      foreach (var carrier in Carriers.Values) carrier.Destroy();
+      Carriers.Clear();
       DestroyBeacons();
+    }
+
+    private Dictionary<int, Entity> Fleet(Harvester.HarvesterType type) => type switch
+    {
+      Harvester.HarvesterType.AdvancedHarvester => AdvancedHarvesters,
+      Harvester.HarvesterType.PerimeterHarvester => PerimeterHarvesters,
+      Harvester.HarvesterType.ExpertHarvester => ExpertHarvesters,
+      Harvester.HarvesterType.UltimateHarvester => UltimateHarvesters,
+      _ => Harvesters,
+    };
+
+    // Keeps every fleet's carrier in step with Mothership Protocol and its ships.
+    public void SyncCarriers()
+    {
+      bool protocol = UpgradeManager.Instance.UGM.MothershipProtocol;
+      if (!protocol && Carriers.Count == 0) return;
+      foreach (var type in ModuleCatalog.Types)
+      {
+        var ships = Fleet(type);
+        Carriers.TryGetValue(type, out var entity);
+        if (!protocol || ships.Count == 0)
+        {
+          if (entity == null) continue;
+          foreach (var ship in ships.Values) ship.Get<Harvester>().LeaveCarrier();
+          entity.Destroy();
+          Carriers.Remove(type);
+          continue;
+        }
+        entity ??= CreateCarrier(type);
+        var carrier = entity.Get<Harvester>();
+        if (carrier.ShuttleCount == ships.Count) continue;
+        carrier.ShuttleCount = ships.Count;
+        foreach (var ship in ships.Values) ship.Get<Harvester>().JoinCarrier(carrier);
+      }
+    }
+
+    private Entity CreateCarrier(Harvester.HarvesterType type)
+    {
+      var position = Screens.UntitledGemGameGameScreen.HomeBasePos;
+      var entity = type switch
+      {
+        Harvester.HarvesterType.AdvancedHarvester => CreateAdvancedHarvester(position),
+        Harvester.HarvesterType.PerimeterHarvester => CreatePerimeterHarvester(position),
+        Harvester.HarvesterType.ExpertHarvester => CreateExpertHarvester(position),
+        Harvester.HarvesterType.UltimateHarvester => CreateUltimateHarvester(position),
+        _ => CreateHarvester(position),
+      };
+      Fleet(type).Remove(entity.Id);
+      entity.Get<Harvester>().IsCarrier = true;
+      Carriers.Add(type, entity);
+      return entity;
     }
 
     public void RemoveRandomHarvester(Dictionary<int, Entity> collection)

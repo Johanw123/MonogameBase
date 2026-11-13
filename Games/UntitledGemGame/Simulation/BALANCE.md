@@ -1,5 +1,26 @@
 # Regular upgrade progression
 
+## Late-game collection (2026-11-11)
+
+Weapons out-produced collection late: on the "Late game: fleet" preset about 5M gems a second came off the planet and a tenth of that was collected, with the field full and the rest lost. Three changes:
+
+- **Ships collect along their path.** A ship used to collect once per step at its position, so past about 600 units/s extra speed added nothing. It now sweeps the segment it flew (not warps). "Late game: fleet" income went from 3.3e15 to 4.4e16 a minute; slower fleets are unchanged. Update time on that preset rose from 0.54 to about 1.1 ms a step.
+- **Buried gems** (`BuriedGems`). Damage that finds no room on the field is buried in a per-run pool (capped at 20x the field size) instead of lost. Deep Scoops (fleet), Deep Grip (hand, Magnet Cursor, Tidal Pull) and Deep Rails (belt) dig up 1, 2, 4, 8 ... 512 buried gems beside every pickup, each worth what the pickup was worth, without using cargo. Collection therefore scales up to what the weapons produce and no further: Deep Scoops at rank 5 (x17) gave x1.9 on "Late game: fleet", at rank 10 (x513) x6.3; on "Mid game: logistics" rank 10 gave x40.
+- **New nodes.** Deep Scoops/Grip/Rails (10 ranks, 2e9 to 1.5e19 and 5e8 to 5e18), Fleet Afterburners (+25% fleet speed x8) and Bulk Holds (+50% fleet cargo x8) after Trove Hunter Count, Gem Link III, Pulse Frequency III, Belt Speed II and Cargo Pods II. Later ranks need Expand Space 1-5. The top prices sit just under the 1.8e19 ceiling of the gem counter.
+
+Core Shard picks for collection: **Tidal Pull** (every 8 s the home base draws in a tenth of the field: x3.3 on "Developing fleet", x2.1 on "Mid game: logistics"), **Magnet Cursor** (the cursor collects up to 10 hovered gems every 0.1 s without clicking) and **Express Line** (belt speed and pod size x3). Magnet Cursor and Express Line need a pointer and were not measured.
+
+Not checked with a playthrough: how the prestige ladder and the Warp Drive price (1e15) hold up now that late income is 10-80x higher.
+
+### Drop Pods replaces Slipstream (tier 1 talent)
+
+Slipstream (+50% speed for ships passing each other) is removed. Drop Pods: once per trip a
+fleet ship with a full hold launches it home and keeps collecting. Measured with and without the
+talent (two runs each, no modules, 6 game minutes): gems collected ×1.71 on "Developing fleet"
+and ×1.70 on "Mid game: logistics". Income rose ×2.13 because learning any tier 1 talent also
+raises gem value ×1.25 through Gem Lore. Both presets sit on a full field, where holds fill at
+once and the return trip is most of a ship's time, so this is the talent's best case.
+
 ## Fleet consolidation (2026-10-05)
 
 The harvester side now mirrors the weapons side: fewer, stronger nodes on a clean layout. It supersedes the fleet prices in "Live calibration and fleet tiers" below.
@@ -146,7 +167,7 @@ The prestige tree was rebuilt around weapons and systems that set each other off
 | 1 Directives | Command Center, Auxiliary Power, Shipyard, Deep-Core Munitions, Overloaded Holds, **Thermite Rounds** |
 | 2 Infrastructure | Deep Space Signals, Cargo Catapult, Matter Compression, Quantum Touch, **Lightning Rod** |
 | 3 Reactions | **Beam Riders**, **Magma Detonation**, **Echo Protocol**, **Armed Escorts**, **Gravity Mastery**, Combo Supernova |
-| 4 Convergence | Project Constellation, **Main Battery Relay**, **Drone Gunships**, **Kamikaze Drones**, **Command Nexus**, Phase Logistics |
+| 4 Convergence | Project Constellation, **Main Battery Relay**, **Drone Gunships**, **Kamikaze Drones**, **Command Nexus** |
 | 5 Transcendence | **Shard Reactor**, **Signal Resonance**, **Planetary Overload**, Singularity Collapse, Weaponized Compression |
 
 New or reworked (bold): Thermite Rounds (cannon hits leave molten craters; laser scars burn twice as long), Lightning Rod (cannon hits add pulses to the anchored harpoon; faster harpoon reload), Beam Riders (laser beams launch rockets that use every rocket upgrade), Magma Detonation (rockets and the Railgun burst scars and craters), Echo Protocol (replaces both multicast talents: 25% double cast, every system activation fires a cannon volley), Gravity Mastery (Mobile Singularity + Event Horizon), Main Battery Relay (the Railgun makes every weapon fire), Drone Gunships (drones fire cannon shells), Armed Escorts (fleet deliveries fire one cannon shell per fitted module: the Shipyard feeds the arsenal), Command Nexus (now includes Command Chain, no global cooldown), Shard Reactor (+20% weapon damage per unspent Core Shard; collecting a shard fires every weapon), Signal Resonance (+1% weapon gems per signal, deeper every 25), Planetary Overload (every 500 weapon gems: a quake ring and every weapon fires, at most every 8 s). Shipyard and Deep Space Signals are back in the tree; they had dropped out of the tiers and could not be bought.
@@ -156,6 +177,26 @@ Retired from the tree (definitions kept as legacy, unbuyable): Target Painter, J
 **Kamikaze Drones** (added later, Convergence) swaps the Drone Swarm ship system for the **Kamikaze Wing**, in the same tab slot: bomber drones (3, 12 s base cooldown) dive into the planet, each detonating for 12× the strongest weapon's fire power, one quality layer deeper. Blasts count as rocket hits (Incendiary Warheads, Magma Detonation), Drone Gunships fires a shell per launch, and drone count and drone cooldown signals apply. Its tree mirrors Core Drill's shape and 49-cell cost: Wing Size, Shaped Warheads and Rapid Rearm; Cluster Bombs (bomblets hop across the surface at 30% each), Volatile Payload (20% critical blasts at 3×) and Second Sortie (25% chance a blast launches another bomber); ranks for bomblet count, critical chance and power, sortie chance, depth and dive speed; and the capstones Firestorm (every blast leaves a molten crater), Doomsday Drone (the wing's last bomber hits 8× and quakes the planet) and Hive Mind (each blast takes 1 s off the other systems' cooldowns). Values are first guesses; a maxed wing is very strong.
 
 Two new Core Shard upgrades build on the talents: **Incendiary Warheads** (rockets leave molten craters) and **Tesla Coil** (every harpoon pulse arcs to every molten scar and crater). Example builds: *Barrage* (Quad Lasers, Rocket Swarm, Beam Riders, Project Constellation, Main Battery Relay); *Firestorm* (Thermite Rounds, Gatling Cannon, Incendiary Warheads, Magma Detonation); *Storm* (Lightning Rod, Gatling Cannon or Drone Gunships, Tesla Coil, Thermite Rounds); *Systems* (Auxiliary Power, Echo Protocol, Drone Gunships, Core Drill Seismic Resonance); *Hoarder* (Shard Reactor holding Core Shards instead of spending them). All values are first guesses for the balance pass; the simulator does not model these effects.
+
+
+## Mothership Protocol (2026-11-04)
+
+Replaces Jackpot as a tier 6 capstone. It is a playstyle talent: presets and autoplay never buy it, and Lone Operator rules it out because it docks the fleet there would be to combine. Each fleet type flies as one carrier (the type's hull drawn 3× size, 0.5× speed) and three shuttles per purchased ship. Shuttles fly at ship speed, burn no fuel and hold a third of a ship's load; the carrier holds a full ship's load per shuttle, so cargo modules and every other capacity bonus grow both. A carrier flies its type's usual route, holds station while there is about a gem per shuttle in reach (20 s at most), and heads home when its hold fills or its trip reaches 60 s. Only carriers deliver. Cargo Catapult queues 400 slugs instead of 40 and fires every 0.1 s instead of 0.25 s, so a whole hold's salvo is not lost.
+
+The leash is the larger of 260 and 1.5 s of carrier flight. A fixed leash failed badly: by the late game the field is two to three times wider and shuttles fly past 1,000 units a second, so carriers stripped a tiny patch and waited. Shuttles also unload part-filled once their patch is empty, since a late shuttle's hold (400+ gems) is far more than a patch gives it.
+
+Three shuttles stand in for one ship, which keeps modules from multiplying. A shuttle's module trip lasts the carrier's whole cycle, or small loads would fire Final Sweep, Supernova and Event Horizon three times as often per gem; travel charges (Thunder God, Arc Emitter) gain a third as much per distance; World Eater is the carrier's alone, as a black hole per shuttle swallowed the field. Effects that fire on delivery (Armed Escorts, Rocket Rack, Laser Uplink, Detonator Charge) fire once per carrier delivery, which is the talent's real cost.
+
+Measured live, 3 minutes of play at steady state with Auto Refuel, on a full 100K gem field (the talent's best case: fleets are limited by travel, not by gem supply). Values are first guesses; `ShuttlesPerShip`, `CarrierSpeedMultiplier` and `ShuttleLeashCarrierSeconds` are the levers.
+
+| Preset | Ships | Income/min without | With | Ratio | Cargo Catapult damage |
+|---|---|---|---|---|---|
+| Developing fleet | 13 | 1.29B | 4.20B | 3.3× | 1.6× |
+| Mid game: logistics | 26 | 9.04T | 15.5T | 1.7× | 2.0× |
+| Late game: fleet | 60 | 186T | 454T | 2.4× | 1.9× |
+| Late game: fleet, no modules | 60 | 184T | 477T | 2.6× | 2.0× |
+
+The simulator does not model this talent.
 
 
 ## Core fractures replace run objectives (2026-10-05)
@@ -230,3 +271,7 @@ Before, fully upgraded: cannon 9.75K, laser 1.8K, harpoon 2.8K, rockets 1.8K, ra
 Autoplay, 5 hours, settings as in "Prestige loops": 3 points at 0:16, 10 at 0:43, 16 at 1:25, 20 at 2:11, 24 at 3:26, 25 at 3:54, then no new points (runs 17-20 earn 0 at 9T/min and Gem Lore x710K). That is about twice as fast as the tuned curve above, and it reaches the late wall (each talent's Gem Lore, x2-2.2, falls behind a ladder step of about x3) around 4 hours instead of past 5. Short plans from a fresh save: click shards 3rd point 16:16 (was 19:21), no shards 59:57 (was 73:31). Idle shopping rounds 19-28%, none over a minute.
 
 Ladder retuned for the stronger weapons (2026-10-10, not yet checked with a playthrough): `FirstThreshold` 150K, `ThresholdGrowth` 1.8, `GrowthSteepening` 1.01, and a new `MaxThresholdStep` 2.2 (equal to the best Gem Lore factor) that stops the steps steepening, so a late talent always keeps up with the next point. A model fitted to the playthrough above (income about 7-12M x Gem Lore from run 3 on, talents learned highest tier first) predicts 2, 3 and 4 points in the first three runs, then one per run with no empty runs through 5 hours.
+
+## Belt Network; Cargo Catapult moves to tier 5 (2026-11-09)
+
+**Belt Network** (`BNW1`, tier 1) doubles how many Tractor Belt intakes run at once: two, or four with Branch Line. It sits last in tier 1, so autoplay (which learns a tier left to right and never right-clicks) reaches it last. **Cargo Catapult** moved to tier 5 (16 earlier points), since a slug per 250 deliveries was far stronger than the other first-tier seeds. Presets now take Tractor Tails as their third tier-1 point (Belt Network last) and Cargo Catapult second in tier 5, after Executioner. Not yet checked with a playthrough.

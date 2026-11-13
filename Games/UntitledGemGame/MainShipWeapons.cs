@@ -2,7 +2,7 @@ using System;
 
 namespace UntitledGemGame;
 
-public enum MainShipWeapon { Cannon, Laser, Harpoon, Rockets, Railgun }
+public enum MainShipWeapon { Cannon, Laser, Harpoon, Rockets, Railgun, Flak }
 
 // Main ship weapon tuning, shared by the game and the progression simulator.
 // Every gem in the field is knocked loose by a weapon. Each weapon has its own
@@ -81,45 +81,83 @@ public static class MainShipWeapons
   public const int ConductorSlugs = 3;
   public const float ConductorShare = 0.5f;         // of a pulse's gems, along the arc to each lodged slug
 
+  // Flak Battery: frequent bursts of many weak pellets spread over a wide arc. Each fire
+  // power above 1 adds a fifth of the base pellet (one gem), so volume comes from pellets
+  // and fire rate rather than power.
+  public const float FlakBurstSeconds = 2.5f;
+  public const int FlakBasePellets = 8;
+  public const int FlakPelletPayload = 5;
+  public const float FlakPowerDamage = 0.2f;
+  public const float WideChokePelletMultiplier = 1.5f;
+  public const float WideChokeDamageMultiplier = 0.8f;
+  public const float FlechetteShare = 0.4f;
+  // Flak Barrage (a core shard): bursts per cycle, in line with the other x2 capstones.
+  public const int FlakBarrageBursts = 2;
+  public const float FlakBarrageInterval = 0.15f;
+
+  public static float LaserScarShare(UpgradesGeneratorUpgrades ug)
+    => (MagmaShare + ug.LaserScarDamage) * (ug.LaserMagmaReactor ? 2f : 1f);
+
+  public static float LaserSurgeSeconds(UpgradesGeneratorUpgrades ug)
+    => OverheatSurgeSeconds + ug.LaserSurgeDuration;
+
+  public static float LaserGemValue(UpgradesGeneratorUpgrades ug)
+    => ug.MiningLaserThermalLance ? ThermalLanceValue + ug.LaserThermalValue : 1f;
+
+  public static float HarpoonForkDamage(UpgradesGeneratorUpgrades ug) => HarpoonForkShare + ug.HarpoonForkBonus;
+  public static int HarpoonExtractionPulses(UpgradesGeneratorUpgrades ug)
+    => (HarpoonWinchBonusPulses + ug.HarpoonWinchBonus) * (ug.HarpoonExtraction ? 2 : 1);
+  public static float RocketOrbitalDamage(UpgradesGeneratorUpgrades ug)
+    => (OrbitalStrikeBonus + ug.RocketOrbitBonus) * (ug.RocketOrbitalOverload ? 2f : 1f);
+  public static float RocketClusterDamage(UpgradesGeneratorUpgrades ug) => ClusterWarheadShare + ug.RocketClusterBonus;
+  public static float RailgunWaveDamage(UpgradesGeneratorUpgrades ug) => ShockwaveShare + ug.RailgunWaveBonus;
+  public static float RailgunConductorDamage(UpgradesGeneratorUpgrades ug) => ConductorShare * (ug.RailgunSuperconductor ? 2f : 1f);
+
   public static double SpecialMultiplier(UpgradesGeneratorUpgrades ug, MainShipWeapon weapon)
   {
     double multiplier = 1;
     switch (weapon)
     {
       case MainShipWeapon.Cannon:
-        if (ug.CannonRicochet) multiplier *= 1 + RicochetBounces * RicochetShare;
+        if (ug.CannonRicochet) multiplier *= 1 + (RicochetBounces + ug.CannonExtraBounces) * Math.Min(1f, RicochetShare + ug.CannonBounceRetention);
         if (ug.CannonCritical)
-          multiplier *= 1 + CriticalChance * (CriticalMultiplier - 1)
+          multiplier *= 1 + Math.Min(1f, CriticalChance + ug.CannonCritChance) * (CriticalMultiplier + ug.CannonCritDamage - 1)
             // Critical Cascade: each crit fires CascadeShells more sure crits.
-            + (ug.CannonCascade ? CriticalChance * CascadeShells * CriticalMultiplier : 0);
+            + (ug.CannonCascade ? Math.Min(1f, CriticalChance + ug.CannonCritChance) * CascadeShells * (CriticalMultiplier + ug.CannonCritDamage) : 0);
+        multiplier *= 1 + ug.CannonBlastRadius + (ug.CannonAftershock ? 0.5 : 0) + (ug.CannonSeismic ? 0.5 : 0);
         break;
       case MainShipWeapon.Laser:
-        if (ug.LaserMagmaScars) multiplier *= 1 + MagmaShare;
+        if (ug.LaserMagmaScars) multiplier *= 1 + LaserScarShare(ug);
         if (ug.LaserOverheat)
-          multiplier *= (OverheatBuildSeconds + OverheatSurgeSeconds * OverheatSurgeRate)
-            / (OverheatBuildSeconds + OverheatSurgeSeconds + OverheatVentSeconds);
+          multiplier *= (OverheatBuildSeconds + LaserSurgeSeconds(ug) * OverheatSurgeRate)
+            / (OverheatBuildSeconds + LaserSurgeSeconds(ug) + OverheatVentSeconds);
         break;
       case MainShipWeapon.Rockets:
-        if (ug.RocketClusterWarheads) multiplier *= ClusterWarheadSplit * ClusterWarheadShare;
-        if (ug.RocketOrbitalStrike) multiplier *= OrbitalStrikeBonus;
+        if (ug.RocketClusterWarheads) multiplier *= ClusterWarheadSplit * RocketClusterDamage(ug);
+        if (ug.RocketOrbitalStrike) multiplier *= RocketOrbitalDamage(ug);
         break;
       case MainShipWeapon.Harpoon:
       {
         int pulses = HarpoonPulseCount(ug);
         double equivalentPulses = pulses;
-        if (ug.HarpoonForkedCurrent) equivalentPulses += pulses * HarpoonForkShare;
+        if (ug.HarpoonForkedCurrent) equivalentPulses += pulses * HarpoonForkDamage(ug);
         if (ug.HarpoonCapacitorDischarge) equivalentPulses += HarpoonCapacitorBonusPulses;
-        if (ug.HarpoonTectonicWinch) equivalentPulses += HarpoonWinchBonusPulses;
+        if (ug.HarpoonTectonicWinch) equivalentPulses += HarpoonExtractionPulses(ug);
         // Conductors take one arc per pulse, shared by the whole volley.
         double conductors = (ug.LaserArcLance && ug.MiningLaser ? LaserBeams(ug) * ArcLanceShare : 0)
-          + (ug.RailgunConductor && ug.Railgun ? ConductorSlugs * ConductorShare : 0);
+          + (ug.RailgunConductor && ug.Railgun ? ConductorSlugs * RailgunConductorDamage(ug) : 0);
         equivalentPulses += pulses * conductors / HarpoonCount(ug);
         multiplier *= equivalentPulses / HarpoonBasePulses;
         break;
       }
       case MainShipWeapon.Railgun:
-        if (ug.RailgunShockwave) multiplier *= 1 + ShockwaveShare;
+        if (ug.RailgunShockwave) multiplier *= 1 + RailgunWaveDamage(ug);
         if (ug.RailgunCapacitor) multiplier *= CapacitorRoundBonus;
+        break;
+      case MainShipWeapon.Flak:
+        if (ug.FlakWideChoke) multiplier *= WideChokePelletMultiplier * WideChokeDamageMultiplier;
+        if (ug.FlakFlechettes) multiplier *= 1 + FlechetteShare;
+        if (ug.FlakBarrage) multiplier *= FlakBarrageBursts;
         break;
     }
     return multiplier;
@@ -127,7 +165,7 @@ public static class MainShipWeapons
 
   public static readonly MainShipWeapon[] All =
     [MainShipWeapon.Cannon, MainShipWeapon.Laser, MainShipWeapon.Harpoon,
-     MainShipWeapon.Rockets, MainShipWeapon.Railgun];
+     MainShipWeapon.Rockets, MainShipWeapon.Railgun, MainShipWeapon.Flak];
 
   // Fires on its own: the cannon once automated, the other weapons once unlocked.
   public static bool IsAutomatic(UpgradesGeneratorUpgrades ug, MainShipWeapon weapon) => weapon switch
@@ -137,6 +175,7 @@ public static class MainShipWeapons
     MainShipWeapon.Harpoon => ug.ArcHarpoon,
     MainShipWeapon.Rockets => ug.RocketPods,
     MainShipWeapon.Railgun => ug.Railgun,
+    MainShipWeapon.Flak => ug.FlakBattery,
     _ => false,
   };
 
@@ -148,6 +187,7 @@ public static class MainShipWeapons
     MainShipWeapon.Harpoon => ug.HarpoonFireRate,
     MainShipWeapon.Rockets => ug.RocketFireRate,
     MainShipWeapon.Railgun => ug.RailgunFireRate,
+    MainShipWeapon.Flak => ug.FlakFireRate,
     _ => 1f,
   };
 
@@ -158,6 +198,7 @@ public static class MainShipWeapons
     MainShipWeapon.Harpoon => ug.HarpoonFirePower,
     MainShipWeapon.Rockets => ug.RocketFirePower,
     MainShipWeapon.Railgun => ug.RailgunFirePower,
+    MainShipWeapon.Flak => ug.FlakFirePower,
     _ => 1,
   });
 
@@ -197,7 +238,15 @@ public static class MainShipWeapons
   // carries RailgunPayload times that, and an impact throws Fragmentation fragments.
   public static int RailgunGems(UpgradesGeneratorUpgrades ug, int firePower)
     => (int)Math.Min(int.MaxValue, (long)firePower * RailgunPayload * Math.Max(1, ug.RailgunFragments)
-      * (ug.RailgunDoomsday ? DoomsdayPayloadMultiplier : 1));
+      * (ug.RailgunDoomsday ? DoomsdayPayloadMultiplier : 1) * (1d + ug.RailgunPayloadBonus));
+
+  public static int FlakPelletsPerBurst(UpgradesGeneratorUpgrades ug)
+    => Math.Max(1, ug.FlakPelletCount);
+
+  public static int FlakPelletGems(int firePower)
+    => (int)Math.Max(1, Math.Round(FlakPelletPayload * (1 + FlakPowerDamage * (Math.Max(1, firePower) - 1))));
+
+  public static float FlakBurstInterval(float fireRate) => FlakBurstSeconds / Math.Max(0.1f, fireRate);
 
   // Average gems per second one weapon knocks loose on its own, before field limits.
   public static double GemsPerSecond(UpgradesGeneratorUpgrades ug, MainShipWeapon weapon, float fireRate,
@@ -212,6 +261,7 @@ public static class MainShipWeapons
         / HarpoonCycleTime(ug, fireRate),
       MainShipWeapon.Rockets => (double)RocketsPerSalvo(ug) * RocketGems(firePower) / RocketSalvoInterval(fireRate),
       MainShipWeapon.Railgun => RailgunGems(ug, firePower) / RailgunCycleTime(fireRate),
+      MainShipWeapon.Flak => (double)FlakPelletsPerBurst(ug) * FlakPelletGems(firePower) / FlakBurstInterval(fireRate),
       _ => 0,
     };
     return gems * SpecialMultiplier(ug, weapon);

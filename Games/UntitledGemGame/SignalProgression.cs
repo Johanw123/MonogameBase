@@ -35,7 +35,7 @@ public sealed class SignalProgression
   public static double BonusForRarity(int signal, int rarity)
     => Bonuses[rarity] * ((SignalKind)signal is SignalKind.CollectionRange or SignalKind.HomeRange
       or SignalKind.ClickRadius or SignalKind.DroneRange or SignalKind.ClickChainRange
-      or SignalKind.CursorGravityRadius ? 0.5 : 1);
+      or SignalKind.TractorBeltRadius ? 0.5 : 1);
   public long StackCount(int signal)
   {
     long total = 0;

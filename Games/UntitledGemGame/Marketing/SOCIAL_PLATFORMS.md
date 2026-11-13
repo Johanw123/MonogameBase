@@ -56,7 +56,7 @@ that is the goal, and avoid repeated copy-paste promotional replies.
 Example for Saturday:
 
 ```text
-One mining ship becomes a fleet in Beyond the Belt, our incremental space game.
+One mining ship becomes a fleet in Beyond the Belt, my incremental space game.
 
 [Attach fleet clip]
 

@@ -90,3 +90,42 @@ JPEG upload copies are retained. Matching GIFs and 1920×1080 JPEGs live in
 `../Itch/2026-10-13-refresh/`. Store copy, platform requirements, a local review
 page, source manifest and size/decode reports accompany the packages. No new
 art or music was generated. Nothing has been uploaded or published.
+
+## 9 November refresh on the current build
+
+All thirteen shorts and the store package were recaptured from build `a00bfd91`
+(Tractor Belt replacing the gravity well, Weaponry panel with per-weapon trees,
+new prestige tiers). The 21 unique scenes of shorts 01–08 were captured once at
+4K/60; shorts 09–13 use identical scenes, so they reuse copies of those takes.
+Takes are `_v2`; renders are `_v2` for 01–08 and `_v3` for 09–13.
+
+Capture mode needs `Demo.IsDev`, which has been off in source since the playtest
+build. Captures ran through `CaptureLauncher.dll` (sets `IsDev`, with a 90 s
+tick watchdog) from a private copy of `bin/Debug/net10.0`, one at a time behind
+a GPU lock: `BTB_CAPTURE_SNAPSHOT=<snapshot> BTB_GPU_LOCK=<file>` in `capture.py`.
+On the NVIDIA host a 4K take took 15–60 s to render.
+
+Changes needed for the current build:
+
+- Short 01, upgrade shot: Plasma Repeater (`AC1`) moved to Weaponry, so the
+  scripted pointer had nothing to aim at. The shot now buys Harvester Count and
+  Harvester Capacity in the upgrade tree (Plasma Repeater is owned from the
+  save), and the crop is re-aimed at the new tree position (`focus` 0.57).
+- Short 04: "Collect the Core Shard" starts as the shard appears (5.5 s) instead
+  of at the click.
+- Short 09: game audio at 0 dB instead of +2 dB; the new sounds peaked at
+  −0.8 dBTP.
+
+All other edits are unchanged apart from take and render names. Event timing
+(scripted actions, abilities, railgun and rocket sounds) matched the 25 October
+takes within a few frames. `check_exports.py` now checks only the 13-short slate
+(the blooper folders 14–19 also have edit files) and passed for all thirteen.
+
+The renderer flags short repeats in 06, 07, 09 and 13. These are in the game
+footage, not capture faults: the Shipyard ship turntable steps at a lower frame
+rate (the 25 October render of 07 shows the same pattern), and after Graviton
+Cascade clears the field nothing moves for 0.2 s until the next Genesis Pulse.
+
+The store package is in `../Steam/2026-11-09-refresh/` and
+`../Itch/2026-11-09-refresh/`. No new art or music was generated. Nothing has
+been uploaded or published.

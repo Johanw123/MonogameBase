@@ -26,10 +26,15 @@
 // a = soot strength (1 for a crater; the laser's scars, many small overlapping spots,
 // keep only a trace so their soot doesn't bury the lava).
 // The quad's half size is radius * QUAD_SCALE + QUAD_PAD frame units
-// (CraterQuadScale and CraterQuadPad in GameScreen.TalentCombos.cs).
+// (CraterQuadScale and CraterQuadPad in GameScreen.TalentCombos.cs). Every pass is clear
+// past q = 1.38, and the contour warp is at most 1.26, so nothing shows beyond
+// 1.38 * 1.26 = 1.74 radii of sphere distance. A pixel's distance across the disc is never
+// more than its sphere distance, so a quad of that half size holds every visible pixel;
+// QUAD_PAD is a sliver of margin.
 // Output is premultiplied (BlendState.AlphaBlend).
-#define QUAD_SCALE 1.6
-#define QUAD_PAD 2.0
+#define QUAD_SCALE 1.75
+#define QUAD_PAD 0.25
+#define MAX_CONTOUR 1.26
 
 float4x4 view_projection;
 float2 PlanetCenter;   // world units, including the planet's shake
@@ -138,6 +143,12 @@ float4 MainPS(PixelInput input) : COLOR
 
     // 3D chord distance on the sphere naturally foreshortens craters and scars toward the limb.
     float sphereDist = length(viewNormal - centerNormal) * DiscRadius;
+    // Skip the noise for pixels this pass can't reach even at the widest contour. Each pass
+    // is clear past its own q (soot 1.38, bed 0.90, core 0.58; shrink only narrows the
+    // last two), so this returns only pixels that would come out transparent anyway.
+    float reach = sootStrength > 0.25 ? 1.38 : (sootStrength > 0.04 ? 0.90 : 0.58);
+    if (sphereDist > max(radius * MAX_CONTOUR, 0.15) * reach)
+        return float4(0.0, 0.0, 0.0, 0.0);
     float warpLow = Noise3(surfacePos * 0.28 + float3(2.3, 7.1, 4.9)) - 0.5;
     float warpHigh = Noise3(surfacePos * 0.65 + float3(8.7, 1.9, 6.2)) - 0.5;
     float contour = 1.0 + warpLow * 0.34 + warpHigh * 0.18;

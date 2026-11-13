@@ -6,6 +6,7 @@ public class GameState
 {
   public UntitledGemGame.ShipyardModules Modules { get; set; } = new();
   public UntitledGemGame.SignalProgression Signals { get; set; } = new();
+  public UntitledGemGame.WeaponryLoadout Weapons { get; set; } = new();
   public ulong CurrentRedGemCount = 0;
   public ulong CurrentBlueGemCount = 0;
   public ulong CurrentPurpleGemCount = 0;
@@ -23,6 +24,8 @@ public class GameState
   public bool ShellBroken => PlanetShell.Broken(ShellDamage);
   // The planet's damage by source this run, for the HUD's Damage panel.
   public PlanetDamageMeter Damage { get; } = new();
+  // Gems collected by source this run, for the HUD's Collection panel.
+  public GemCollectionMeter Collection { get; } = new();
   public ulong RedGemsEarnedThisRun { get; private set; }
   // Gem income over the last minute: sustained, it earns prestige points (PrestigeProgression).
   public RollingMinute Income { get; } = new();
@@ -138,6 +141,7 @@ public class GameState
   {
     Modules.EndHarvesting();
     Modules.ResetRun(Random.Shared);
+    Weapons.ResetRun();
     CurrentPurpleGemCount = PrestigeProgression.AddSaturating(
       CurrentPurpleGemCount, PendingPrestigePoints);
     PrestigeEcho = EchoAfterExtraction;
@@ -155,6 +159,7 @@ public class GameState
     CoreFractures = 0;
     ShellDamage = 0;
     Damage.Reset();
+    Collection.Reset();
     CoreExtractions = PrestigeProgression.AddSaturating(CoreExtractions, 1);
   }
 }

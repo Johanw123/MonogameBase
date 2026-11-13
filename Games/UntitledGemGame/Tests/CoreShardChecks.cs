@@ -154,8 +154,65 @@ internal static class CoreShardChecks
 
     var state = new GameState();
     state.Damage.Record(PlanetDamageSource.Railgun, 500);
+    state.Collection.Record(GemCollectionSource.Drifter, 250);
+    state.Collection.Record(GemCollectionSource.ManualClicks, 75);
+    Check(state.Collection.PerMinute(GemCollectionSource.Drifter) == 250
+      && state.Collection.TotalPerMinute == 325 && state.Collection.TotalThisRun == 325,
+      "Collection must count toward its own source, in the minute and the run");
+    var collectionNames = Enum.GetValues<GemCollectionSource>().Select(GemCollectionMeter.Name).ToList();
+    Check(collectionNames.Count == GemCollectionMeter.SourceCount
+      && collectionNames.All(n => !string.IsNullOrWhiteSpace(n))
+      && collectionNames.Distinct().Count() == collectionNames.Count,
+      "Every collection source must have its own display name");
+    var methodNames = Enum.GetValues<GemCollectionMethod>().Where(GemCollectionMeter.IsBreakdown)
+      .Select(GemCollectionMeter.Name).ToList();
+    Check(methodNames.All(n => !string.IsNullOrWhiteSpace(n) && !collectionNames.Contains(n))
+      && methodNames.Distinct().Count() == methodNames.Count,
+      "Every bonus collection method must have its own display name, apart from the sources");
+
+    var split = new GemCollectionMeter();
+    var credits = new CargoCredits();
+    credits.Add(GemCollectionMethod.TractorTails, 30);
+    credits.Add(GemCollectionMethod.ManualClick, 10);
+    credits.Add(GemCollectionMethod.TractorTails, 10);
+    split.RecordDelivery(GemCollectionSource.Drifter, 200, 100, credits);
+    Check(credits.Count == 2 && split.ThisRun(GemCollectionMethod.TractorTails) == 80
+      && split.ThisRun(GemCollectionSource.Drifter) == 100 && split.ThisRun(GemCollectionSource.ManualClicks) == 20
+      && split.TotalThisRun == 200 && split.ThisRun(GemCollectionMethod.ManualClick) == 0,
+      "A delivery must split by its credits into rows of their own, apart from the collector's");
+    double rowSum = 0;
+    for (int row = 0; row < GemCollectionMeter.RowCount; row++)
+      if (GemCollectionMeter.IsRow(row)) rowSum += split.ThisRun(row);
+    Check(rowSum == split.TotalThisRun, "The Collection panel's rows must add up to its total");
+    split.Record(GemCollectionSource.HomeBase, GemCollectionMethod.TractorBelt, 40);
+    Check(split.ThisRun(GemCollectionSource.TractorBelt) == 40 && split.ThisRun(GemCollectionSource.HomeBase) == 0,
+      "Gems the Tractor Belt hands the home base must count as the belt's");
+    var overCredited = new CargoCredits();
+    overCredited.Add(GemCollectionMethod.ChainCollection, 500);
+    var capped = new GemCollectionMeter();
+    capped.RecordDelivery(GemCollectionSource.Prospector, 50, 100, overCredited);
+    Check(capped.ThisRun(GemCollectionMethod.ChainCollection) == 50 && capped.TotalThisRun == 50,
+      "Credits beyond the hold must never count more than the delivery");
+    var methodTotals = split.MethodRunTotals();
+    Check(methodTotals.Count == 1 && methodTotals["TractorTails"] == 80, "Method run totals must save by name");
+    var reloaded = new GemCollectionMeter();
+    reloaded.RestoreRunTotals(split.RunTotals(), new Dictionary<string, double>(methodTotals)
+      { ["Bogus"] = 4, ["5"] = 2, ["StormCoil"] = double.NaN, ["ManualClick"] = 9 });
+    Check(reloaded.ThisRun(GemCollectionMethod.TractorTails) == 80 && reloaded.ThisRun(GemCollectionSource.TractorBelt) == 40
+      && reloaded.ThisRun(GemCollectionMethod.StormCoil) == 0 && reloaded.ThisRun((GemCollectionMethod)5) == 0
+      && reloaded.ThisRun(GemCollectionMethod.ManualClick) == 0 && reloaded.TotalThisRun == split.TotalThisRun,
+      "Method run totals must reload, skipping unknown or corrupt entries");
+    state.Collection.Record(GemCollectionSource.Seeker, GemCollectionMethod.StormCoil, 5);
+    Check(!HudLayout.SideCollectionButton().Intersects(HudLayout.SideDamageButton())
+      && HudLayout.SideCollectionButton().Top > HudLayout.SideResourcePanel(1).Bottom
+      && HudLayout.SideDamageButton().Top > HudLayout.SideCollectionButton().Bottom,
+      "Collection and Damage expander buttons must stack cleanly below the resource pills");
     state.CompletePrestige();
-    Check(state.Damage.TotalThisRun == 0 && state.Damage.TotalPerMinute == 0, "Extraction must clear the damage by source");
+    Check(state.Damage.TotalThisRun == 0 && state.Damage.TotalPerMinute == 0
+      && state.Collection.TotalThisRun == 0 && state.Collection.TotalPerMinute == 0
+      && state.Collection.ThisRun(GemCollectionMethod.StormCoil) == 0
+      && state.Collection.PerMinute(GemCollectionMethod.StormCoil) == 0,
+      "Extraction must clear the damage and collection meters by source and method");
   }
 
   private static void CheckRunState()
@@ -193,10 +250,17 @@ internal static class CoreShardChecks
       state.RestoreCoreShards(1, -2, 0);
       Check(state.CoreFractures == 0, "A corrupt fracture count must not lower the next threshold");
 
-      Check(store.Save(new GameSave { DamageThisRun = new() { ["ArcHarpoon"] = 1234 } }), "Damage save must write");
+      Check(store.Save(new GameSave
+      {
+        DamageThisRun = new() { ["ArcHarpoon"] = 1234 },
+        CollectionThisRun = new() { ["Seeker"] = 4321 }
+      }), "Damage and collection save must write");
       loaded = new GameSaveStore(store.SavePath).Load() ?? throw new Exception("Damage save must load");
       state.Damage.RestoreRunTotals(loaded.DamageThisRun);
-      Check(state.Damage.ThisRun(PlanetDamageSource.ArcHarpoon) == 1234, "Damage by source must round-trip through the save");
+      state.Collection.RestoreRunTotals(loaded.CollectionThisRun);
+      Check(state.Damage.ThisRun(PlanetDamageSource.ArcHarpoon) == 1234
+        && state.Collection.ThisRun(GemCollectionSource.Seeker) == 4321,
+        "Damage and collection by source must round-trip through the save");
 
       Check(store.Save(new GameSave { ShellDamage = 120 }), "Shell save must write");
       loaded = new GameSaveStore(store.SavePath).Load() ?? throw new Exception("Shell save must load");
@@ -309,14 +373,14 @@ internal static class CoreShardChecks
       Check(Math.Abs(MainShipWeapons.GemsPerSecond(storm, MainShipWeapon.Harpoon, 1, 3) - twinPulses * 1.5) < 1e-9,
         "Conductors arc once per pulse, not once per harpoon");
       Check(upgrades.UpgradeButtons["ALC1"].Data.UpgradeDefinition.Currency == CoreShards.Currency
-        && upgrades.UpgradeButtons["ALC1"].Data.BlockedBy == "LZH1",
+        && upgrades.UpgradeButtons["ALC1"].Data.BlockedBy == "LZS1",
         "Arc Lance must be a Core Shard choice at the end of the laser's branch");
       var crits = new UpgradesGeneratorUpgrades { AutoCannon = true, CannonCritical = true };
       double critCannon = MainShipWeapons.GemsPerSecond(crits, MainShipWeapon.Cannon, 1, 3);
       crits.CannonCascade = true;
       Check(MainShipWeapons.GemsPerSecond(crits, MainShipWeapon.Cannon, 1, 3) > critCannon * 2
         && upgrades.UpgradeButtons["CCS1"].Data.UpgradeDefinition.Currency == CoreShards.Currency
-        && upgrades.UpgradeButtons["CCS1"].Data.BlockedBy == "CCR1",
+        && upgrades.UpgradeButtons["CCS1"].Data.BlockedBy == "CCD1",
         "Critical Cascade is the cannon's second Core Shard choice, after Critical Shells, and chains more crits");
       Check(upgrades.UpgradeButtons["TGF1"].Data.UpgradeDefinition.Currency == CoreShards.Currency
         && upgrades.UpgradeButtons["TGF1"].Data.BlockedBy == "HCM1",
@@ -327,14 +391,14 @@ internal static class CoreShardChecks
       Check(Math.Abs(MainShipWeapons.GemsPerSecond(bank, MainShipWeapon.Railgun, 1, 3)
           - plainRail * MainShipWeapons.CapacitorRoundBonus) < 1e-9
         && upgrades.UpgradeButtons["RCB1"].Data.UpgradeDefinition.Currency == CoreShards.Currency
-        && upgrades.UpgradeButtons["RCB1"].Data.BlockedBy == "BTS1",
+        && upgrades.UpgradeButtons["RCB1"].Data.BlockedBy == "RGS1",
         "Capacitor Bank is the Railgun's second Core Shard choice, its rounds 50% stronger");
       Check(upgrades.UpgradeButtons["RCN1"].Data.UpgradeDefinition.Currency == "red"
         && upgrades.UpgradeButtons["RCN1"].Data.BlockedBy == "RGR1" && !upgrades.UpgradeButtons.ContainsKey("BSS1"),
         "Conductor Round is a regular railgun upgrade where Singularity Round used to be");
 
       var twin = upgrades.UpgradeButtons["THP1"].Data;
-      Check(twin.UpgradeDefinition.Currency == CoreShards.Currency && twin.BlockedBy == "AHB1",
+      Check(twin.UpgradeDefinition.Currency == CoreShards.Currency && twin.BlockedBy == "AHDX1",
         "Twin Harpoons must be a Core Shard choice at the end of the harpoon's anchor branch");
 
       var manager = new UpgradeManager();

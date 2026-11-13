@@ -22,7 +22,7 @@ captions concrete and understated; avoid teaser questions and hype lines.
   covers the frame. Contrast is the payoff; put it on the music drop.
 - **Cause -> effect.** A click, an ability or an upgrade, and the screen
   answers immediately (chain lightning, genesis pulse, collector swarm,
-  gravity well pulling gems in). Show the trigger, then let it land for 1-2 s.
+  a tractor belt hauling gems home). Show the trigger, then let it land for 1-2 s.
 - **Satisfying collection.** Gems converging on the homebase, rings of
   collectors, a jackpot. Slow motion (120 fps take, `speed: 0.5`) on the
   single best moment only.
@@ -62,8 +62,8 @@ A series of focused shorts beats one montage.
   `active_gems` 12000, `MaxGemCount` 14000, fps 120 + `speed: 0.5`, Homebase
   Magnetizer; mix game audio +12 dB ("sound on").
 - **Clicker build** (10): clicking presets with every ship count node set to 0
-  (the unlocks alone do not remove ships), packed field; `gravity` at a fixed
-  point under the ship (the well drags the whole field in).
+  (the unlocks alone do not remove ships), packed field. Shot with the gravity
+  well, since replaced by the Tractor Belt (`belt`): place it under the ship.
 - **Gem events** (11): made before showers, comets and the colour unlock nodes
   were removed; the scene no longer loads. Gem colours now come from each
   weapon's Fire Power, and `event` fires `cannon`, `rockets` or `railgun` on cue.
@@ -154,7 +154,7 @@ calm satisfying short, "Beyond the Limits" for a cinematic build (17).
 | Crash-landing intro (backstory) | `Beginning`, `warmup: 0`, `zoom: 1.8` | The game's own opening: logo at the top (fades by ~1.6 s; put text under it with `pos: 0.26`), ship sputters up from the bottom, impact at 3.017 s (impact sound) and the field bursts into red gems. Align a music lift with the impact. Use in some shorts, not all. Wording used: "ENGINE FAILURE..." / "...RIGHT IN A FIELD OF GEMS" (user-approved; no other lore exists in the game yet). |
 | Fresh start, single ship | preset `Beginning` | Red gems only, manual clicks (`click_gems`, rate 2, zoom 2.2 so each pop reads). |
 | Growth montage | `Beginning` -> `Developing fleet` -> `Late game: production` | A `live` `{gems}` counter across the shots: 124 -> 337K -> 40B -> 68B. (`First upgrades` looks almost like `Beginning`: skip it.) |
-| Clicking build | `Early/Mid/Late game: clicking` | `hold` (sustained harvest), `gravity` (cursor gravity well), click chains. |
+| Clicking build | `Early/Mid/Late game: clicking` | `hold` (sustained harvest), `belt` (Tractor Belt intake; drag it with a `pointer` glide), click chains. |
 | Fleet | `Developing fleet`, `Late game: fleet` | Ship classes: Drifters (HC), Seekers (AHC), Prospectors (EHC), Trove hunters (UHC), Rimrunners (PHC). `level` adds ships mid-shot. |
 | Automatic abilities | preset `Abilities: fully upgraded` (busy gem field, no fleet) + `equip` one ability; in late presets `"abilities": {"*": "max"}` | GS1 Genesis Pulse blooms a (golden) ring of gems around the planet; CM1 Graviton Cascade draws constellation chains and collects arcs of the ring; Drones1 sweeps. `ability` fires on cue. Close-ups at zoom 2-2.6 read well. |
 | Manual fleet abilities | earnings this run unlock them | Overdrive (250), Planet Cracker (5K), Collector Swarm (250K), Fault Scan (5M: weak points sweep across the planet and burst), System Surge (100M). |

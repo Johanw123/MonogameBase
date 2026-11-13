@@ -1,5 +1,5 @@
 {
-  "output": "../takes/full_barrage_v1.mp4",
+  "output": "../takes/full_barrage_v3.mp4",
   "preset": "Late game: production",
   "width": 2160,
   "height": 3840,
@@ -7,6 +7,7 @@
   "warmup": 6,
   "duration": 9,
   "zoom": 1,
+  "frame_planet": 0.46,
   "auto_fractures": false,
   "stats": {
     "AutoRefuel": true,
@@ -14,7 +15,6 @@
     "AllHarvesterMaxFuel": 1000,
     "AllHarvesterFuelEfficiency": 1000,
     "RocketOrbitalStrike": false,
-    "CameraZoomScale": 2.8,
     "MaxGemCount": 8000
   },
   "save": {

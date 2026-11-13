@@ -140,6 +140,7 @@ namespace UntitledGemGame
     public static AsyncAsset<Effect> ShapeFx;
     public static AsyncAsset<Effect> LineSdfFx;
     public static AsyncAsset<Effect> LaserBeamFx;
+    public static AsyncAsset<Effect> TractorBeltFx;
     public static AsyncAsset<Effect> BlackHoleWarpFx;
     public static AsyncAsset<Effect> PlanetCollapseFx;
     public static AsyncAsset<Effect> MoltenCraterFx;
@@ -148,6 +149,8 @@ namespace UntitledGemGame
     public static AsyncAsset<Effect> WorldParticlesFx;
     public static AsyncAsset<Effect> IncendiaryRoundFx;
     public static AsyncAsset<Effect> ArcAnchorFx;
+    public static AsyncAsset<Effect> RailgunBoltFx;
+    public static AsyncAsset<Effect> ModuleEffectsFx;
     public static AsyncAsset<Effect> GpuParticlesFx;
     public static AsyncAsset<Effect> RectangleSdfFx;
     // public static AsyncAsset<Effect> BlurFx;
@@ -172,6 +175,7 @@ namespace UntitledGemGame
       GameplayPreloader.Queue<Effect>("Shaders/Shapes/apos-shapes.fx", asset => ShapeFx = asset);
       GameplayPreloader.Queue<Effect>("Shaders/LineSDF.fx", asset => LineSdfFx = asset);
       GameplayPreloader.Queue<Effect>("Shaders/LaserBeam.fx", asset => LaserBeamFx = asset);
+      GameplayPreloader.Queue<Effect>("Shaders/TractorBelt.fx", asset => TractorBeltFx = asset);
       GameplayPreloader.Queue<Effect>("Shaders/BlackHoleWarp.fx", asset => BlackHoleWarpFx = asset);
       GameplayPreloader.Queue<Effect>("Shaders/PlanetCollapse.fx", asset => PlanetCollapseFx = asset);
       GameplayPreloader.Queue<Effect>("Shaders/MoltenCrater.fx", asset => MoltenCraterFx = asset);
@@ -180,6 +184,8 @@ namespace UntitledGemGame
       GameplayPreloader.Queue<Effect>("Shaders/WorldParticles.fx", asset => WorldParticlesFx = asset, optional: true);
       GameplayPreloader.Queue<Effect>("Shaders/IncendiaryRound.fx", asset => IncendiaryRoundFx = asset);
       GameplayPreloader.Queue<Effect>("Shaders/ArcAnchor.fx", asset => ArcAnchorFx = asset);
+      GameplayPreloader.Queue<Effect>("Shaders/RailgunBolt.fx", asset => RailgunBoltFx = asset);
+      GameplayPreloader.Queue<Effect>("Shaders/ModuleEffects.fx", asset => ModuleEffectsFx = asset, optional: true);
       GpuParticlesFx = GameplayPreloader.LoadMenu<Effect>("Shaders/GpuParticles.fx");
       GameplayPreloader.Queue<Effect>("Shaders/JuicySDFRect.fx", asset => RectangleSdfFx = asset);
       // BlurFx = AssetManager.LoadAsync<Effect>("Shaders/BlurShader.fx");

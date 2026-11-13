@@ -105,14 +105,14 @@ internal static class ExpandedModuleChecks
     Check(BaseStats.GetHarvesterCapacity(ship) == (int)Math.Ceiling(capacity * 1.5)
       && Near(BaseStats.GetHarvesterSpeed(ship), speed * 1.25f), "Cargo and propulsion bonuses combine");
     manager.Modules.TryEquip(0, 0, ShipModule.WidebandArray);
-    manager.Modules.TryEquip(0, 1, ShipModule.FuelRecycler);
+    manager.Modules.TryEquip(0, 1, ShipModule.StellarEngine);
     ship.BeginModuleTrip();
-    Check(Near(BaseStats.GetHarvesterCollectionRange(ship), range * 1.1f)
-      && Near(BaseStats.GetHarvesterFuelEfficiency(ship), efficiency * 2f), "Range and fuel modules apply advertised multipliers");
+    Check(Near(BaseStats.GetHarvesterCollectionRange(ship), range * 1.45f)
+      && Near(BaseStats.GetHarvesterFuelEfficiency(ship), efficiency * 0.5f), "Range and fuel modules apply advertised multipliers");
     manager.Modules.TryEquip(0, 1, ShipModule.FinalSweep);
     ship.BeginModuleTrip();
     ship.CarryingGemCount = (uint)BaseStats.GetHarvesterCapacity(ship);
-    Check(ship.TryBeginFinalSweep(Vector2.Zero) && Near(ship.FinalSweepRadius, range * 2.2f),
+    Check(ship.TryBeginFinalSweep(Vector2.Zero) && Near(ship.FinalSweepRadius, range * 2.4f),
       "Wideband amplifies Final Sweep");
     manager.Modules.TryEquip(0, 0, ShipModule.CargoPod);
     manager.UG.HarvesterCapacity = int.MaxValue;
@@ -140,7 +140,7 @@ internal static class ExpandedModuleChecks
 
   private static void CheckPickupEffects()
   {
-    using var scene = new Scene(ShipModule.OverdriveCoil, ShipModule.EchoChamber);
+    using var scene = new Scene(ShipModule.OverdriveCoil, ShipModule.GemPolisher);
     float speed = BaseStats.GetHarvesterSpeed(scene.Ship);
     var gems = Enumerable.Range(0, 5).Select(i => scene.AddGem(new Vector2(500 + i, 500))).ToArray();
     scene.Prepare();
@@ -150,16 +150,16 @@ internal static class ExpandedModuleChecks
     scene.Fleet.CollectGem(gems[1], scene.Ship);
     Check(Near(scene.Ship.OverdriveTimeRemaining, 3f), "Further pickups refresh overdrive");
     foreach (var gem in gems.Skip(2)) scene.Fleet.CollectGem(gem, scene.Ship);
-    Check(scene.Ship.CarryingGemCount == 5 && scene.Ship.CarryingGemBaseValue == 70,
-      "Fifth pickup adds two echoes without taking cargo space");
+    Check(scene.Ship.CarryingGemCount == 5 && scene.Ship.CarryingGemBaseValue == 65,
+      "Polisher adds a quarter of each gem's value, rounded up, without taking cargo space");
     scene.Ship.AdvanceDroneTimers(3.1f);
     Check(Near(BaseStats.GetHarvesterSpeed(scene.Ship), speed), "Overdrive expires");
     scene.Ship.BeginModuleTrip();
     for (int i = 0; i < 4; i++) scene.Ship.PickedUpGem(new Gem { BaseValue = 1 });
-    Check(scene.Ship.CarryingGemBaseValue == 74, "Echo counter resets each trip");
+    Check(scene.Ship.CarryingGemBaseValue == 73, "Bonus value rounds up per gem");
     scene.Ship.CarryingGemBaseValue = ulong.MaxValue - 1;
     scene.Ship.PickedUpGem(new Gem { BaseValue = uint.MaxValue });
-    Check(scene.Ship.CarryingGemBaseValue == ulong.MaxValue, "Echo bonus safely saturates cargo value");
+    Check(scene.Ship.CarryingGemBaseValue == ulong.MaxValue, "Bonus value safely saturates cargo value");
 
     scene.Manager.Modules.TryEquip(0, 0, ShipModule.CrystalRefinery);
     scene.Ship.BeginModuleTrip();
@@ -215,8 +215,8 @@ internal static class ExpandedModuleChecks
     Check(scene.Ship.WarpDriveFlashTimeRemaining > 0f, "Phase Anchor displays a warp flash");
     ulong before = UntitledGemGameGameScreen.DeliveredUncounted;
     scene.Invoke("DeliverCargo", scene.Ship);
-    Check(UntitledGemGameGameScreen.DeliveredUncounted - before == 420,
-      "Warp delivery includes supernova cargo");
+    Check(UntitledGemGameGameScreen.DeliveredUncounted - before == 1220,
+      "Warp delivery includes supernova cargo at full pressure");
     Check(!scene.Ship.TryBeginSupernova(), "A fresh empty trip cannot detonate");
     scene.Ship.CarryingGemCount = (uint)BaseStats.GetHarvesterCapacity(scene.Ship);
     Check(scene.Ship.TryBeginSupernova(), "Next full trip rearms supernova");

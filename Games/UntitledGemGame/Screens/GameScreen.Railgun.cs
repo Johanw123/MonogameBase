@@ -7,11 +7,16 @@ namespace UntitledGemGame.Screens;
 
 // The railgun (tuning in MainShipWeapons): a turret on the homebase's right flank.
 // Its charge fills the capacitor cells in the breech; the end of each cycle is a
-// visible wind-up: it locks onto its target, energy runs up the rails from the
-// breech to the muzzle, arcs crackle between the rails and light gathers at the
-// muzzle while the turret shudders. Then it fires one hypersonic round: a muzzle
-// flash and shock ring, a hard recoil, rails glowing white-hot and cooling through
-// orange, and a straight beam with a spiralling ion trail that lingers and fades.
+// visible wind-up that follows its own sound: it locks onto its target, then as the
+// sound rises energy surges up the rails from the breech to the muzzle, arcs crackle
+// between the rails and a vortex of energy is drawn into the muzzle while the turret
+// shudders. As the sound drops away the vortex collapses into a hard white star and
+// the gun goes still for the held breath before the shot. Then it fires one
+// hypersonic round: a star flash and a shock ring racing out ahead of the gun, a hard
+// recoil, rails glowing white-hot and cooling through orange, and the round tearing
+// an ionised channel to the planet that flashes white, cools to blue and unwinds
+// into a double helix of ions that disperses as the sound dies. The muzzle and the
+// channel are shaded by RailgunBolt.fx; the breech and rails are shapes on the turret.
 // Capacitor Bank (a core shard) banks two full charges in the breech cells and fires
 // them after the third as a barrage. Kinetic Harvest and Kinetic Battery feed the gun
 // from gems collected by hand; Recoil Harvest rewards hand collection after each round.
@@ -31,7 +36,21 @@ public partial class UntitledGemGameGameScreen
   private const float RailgunRecoilTexels = 9f;
   private const float RailgunRecoilSeconds = 0.7f;
   private const float RailgunHeatSeconds = 1.6f;
-  private const float RailgunTrailSeconds = 1.3f;
+  // The wind-up sound (RailgunWindUp at its pitch) lasts this long. It rises to a
+  // climax and drops off before its end, so it starts late in a longer wind-up: its
+  // drop-off is the held breath right before the shot, whatever the fire rate.
+  private const float RailgunWindUpSoundSeconds = 0.72f;
+  // The shader's time spans: how long the muzzle plays out after a shot, the trail's
+  // age range and how long the channel lingers after the round lands (RailgunBolt.fx:
+  // MUZZLE_SPAN, TRAIL_SPAN and TRAIL_FADE).
+  private const float RailgunMuzzleSeconds = 1f;
+  private const float RailgunTrailSpan = 2f;
+  private const float RailgunTrailSeconds = 0.9f;
+  // How far (effect units) the channel's and the muzzle's light reaches; the shader
+  // fades it out by then and the quads are padded to fit (RailgunBolt.fx: TRAIL_REACH
+  // and MUZZLE_REACH).
+  private const float RailgunTrailReach = 56f;
+  private const float RailgunMuzzleReach = 180f;
   private const int MaxRailTrails = 6;
 
   private static readonly Color RailGlow = new(110, 180, 255);
@@ -49,11 +68,13 @@ public partial class UntitledGemGameGameScreen
   private float railgunCharge;
   // Seconds into the wind-up; negative while the gun is charging.
   private float railgunWindUp = -1f;
+  private bool railgunWindUpSounded;
   private Vector2 railgunTarget;
   private float railgunAim;
   private float railgunSinceFire = float.MaxValue;
-  private Vector2 railgunFiredFrom;
+  private Vector2 railgunFiredFrom, railgunFiredAlong = Vector2.UnitX;
   private readonly List<RailTrail> railTrails = new();
+  private SdfLineRenderer railgunRenderer;
   // Capacitor Bank: full charges banked so far, and barrage rounds still to fire.
   private int railgunBank;
   private int railgunBarrage;
@@ -71,6 +92,17 @@ public partial class UntitledGemGameGameScreen
   private float RailgunChargeTime() => MainShipWeapons.RailgunChargeTime(RailgunFireRate());
 
   private float RailgunWindUpTime() => MainShipWeapons.RailgunWindUpTime(RailgunFireRate());
+
+  // Seconds into the wind-up at which its sound starts, so that the sound ends on the shot.
+  private float RailgunWindUpSoundStart() => Math.Max(0f, RailgunWindUpTime() - RailgunWindUpSoundSeconds);
+
+  // 0..1 through the wind-up sound: the effects follow the sound, not the clock.
+  private float RailgunWindUpPhase()
+  {
+    if (!RailgunWindingUp) return 0f;
+    float start = RailgunWindUpSoundStart();
+    return Math.Clamp((railgunWindUp - start) / Math.Max(0.01f, RailgunWindUpTime() - start), 0f, 1f);
+  }
 
   // Charge past full spills into the bank with Capacitor Bank.
   private float RailgunChargeCap
@@ -125,15 +157,24 @@ public partial class UntitledGemGameGameScreen
       if (railgunCharge >= 1f)
         StartRailgunWindUp();
     }
-    else if ((railgunWindUp += dt) >= RailgunWindUpTime())
-      FireRailgun();
+    else
+    {
+      railgunWindUp += dt;
+      if (!railgunWindUpSounded && railgunWindUp >= RailgunWindUpSoundStart())
+      {
+        railgunWindUpSounded = true;
+        AudioManager.Instance.PlaySound(SoundEvent.RailgunWindUp);
+      }
+      if (railgunWindUp >= RailgunWindUpTime())
+        FireRailgun();
+    }
   }
 
   private void StartRailgunWindUp()
   {
-    AudioManager.Instance.PlaySound(SoundEvent.RailgunWindUp);
     railgunCharge = 1f;
     railgunWindUp = 0f;
+    railgunWindUpSounded = false;
     railgunTarget = AutomaticPlanetTarget(0.3f);
   }
 
@@ -141,7 +182,6 @@ public partial class UntitledGemGameGameScreen
   // (Capacitor Bank) follow the gun's own round out.
   private void FireRailgun(bool bonus = false, bool barrage = false)
   {
-    AudioManager.Instance.PlaySound(SoundEvent.RailgunFire);
     var upgrades = UpgradeManager.Instance.UG;
     int firePower = SignalStats.FirePower(MainShipWeapon.Railgun);
     double gems = AutomaticWeaponYield(MainShipWeapons.RailgunGems(upgrades, firePower), arsenal: !bonus);
@@ -164,24 +204,35 @@ public partial class UntitledGemGameGameScreen
         railgunBarrageTimer = MainShipWeapons.CapacitorBarrageInterval;
       }
     }
+    ReleaseConstellation(target);
+    LaunchRailRound(target, (int)Math.Min(int.MaxValue, Math.Ceiling(gems)), firePower);
+    // Main Battery Relay: the rest of the arsenal answers the railgun.
+    if (UpgradeManager.Instance.UGM.MainBatteryRelay)
+      FireAllWeapons(false, PrestigeTalentEffects.RelayVolleyShells, arsenal: true);
+  }
+
+  // Every round the gun fires, its own or borrowed by Chaos Theory: the shot's sound,
+  // the round with its channel, the muzzle flash and the recoil. The sound only ever
+  // plays with a round the player can see leave the gun.
+  private void LaunchRailRound(Vector2 target, int damage, int firePower)
+  {
+    AudioManager.Instance.PlaySound(SoundEvent.RailgunFire);
     // The round leaves straight down the barrel.
     railgunAim = RailgunAimAt(target);
     Vector2 muzzle = RailgunMuzzlePoint();
-    ReleaseConstellation(target);
-    LaunchPlanetShot(PlanetShotKind.Rail, muzzle, target, (int)Math.Min(int.MaxValue, Math.Ceiling(gems)), firePower);
+    LaunchPlanetShot(PlanetShotKind.Rail, muzzle, target, damage, firePower);
     if (railTrails.Count >= MaxRailTrails) railTrails.RemoveAt(0);
     railTrails.Add(new RailTrail
     {
       Start = muzzle,
       End = target,
       Flight = Math.Max(0.05f, Vector2.Distance(muzzle, target) / RailgunRoundSpeed),
-      Phase = Random.Shared.NextSingle() * MathHelper.TwoPi,
+      Phase = Random.Shared.NextSingle(),
     });
     railgunSinceFire = 0f;
     railgunFiredFrom = muzzle;
-    // Main Battery Relay: the rest of the arsenal answers the railgun.
-    if (UpgradeManager.Instance.UGM.MainBatteryRelay)
-      FireAllWeapons(false, PrestigeTalentEffects.RelayVolleyShells, arsenal: true);
+    var along = target - muzzle;
+    railgunFiredAlong = along.LengthSquared() > 1e-4f ? Vector2.Normalize(along) : RailgunDirection();
   }
 
   private void FireBarrageRound()
@@ -223,6 +274,7 @@ public partial class UntitledGemGameGameScreen
     railgunBank = railgunBarrage = 0;
     PrestigeTalentEffects.RecoilHarvestActive = false;
     railgunWindUp = -1f;
+    railgunWindUpSounded = false;
     railgunSinceFire = float.MaxValue;
     railgunAim = 0f;
     railTrails.Clear();
@@ -255,11 +307,13 @@ public partial class UntitledGemGameGameScreen
     float aim = railgunAim + HullRotation();
     Vector2 direction = PlanetDirection(aim);
     Vector2 across = new(-direction.Y, direction.X);
-    float windUp = RailgunWindingUp ? Math.Clamp(railgunWindUp / Math.Max(0.01f, RailgunWindUpTime()), 0f, 1f) : 0f;
-    // The turret shudders harder as the wind-up peaks.
+    float windUp = RailgunWindUpPhase();
+    // The turret shudders harder as the charge builds, then goes still for the held
+    // breath before the shot.
+    float shudderAmount = Smooth(0.08f, 0.72f, windUp) * (1f - Smooth(0.76f, 0.9f, windUp));
     int frame = (int)(planetAge * 60f);
-    Vector2 shudder = windUp > 0f
-      ? new Vector2(FlickerNoise(frame, 1) - 0.5f, FlickerNoise(frame, 2) - 0.5f) * (1.2f * windUp * windUp * scale)
+    Vector2 shudder = shudderAmount > 0f
+      ? new Vector2(FlickerNoise(frame, 1) - 0.5f, FlickerNoise(frame, 2) - 0.5f) * (1.5f * shudderAmount * scale)
       : Vector2.Zero;
     Vector2 pivot = RailgunPivot() - direction * RailgunRecoil() * scale + shudder;
     Vector2 At(float along, float side) => pivot + (direction * along + across * side) * scale;
@@ -273,18 +327,17 @@ public partial class UntitledGemGameGameScreen
       m_spriteBatch.End();
     }
 
-    m_shapeBatch.Begin(m_camera.GetViewMatrix(), blendState: BlendState.Additive);
-    foreach (var trail in railTrails)
-      DrawRailTrail(trail, feather);
-    if (mounted && GameStarted)
+    bool live = mounted && GameStarted;
+    if (live)
     {
+      m_shapeBatch.Begin(m_camera.GetViewMatrix(), blendState: BlendState.Additive);
       DrawRailgunCharge(At, windUp, feather, scale);
       if (windUp > 0f)
-        DrawRailgunWindUp(At, across, windUp, feather, scale);
+        DrawRailgunWindUp(At, windUp, feather, scale);
       DrawRailgunHeat(At, feather, scale);
+      m_shapeBatch.End();
     }
-    DrawRailgunRelease(direction, across, feather, scale);
-    m_shapeBatch.End();
+    DrawRailgunEnergy(live, At(RailgunMuzzle, 0f), direction, windUp, scale);
   }
 
   // The capacitor cells in the breech fill as the gun charges.
@@ -292,6 +345,8 @@ public partial class UntitledGemGameGameScreen
   {
     float charge = RailgunWindingUp ? 1f : railgunCharge;
     bool banking = UpgradeManager.Instance.UG.RailgunCapacitor;
+    // Locked on and waiting for the sound, the cells pulse fast; they flare with it.
+    float locked = RailgunWindingUp ? 1f : 0f;
     for (int i = 0; i < RailgunCells.Length; i++)
     {
       // With Capacitor Bank each cell holds a banked round, and empties as the barrage fires.
@@ -299,9 +354,9 @@ public partial class UntitledGemGameGameScreen
         : railgunBarrage > 0 ? (i < railgunBarrage ? 1f : 0f)
         : Math.Clamp(railgunBank + charge - i, 0f, 1f);
       if (fill <= 0f) continue;
-      float pulse = 0.75f + 0.25f * MathF.Sin(planetAge * (4f + 20f * windUp) + i * 1.7f);
-      m_shapeBatch.FillCircle(at(RailgunCells[i], 0f), (1.1f + 0.6f * windUp) * scale,
-        Color.Lerp(RailGlow, Color.White, windUp) * (fill * pulse * (0.55f + 0.45f * windUp)),
+      float pulse = 0.75f + 0.25f * MathF.Sin(planetAge * (4f + 16f * locked + 20f * windUp) + i * 1.7f);
+      m_shapeBatch.FillCircle(at(RailgunCells[i], 0f), (1.1f + 0.3f * locked + 0.6f * windUp) * scale,
+        Color.Lerp(RailGlow, Color.White, windUp) * (fill * pulse * (0.55f + 0.2f * locked + 0.45f * windUp)),
         Math.Max(feather, 1.5f * scale));
     }
     // A faint hum along the rails as the charge nears full.
@@ -315,18 +370,21 @@ public partial class UntitledGemGameGameScreen
       }
   }
 
-  private void DrawRailgunWindUp(Func<float, float, Vector2> at, Vector2 across, float windUp, float feather,
-    float scale)
+  // The rails and breech through the wind-up sound: energy surges up the rails on
+  // its attack, arcs crackle between them as it climbs, and they settle into a hard
+  // white charge as it drops away.
+  private void DrawRailgunWindUp(Func<float, float, Vector2> at, float windUp, float feather, float scale)
   {
-    // Energy runs up the rails from the breech, reaching the muzzle at 70%.
-    float run = Smooth(0f, 0.7f, windUp);
+    float run = Smooth(0f, 0.2f, windUp);
+    float build = Smooth(0.1f, 0.75f, windUp);
+    float hold = Smooth(0.78f, 1f, windUp);
     float front = MathHelper.Lerp(RailgunBreechFront, RailgunMuzzle - 1f, run);
-    float brightness = 0.45f + 0.55f * windUp;
+    float brightness = 0.5f + 0.5f * build;
     foreach (float sign in RailgunSides)
     {
       float side = sign * RailgunConductor;
-      m_shapeBatch.FillLine(at(RailgunBreechFront, side), at(front, side), 0.7f * scale,
-        Color.Lerp(RailGlow, Color.White, windUp * 0.5f) * brightness, Math.Max(feather, 1.6f * scale));
+      m_shapeBatch.FillLine(at(RailgunBreechFront, side), at(front, side), (0.7f + 0.3f * build - 0.4f * hold) * scale,
+        Color.Lerp(RailGlow, Color.White, 0.4f * build + 0.6f * hold) * brightness, Math.Max(feather, (1.6f - 0.6f * hold) * scale));
       if (run < 1f)
         m_shapeBatch.FillCircle(at(front, side), 1.8f * scale, Color.White * 0.9f, Math.Max(feather, 1.5f * scale));
     }
@@ -338,11 +396,14 @@ public partial class UntitledGemGameGameScreen
       float flash = Math.Clamp(1f - (front - coil) / 12f, 0f, 1f);
       foreach (float sign in RailgunSides)
         m_shapeBatch.FillCircle(at(coil, sign * (RailgunConductor + 1f)), (1.2f + 2.2f * flash) * scale,
-          Color.Lerp(RailGlow, Color.White, flash) * (0.6f + 0.4f * flash), Math.Max(feather, 2f * scale));
+          Color.Lerp(RailGlow, Color.White, flash) * ((0.6f + 0.4f * flash) * (1f - 0.5f * hold)),
+          Math.Max(feather, 2f * scale));
     }
 
-    // Arcs jump between the rails behind the front, more and brighter as it builds.
-    int arcs = 1 + (int)(windUp * 6f);
+    // Arcs jump between the rails behind the front, more and brighter as the sound
+    // climbs, and die away as it drops.
+    float arcing = build * (1f - hold);
+    int arcs = arcing > 0f ? 1 + (int)(arcing * 6f) : 0;
     int flicker = (int)(planetAge * 30f);
     for (int i = 0; i < arcs; i++)
     {
@@ -353,32 +414,10 @@ public partial class UntitledGemGameGameScreen
         float side = -RailgunConductor + step * (2f * RailgunConductor / 3f);
         float drift = step < 3 ? (FlickerNoise(i * 7 + step, flicker) - 0.5f) * 4f : (FlickerNoise(i, flicker + 1) - 0.5f) * 2f;
         var next = at(x + drift, side);
-        m_shapeBatch.FillLine(previous, next, 0.35f * scale, RailArcColor * (0.55f + 0.45f * windUp), feather);
+        m_shapeBatch.FillLine(previous, next, 0.35f * scale, RailArcColor * (0.55f + 0.45f * arcing), feather);
         previous = next;
       }
     }
-
-    // Light gathers at the muzzle, fed by motes spiralling in.
-    float gather = Smooth(0.35f, 1f, windUp);
-    if (gather <= 0f) return;
-    var muzzle = at(RailgunMuzzle, 0f);
-    m_shapeBatch.FillCircle(muzzle, (1.5f + 7f * gather) * scale, RailGlow * (0.5f * gather),
-      Math.Max(feather, 5f * scale));
-    m_shapeBatch.FillCircle(muzzle, (0.6f + 2.8f * gather) * scale, Color.White * gather,
-      Math.Max(feather, 1.5f * scale));
-    for (int i = 0; i < 8; i++)
-    {
-      float phase = (planetAge * 2.4f + i / 8f) % 1f;
-      float angle = i * 2.39996f + phase * 2.2f;
-      var mote = muzzle + PlanetDirection(angle) * ((1f - phase) * 22f + 3f) * scale;
-      m_shapeBatch.FillCircle(mote, (0.5f + 0.6f * phase) * scale, RailArcColor * (gather * phase),
-        Math.Max(feather, scale));
-    }
-    // A flare streak across the muzzle in the last moments.
-    float flare = Smooth(0.8f, 1f, windUp);
-    if (flare > 0f)
-      m_shapeBatch.FillLine(muzzle - across * 16f * flare * scale, muzzle + across * 16f * flare * scale,
-        0.5f * scale, Color.White * flare, Math.Max(feather, 1.5f * scale));
   }
 
   // After a shot the rails glow white-hot and cool through orange to dull red.
@@ -402,78 +441,47 @@ public partial class UntitledGemGameGameScreen
     }
   }
 
-  // The muzzle flash, side jets and shock ring where the round left the barrel.
-  private void DrawRailgunRelease(Vector2 direction, Vector2 across, float feather, float scale)
+  // The muzzle and the rounds' channels, shaded by RailgunBolt.fx on SDF quads: the
+  // wind-up vortex and star at the muzzle, the star flash, shock ring and vents of a
+  // shot where the round left, and each round with the ion channel it tears open.
+  private void DrawRailgunEnergy(bool live, Vector2 muzzle, Vector2 direction, float windUp, float scale)
   {
-    float t = railgunSinceFire;
-    if (t >= 0.45f) return;
-    var muzzle = railgunFiredFrom;
-    float flash = 1f - Math.Clamp(t / 0.14f, 0f, 1f);
-    if (flash > 0f)
+    var effect = EffectCache.RailgunBoltFx;
+    if (effect?.IsLoaded != true || effect.IsFailed) return;
+    bool charging = live && windUp > 0f;
+    bool firing = railgunSinceFire < RailgunMuzzleSeconds;
+    if (!charging && !firing && railTrails.Count == 0) return;
+    railgunRenderer ??= new SdfLineRenderer(GraphicsDevice, effect.Value, maxLines: MaxRailTrails + 2)
+      { PulseExtraPadding = 0f };
+
+    if (railTrails.Count > 0)
     {
-      m_shapeBatch.FillCircle(muzzle, (16f + 20f * flash) * scale, RailGlow * (0.3f * flash),
-        Math.Max(feather, 16f * scale));
-      m_shapeBatch.FillCircle(muzzle, (2f + 4f * flash) * scale, Color.White * flash, Math.Max(feather, 2f * scale));
-      // A spike of light down the line of fire, and a thinner one back over the gun.
-      m_shapeBatch.FillLine(muzzle, muzzle + direction * 110f * scale, (1f + 3f * flash) * scale,
-        Color.Lerp(RailGlow, Color.White, flash) * flash, Math.Max(feather, 3f * scale));
-      m_shapeBatch.FillLine(muzzle, muzzle - direction * 30f * scale, (0.5f + 1.5f * flash) * scale,
-        RailArcColor * (0.7f * flash), Math.Max(feather, 2f * scale));
-    }
-    // Gas vents sideways out of the muzzle.
-    float jets = Math.Clamp(t / 0.2f, 0f, 1f);
-    if (jets < 1f)
-      foreach (float sign in RailgunSides)
+      effect.Value.CurrentTechnique = effect.Value.Techniques["RailTrail"];
+      // Room for the helix, the haze and the impact bloom around the line of fire.
+      railgunRenderer.BaseGlowPadding = RailgunTrailReach * scale;
+      railgunRenderer.Begin(m_camera.ViewProjection(), planetAge);
+      foreach (var trail in railTrails)
       {
-        var jetStart = muzzle + across * sign * 3f * scale;
-        var jetEnd = jetStart + (across * sign * (6f + 20f * jets) - direction * 4f * jets) * scale;
-        m_shapeBatch.FillLine(jetStart, jetEnd, (2f - 1.4f * jets) * scale, RailArcColor * (1f - jets),
-          Math.Max(feather, 2f * scale));
+        // r = age over the trail's span, g = seed, b = flight time over half a second.
+        var data = new Color(Math.Clamp(trail.Age / RailgunTrailSpan, 0f, 1f), trail.Phase,
+          Math.Clamp(trail.Flight / 0.5f, 0f, 1f), 1f);
+        railgunRenderer.DrawLine(trail.Start, trail.End, scale, data, RailGlow,
+          pulseProgress: Math.Clamp(trail.Age / trail.Flight, 0f, 1f));
       }
-    float ring = t / 0.45f;
-    float ringEase = 1f - (1f - ring) * (1f - ring);
-    m_shapeBatch.BorderCircle(muzzle, (4f + 60f * ringEase) * scale, RailGlow * (0.8f * (1f - ring)),
-      (2.2f - 1.4f * ring) * scale, Math.Max(feather, 1.5f * scale));
-  }
-
-  // The round streaks to the planet; a beam flashes along its path and an ion
-  // spiral lingers around it, widening as it fades.
-  private void DrawRailTrail(RailTrail trail, float feather)
-  {
-    var path = trail.End - trail.Start;
-    float length = path.Length();
-    if (length < 1f) return;
-    var direction = path / length;
-    var across = new Vector2(-direction.Y, direction.X);
-    float head = length * Math.Clamp(trail.Age / trail.Flight, 0f, 1f);
-    var headPoint = trail.Start + direction * head;
-
-    float life = Math.Clamp(trail.Age / (trail.Flight + RailgunTrailSeconds), 0f, 1f);
-    float fade = MathF.Pow(1f - life, 1.3f);
-    float beam = 1f - Math.Clamp(trail.Age / 0.4f, 0f, 1f);
-    m_shapeBatch.FillLine(trail.Start, headPoint, 8f * beam + 2f, RailGlow * (0.4f * beam + 0.12f * fade),
-      Math.Max(feather, 8f));
-    m_shapeBatch.FillLine(trail.Start, headPoint, 0.8f + 2f * beam,
-      Color.Lerp(RailGlow, Color.White, beam) * (beam + 0.3f * fade), feather);
-
-    // The spiral starts tight at the muzzle, is widest down range and widens as it fades.
-    float radius = 4f + 12f * (1f - (1f - life) * (1f - life));
-    for (float s = 3f; s < head; s += 4.5f)
-    {
-      float angle = s * 0.085f + trail.Phase;
-      float depth = MathF.Cos(angle);
-      float reach = Math.Min(1f, 0.3f + s / 100f);
-      var point = trail.Start + direction * s + across * (MathF.Sin(angle) * radius * reach);
-      m_shapeBatch.FillCircle(point, 1.6f + 0.8f * depth,
-        Color.Lerp(RailGlow, RailArcColor, 0.5f + 0.5f * depth) * (fade * (0.65f + 0.35f * depth)),
-        Math.Max(feather, 1.5f));
+      railgunRenderer.End();
     }
 
-    if (trail.Age < trail.Flight)
-    {
-      var tail = trail.Start + direction * Math.Max(0f, head - 120f);
-      m_shapeBatch.FillLine(tail, headPoint, 6f, RailGlow * 0.6f, 10f);
-      m_shapeBatch.FillLine(Vector2.Lerp(tail, headPoint, 0.4f), headPoint, 3f, Color.White, feather);
-    }
+    if (!charging && !firing) return;
+    effect.Value.CurrentTechnique = effect.Value.Techniques["RailMuzzle"];
+    // Room for the star's rays, the shock ring and the vortex around the muzzle.
+    railgunRenderer.BaseGlowPadding = RailgunMuzzleReach * scale;
+    railgunRenderer.Begin(m_camera.ViewProjection(), planetAge);
+    // r = wind-up phase, g = time since the shot over its span (a zero byte means no shot).
+    if (charging)
+      railgunRenderer.DrawLine(muzzle, muzzle + direction, scale, new Color(windUp, 0f, 0f, 1f), RailGlow);
+    if (firing)
+      railgunRenderer.DrawLine(railgunFiredFrom, railgunFiredFrom + railgunFiredAlong, scale,
+        new Color(0f, Math.Clamp(railgunSinceFire / RailgunMuzzleSeconds, 1f / 255f, 1f), 0f, 1f), RailGlow);
+    railgunRenderer.End();
   }
 }

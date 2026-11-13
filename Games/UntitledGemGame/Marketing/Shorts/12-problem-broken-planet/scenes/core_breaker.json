@@ -1,5 +1,5 @@
 {
-  "output": "../takes/core_breaker_v1.mp4",
+  "output": "../takes/core_breaker_v3.mp4",
   "preset": "Late game: production",
   "width": 2160,
   "height": 3840,
@@ -7,13 +7,13 @@
   "warmup": 6,
   "duration": 15,
   "zoom": 1,
+  "frame_planet": 0.46,
   "auto_fractures": false,
   "stats": {
     "AutoRefuel": true,
     "FleetMaxFuel": 1000,
     "AllHarvesterMaxFuel": 1000,
     "AllHarvesterFuelEfficiency": 1000,
-    "CameraZoomScale": 2.8,
     "MaxGemCount": 7000,
     "RocketOrbitalStrike": false,
     "AllAbilityCooldown": 0.1

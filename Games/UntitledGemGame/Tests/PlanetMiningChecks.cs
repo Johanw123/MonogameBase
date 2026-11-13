@@ -33,8 +33,8 @@ internal static class PlanetMiningChecks
     Check(PlanetObstacle.Steer(center + new Vector2(-300, -200), center + new Vector2(300, -200), center, radius)
       == center + new Vector2(300, -200), "A clear line of sight goes straight to the target");
 
-    // Early cannon gems stay near the planet; reach opens gradually and still
-    // spans the complete play area at the late-game fire-power target.
+    // Gems stay near the planet for most of a run; reach opens late and spans the
+    // complete play area at the tuning table's last fire power (GemSpreadTuning).
     UntitledGemGame.Screens.UntitledGemGameGameScreen.PlanetPos = Vector2.Zero;
     var miningBounds = new PlayAreaBounds(new Vector2(-1000, -600), new Vector2(1000, 600));
     float innerReach = UntitledGemGame.Screens.UntitledGemGameGameScreen.PlanetRadius
@@ -43,11 +43,12 @@ internal static class PlanetMiningChecks
     float ReachFraction(int firePower) =>
       (UntitledGemGame.Screens.UntitledGemGameGameScreen.PlanetDebrisReach(miningBounds, firePower) - innerReach)
       / (fullReach - innerReach);
+    int fullReachPower = GemSpreadTuning.FullReachFirePower;
     Check(ReachFraction(1) <= 0.07f, "The starter cannon must keep debris close to the planet");
-    Check(ReachFraction(6) is > 0.35f and < 0.55f, "Mid-game fire power must open a useful part of the field");
-    Check(Math.Abs(ReachFraction(27) - 1f) < 0.001f, "Late-game fire power must retain full-field reach");
+    Check(ReachFraction(15) < 0.25f, "Mid-game fire power must keep debris fairly close to the planet");
+    Check(Math.Abs(ReachFraction(fullReachPower) - 1f) < 0.001f, "Late-game fire power must retain full-field reach");
     float previousReach = ReachFraction(1);
-    for (int firePower = 2; firePower <= 27; firePower++)
+    for (int firePower = 2; firePower <= fullReachPower; firePower++)
     {
       float reach = ReachFraction(firePower);
       Check(reach > previousReach, "Every fire-power rank through full reach must spread debris farther");
@@ -61,7 +62,7 @@ internal static class PlanetMiningChecks
     double previous = MainShipWeapons.GemsPerSecond(ug);
     Check(Math.Abs(previous - 1 / MainShipWeapons.CannonInterval) < 1e-6, "The automated cannon fires once per interval");
     foreach (var unlock in new Action[] { () => ug.MiningLaser = true, () => ug.ArcHarpoon = true,
-      () => ug.RocketPods = true, () => ug.Railgun = true })
+      () => ug.RocketPods = true, () => ug.Railgun = true, () => ug.FlakBattery = true })
     {
       unlock();
       double next = MainShipWeapons.GemsPerSecond(ug);
@@ -72,8 +73,9 @@ internal static class PlanetMiningChecks
     foreach (var weapon in MainShipWeapons.All)
     {
       double alone = MainShipWeapons.GemsPerSecond(ug, weapon, 1f, 1);
-      // Double fire rate and triple fire power; the laser's fire power adds half its base stream per point.
-      double scale = 2 * (weapon == MainShipWeapon.Laser ? 1 + 2 * MainShipWeapons.LaserPowerDamage : 3);
+      // Double fire rate and triple fire power; the laser's and flak's fire power adds half its base stream per point.
+      double scale = 2 * (weapon == MainShipWeapon.Laser ? 1 + 2 * MainShipWeapons.LaserPowerDamage
+        : weapon == MainShipWeapon.Flak ? 1 + 2 * MainShipWeapons.FlakPowerDamage : 3);
       Check(Math.Abs(MainShipWeapons.GemsPerSecond(ug, weapon, 2f, 3) - alone * scale) < 1e-6,
         $"{weapon} fire rate and fire power must scale its output");
       double others = MainShipWeapons.GemsPerSecond(ug, w => w == weapon ? 2f : 1f, w => w == weapon ? 3 : 1);
@@ -91,6 +93,9 @@ internal static class PlanetMiningChecks
       (MainShipWeapon.Harpoon, () => ug.HarpoonTectonicWinch = true),
       (MainShipWeapon.Rockets, () => ug.RocketClusterWarheads = true), (MainShipWeapon.Rockets, () => ug.RocketOrbitalStrike = true),
       (MainShipWeapon.Railgun, () => ug.RailgunShockwave = true),
+      (MainShipWeapon.Flak, () => ug.FlakWideChoke = true),
+      (MainShipWeapon.Flak, () => ug.FlakFlechettes = true),
+      (MainShipWeapon.Flak, () => ug.FlakBarrage = true),
     };
     foreach (var (weapon, enable) in specials)
     {
@@ -102,23 +107,161 @@ internal static class PlanetMiningChecks
         .SequenceEqual(others), $"A {weapon} special must not change the other weapons");
     }
 
-    // The weapons spine: each weapon unlocks after the one before and has its own upgrades.
+    // The Weaponry blueprints: each weapon blueprint unlocks from HB and has its own upgrade tree.
     var tree = new Upgrades();
     tree.LoadJson(File.ReadAllText("Content/Data/upgrades.json"),
       File.ReadAllText("Content/Data/upgrades_buttons.json"), tree.UpgradeButtons, tree.UpgradeDefinitions);
     var buttons = tree.UpgradeButtons;
     foreach (var (id, parent) in new[] { ("AC1", "HB"), ("CFR1", "AC1"), ("CFP1", "AC1"), ("CSS1", "CFP1"),
-      ("LZ1", "CFP2"), ("LZR1", "LZ1"), ("LZP1", "LZ1"), ("LZT1", "LZP1"), ("LZD1", "LZT1"),
-      ("AH1", "LZ1"), ("AHR1", "AH1"), ("AHP1", "AH1"), ("AHF1", "AHR1"),
-      ("AHDX1", "AHF1"), ("AHB1", "AHP1"), ("AHD1", "AHB1"), ("AHW1", "AHD1"),
-      ("RP1", "LZ1"), ("RPR1", "RP1"), ("RPP1", "RP1"), ("RPC1", "RPP1"),
-      ("RG1", "RP1"), ("RGR1", "RG1"), ("RGP1", "RG1"), ("RGF1", "RGP1"),
-      ("CRB1", "CFR1"), ("CCR1", "CFR2"), ("LZM1", "LZR1"), ("LZH1", "LZM1"),
-      ("RCW1", "RPC1"), ("ROS1", "RPR1"), ("BTS1", "RGF1"), ("RCN1", "RGR1") })
+      ("LZ1", "HB"), ("LZR1", "LZ1"), ("LZP1", "LZ1"), ("LZT1", "LZP1"), ("LZD1", "LZV1"),
+      ("AH1", "HB"), ("AHR1", "AH1"), ("AHP1", "AH1"), ("AHF1", "AHR1"),
+      ("AHDX1", "AH1"), ("AHB1", "AHP1"), ("AHD1", "AHB1"), ("AHW1", "AHD1"),
+      ("RP1", "HB"), ("RPR1", "RP1"), ("RPP1", "RP1"), ("RPC1", "RP1"),
+      ("RG1", "HB"), ("RGR1", "RG1"), ("RGP1", "RG1"), ("RGF1", "RG1"),
+      ("FK1", "HB"), ("FKR1", "FK1"), ("FKP1", "FK1"), ("FKW1", "FKR1"), ("FKC1", "FK1"), ("FKF1", "FKP1"), ("FKS1", "FKC1"),
+      ("CRB1", "AC1"), ("CCR1", "CFR1"), ("LZM1", "LZ1"), ("LZH1", "LZR1"),
+      ("RCW1", "RPP1"), ("ROS1", "RPR1"), ("BTS1", "RGP1"), ("RCN1", "RGR1") })
       Check(buttons.TryGetValue(id, out var node) && node.Data.BlockedBy == parent,
         $"Weapon node {id} must follow {parent}");
     foreach (var id in DebugProgressionPresets.FullWeaponNodes)
+    {
+      Check(Weaponry.IsInTree(id), $"Weapon node {id} must belong to the Weaponry tree");
       Check(File.Exists(Path.Combine("Content", buttons[id].Data.UpgradeDefinition.Icon)), $"{id} needs its icon");
+    }
+
+    var expandedWeapons = new UpgradesGeneratorUpgrades
+    {
+      HarpoonForkBonus = 0.75f, HarpoonWinchBonus = 2, HarpoonExtraction = true,
+      RocketOrbitBonus = 0.45f, RocketOrbitalOverload = true, RocketClusterBonus = 0.3f,
+      RailgunWaveBonus = 0.5f, RailgunSuperconductor = true,
+    };
+    Check(MainShipWeapons.HarpoonForkDamage(expandedWeapons) == 1.25f
+      && MainShipWeapons.HarpoonExtractionPulses(expandedWeapons) == 8,
+      "Harpoon upgrades must strengthen forks and double upgraded extraction");
+    Check(Math.Abs(MainShipWeapons.RocketOrbitalDamage(expandedWeapons) - 3.4f) < 0.0001f
+      && Math.Abs(MainShipWeapons.RocketClusterDamage(expandedWeapons) - 0.9f) < 0.0001f,
+      "Rocket upgrades must amplify orbital and cluster payloads");
+    Check(MainShipWeapons.RailgunWaveDamage(expandedWeapons) == 1f
+      && MainShipWeapons.RailgunConductorDamage(expandedWeapons) == 1f,
+      "Railgun upgrades must amplify shockwaves and conductor arcs");
+    int basePayload = MainShipWeapons.RailgunGems(expandedWeapons, 10);
+    expandedWeapons.RailgunPayloadBonus = 0.6f;
+    Check(MainShipWeapons.RailgunGems(expandedWeapons, 10) >= basePayload * 1.59,
+      "Dense Slugs must increase the actual railgun payload");
+    foreach (var weapon in new[] { MainShipWeapon.Harpoon, MainShipWeapon.Rockets, MainShipWeapon.Railgun })
+      foreach (int column in Enumerable.Range(0, 3))
+      {
+        string capstone = Weaponry.ForWeapon(weapon).Rows.Select(row => row[column]).Last(id => id != "");
+        Check(buttons[capstone].Data.UpgradeDefinition.Currency == CoreShards.Currency,
+          $"Every {weapon} column must end in a core shard upgrade");
+      }
+
+    var laserUpgrades = new UpgradesGeneratorUpgrades { LaserMagmaScars = true, LaserScarDamage = 0.75f };
+    Check(Math.Abs(MainShipWeapons.LaserScarShare(laserUpgrades) - 1.75f) < 0.0001,
+      "Deep Melting must add to scar damage");
+    laserUpgrades.LaserMagmaReactor = true;
+    Check(Math.Abs(MainShipWeapons.LaserScarShare(laserUpgrades) - 3.5f) < 0.0001,
+      "Magma Reactor must double upgraded scars");
+    laserUpgrades.LaserSurgeDuration = 1.5f;
+    Check(MainShipWeapons.LaserSurgeSeconds(laserUpgrades) == 3f,
+      "Heat Capacitors must extend surges");
+    laserUpgrades.MiningLaserThermalLance = true;
+    laserUpgrades.LaserThermalValue = 0.75f;
+    Check(MainShipWeapons.LaserGemValue(laserUpgrades) == 2.25f,
+      "Crystal Refinement must increase thermal gem value");
+    foreach (int column in Enumerable.Range(0, 3))
+    {
+      string capstone = Weaponry.Tabs[1].Rows.Select(row => row[column]).Last(id => id != "");
+      Check(buttons[capstone].Data.UpgradeDefinition.Currency == CoreShards.Currency,
+        "Every laser column must end in a core shard upgrade");
+    }
+
+    var cannonUpgrades = new UpgradesGeneratorUpgrades { CannonRicochet = true };
+    double cannonBefore = MainShipWeapons.SpecialMultiplier(cannonUpgrades, MainShipWeapon.Cannon);
+    cannonUpgrades.CannonExtraBounces = 2;
+    cannonUpgrades.CannonBounceRetention = 0.3f;
+    Check(MainShipWeapons.SpecialMultiplier(cannonUpgrades, MainShipWeapon.Cannon) > cannonBefore,
+      "Ricochet upgrades must increase cannon output");
+    cannonBefore = MainShipWeapons.SpecialMultiplier(cannonUpgrades, MainShipWeapon.Cannon);
+    cannonUpgrades.CannonBlastRadius = 0.4f;
+    cannonUpgrades.CannonAftershock = cannonUpgrades.CannonSeismic = true;
+    Check(Math.Abs(MainShipWeapons.SpecialMultiplier(cannonUpgrades, MainShipWeapon.Cannon) / cannonBefore - 2.4) < 0.0001,
+      "Blast, aftershock and seismic damage must contribute to cannon output");
+    foreach (int column in Enumerable.Range(0, 3))
+    {
+      string capstone = Weaponry.Tabs[0].Rows.Select(row => row[column]).Last(id => id != "");
+      Check(buttons[capstone].Data.UpgradeDefinition.Currency == CoreShards.Currency,
+        "Every cannon column must end in a core shard upgrade");
+    }
+
+    // Every visible edge must descend from its actual prerequisite and clear all
+    // other nodes in the three straight weapon columns.
+    Weaponry.ApplyLayout(buttons);
+    var weaponJoints = new Dictionary<string, UpgradeJoint>();
+    foreach (var tab in Weaponry.Tabs)
+    {
+      Check(tab.Rows.All(row => row.Length == 3), $"{tab.Name} must fit three columns");
+      foreach (var id in tab.Rows.SelectMany(row => row).Where(id => id != "" && id != tab.Root))
+      {
+        var node = buttons[id];
+        var parent = buttons[node.Data.BlockedBy];
+        var position = Weaponry.Locate(id)!.Value;
+        var parentPosition = Weaponry.Locate(parent.Data.ShortName)!.Value;
+        Check(parentPosition.Tab == position.Tab && parentPosition.Row < position.Row,
+          $"{id} must sit below its prerequisite {parent.Data.ShortName}");
+        Check(position.Row == parentPosition.Row + 1 && (parentPosition.Row == 0 || position.Column == parentPosition.Column),
+          $"{id} must connect directly down its column");
+        weaponJoints.Add(id, new UpgradeJoint { StartButton = parent, EndButton = node });
+      }
+    }
+    Weaponry.RouteLinks(weaponJoints);
+    foreach (var (id, joint) in weaponJoints)
+    {
+      Vector2 Center(UpgradeButton node)
+        => new(node.Data.PosX + 25f * node.Data.ButtonSizeScale,
+          node.Data.PosY + 25f * node.Data.ButtonSizeScale);
+      var offset = new Vector2(25f * joint.StartButton.Data.ButtonSizeScale);
+      var path = new[] { Center(joint.StartButton) }
+        .Concat(joint.MidwayPoints.Select(point => point + offset))
+        .Append(Center(joint.EndButton)).ToArray();
+      foreach (var other in Weaponry.Tabs[Weaponry.TabOf(id)].Rows.SelectMany(row => row)
+        .Where(other => other != "" && other != id && other != joint.StartButton.Data.ShortName))
+      {
+        var node = buttons[other];
+        var c = Center(node);
+        float half = 25f * node.Data.ButtonSizeScale + 8f;
+        for (int i = 1; i < path.Length; i++)
+        {
+          var a = path[i - 1];
+          var b = path[i];
+          bool crosses = Math.Min(a.X, b.X) < c.X + half && Math.Max(a.X, b.X) > c.X - half
+            && Math.Min(a.Y, b.Y) < c.Y + half && Math.Max(a.Y, b.Y) > c.Y - half;
+          Check(!crosses, $"Link to {id} must clear {other}");
+        }
+      }
+    }
+
+    // WeaponryLoadout slot equipping, swapping, unequipping, and hull mount coordinates.
+    var loadout = new WeaponryLoadout();
+    Check(loadout.IsFitted(MainShipWeapon.Cannon), "Primary cannon is always fitted in the default bow mount");
+    Check(!loadout.IsFitted(MainShipWeapon.Laser), "Secondary weapons start unfitted until unlocked/equipped");
+    Check(loadout.TryEquip(MainShipWeapon.Rockets, 0) && loadout.FindSlot(MainShipWeapon.Rockets) == 0,
+      "A weapon can be fitted into any of the 4 customizable hardpoint slots");
+    Check(loadout.GetMount(MainShipWeapon.Rockets) == Weaponry.HardpointSlots[0].HullMount,
+      "Fitted weapon uses the hull coordinates of its chosen hardpoint slot");
+    Check(!loadout.TryEquip(MainShipWeapon.Laser, 4), "Out-of-range weapon mount rejects a drop");
+    Check(loadout.TryEquip(MainShipWeapon.Laser, 2) && loadout.FindSlot(MainShipWeapon.Laser) == 2,
+      "Second weapon equips into slot 2");
+    Check(loadout.TryEquip(MainShipWeapon.Rockets, 2)
+      && loadout.FindSlot(MainShipWeapon.Rockets) == 2
+      && loadout.FindSlot(MainShipWeapon.Laser) == 0,
+      "Equipping an already-fitted weapon onto an occupied slot swaps the two weapons");
+    Check(loadout.TryUnequip(MainShipWeapon.Rockets) && !loadout.IsFitted(MainShipWeapon.Rockets),
+      "Unequipping a weapon removes it from its hardpoint slot");
+    loadout.SyncWithUnlockedBlueprints(w => w is MainShipWeapon.Laser or MainShipWeapon.Rockets);
+    Check(!loadout.IsFitted(MainShipWeapon.Rockets),
+      "Explicitly unequipped weapon stays unequipped during blueprint sync");
+
     string[] retired = ["MGC", "GSC", "GSR", "GSQ", "LG", "GSh", "GCo", "ClG", "ClZ", "CosCl", "SCl", "MV", "ML"];
     Check(!buttons.Values.Any(b => retired.Contains(b.Data.UpgradeDefinition.ShortName)),
       "Old spawning upgrades are gone from the tree");

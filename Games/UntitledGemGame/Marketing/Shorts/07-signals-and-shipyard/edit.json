@@ -1,5 +1,5 @@
 {
-  "output": "renders/btb_07_signals-and-shipyard_v1.mp4",
+  "output": "renders/btb_07_signals-and-shipyard_v3.mp4",
   "layout": "fullscreen",
   "size": [
     1080,
@@ -17,7 +17,7 @@
   },
   "shots": [
     {
-      "take": "takes/hud_tour_v1.mp4",
+      "take": "takes/hud_tour_v2.mp4",
       "in": 1.1,
       "dur": 3.6,
       "focus": [
@@ -31,7 +31,7 @@
       "zoom": 1.05
     },
     {
-      "take": "takes/hud_tour_v1.mp4",
+      "take": "takes/hud_tour_v2.mp4",
       "in": 6.0,
       "dur": 4.8,
       "focus": [
@@ -45,7 +45,7 @@
       "zoom": 1.1
     },
     {
-      "take": "takes/hud_tour_v1.mp4",
+      "take": "takes/hud_tour_v2.mp4",
       "in": 11.7,
       "dur": 6.6,
       "focus": [

@@ -49,6 +49,7 @@ public partial class UntitledGemGameGameScreen
   private void UpdatePrestigePoints(float dt)
   {
     m_gameState.Income.Update(dt);
+    m_gameState.Collection.Update(dt);
     prestigePanelFlash = Math.Max(0f, prestigePanelFlash - dt / PointFlashSeconds);
     if (prestigePopupTime >= 0f && (prestigePopupTime += dt) >= PointPopupSeconds)
       prestigePopupTime = -1f;
@@ -64,6 +65,7 @@ public partial class UntitledGemGameGameScreen
     if (!progressReady || !GameStarted || m_prestiging || m_postPrestige) return;
     int earned = m_gameState.UpdatePrestigeProgress();
     if (earned > 0) EarnPrestigePoints(earned);
+    extractionGuide.Update(dt, m_gameState.PendingPrestigePoints, m_gameState.BestPrestigeProgress);
   }
 
   private void EarnPrestigePoints(int count)
