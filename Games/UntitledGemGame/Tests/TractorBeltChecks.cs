@@ -71,11 +71,12 @@ internal static class TractorBeltChecks
     Routing();
     Freight();
     Sweeping();
+    Crowding();
     Teardown();
     // The belt's look: compiled the way the game does at runtime on Linux.
     if (GpuParticleChecks.Compile("Content/Shaders/TractorBelt.fx").Length == 0)
       throw new Exception("TractorBelt.fx compiles to an empty effect");
-    Console.WriteLine("Tractor belt checks passed: placement, dragging, catch ring, loading, delivery, run time, intakes, routing, freight, sweeping and teardown.");
+    Console.WriteLine("Tractor belt checks passed: placement, dragging, catch ring, loading, delivery, run time, intakes, routing, freight, sweeping, crowded fields and teardown.");
   }
 
   private static void Placement()
@@ -359,6 +360,56 @@ internal static class TractorBeltChecks
     upgrades.TractorBeltSweep = true;
     Run(belt, 4f, grid, cargo, upgrades);
     Check(cargo.Delivered.ContainsKey(onBelt), "Sweeping Rail fills empty pods on the way home");
+  }
+
+  // Fields far denser than one search can look through: the belt still takes the gems
+  // nearest each intake, and no intake goes without.
+  private static void Crowding()
+  {
+    var upgrades = new UpgradesGeneratorUpgrades { TractorBeltEnabled = true, TractorBeltRadiusMultiplier = 5.5f };
+    var stats = TractorBeltStats.From(upgrades, 38);
+    var intake = new Vector2(800, 0);
+    var grid = new GemSpatialIndex(TractorBelt.ScanBudget * 4, 30);
+    var cargo = new GridBeltCargo(grid);
+    // In the corner of the catch ring's bounding box, outside the ring itself.
+    for (int i = 0; i < TractorBelt.ScanBudget; ++i) grid.AddGem(i, intake.X - 200, intake.Y - 200, 1);
+    int inRing = grid.AddGem(-1, intake.X + 90, intake.Y + 60, 1);
+    var belt = new TractorBelt();
+    belt.HandleInput(true, true, true, intake, stats);
+    belt.HandleInput(false, false, true, intake, stats);
+    belt.Update(0.01f, grid, cargo, stats, Vector2.Zero);
+    Check(stats.Radius == 209 && belt.Lines[0].Pods.Count == 1 && grid.Gems[inRing].ClaimState == 2,
+      "A pile beside the catch ring does not hide the gems inside it");
+
+    // Inside the ring, at its far edge.
+    for (int i = 0; i < TractorBelt.ScanBudget; ++i) grid.AddGem(i, intake.X, intake.Y - 180, 1);
+    int beside = grid.AddGem(-2, intake.X + 4, intake.Y + 3, 1);
+    int pods = belt.Lines[0].Pods.Count;
+    for (int i = 0; i < 100 && belt.Lines[0].Pods.Count == pods; ++i)
+      belt.Update(0.01f, grid, cargo, stats, Vector2.Zero);
+    Check(grid.Gems[beside].ClaimState == 2, "Out of a pile too big to search, the pod still takes the nearest gem");
+
+    // Two intakes, each on a pile of its own, sending pods on the same frame.
+    upgrades.TractorBeltBranch = true;
+    stats = TractorBeltStats.From(upgrades, 38);
+    var piles = new GemSpatialIndex(TractorBelt.ScanBudget * 4, 30);
+    var freight = new GridBeltCargo(piles);
+    var first = new Vector2(800, 0);
+    var second = new Vector2(-800, 0);
+    for (int i = 0; i < TractorBelt.ScanBudget * 2; ++i)
+    {
+      piles.AddGem(i, first.X + i % 64, first.Y + i / 64 % 64, 1);
+      piles.AddGem(i, second.X - i % 64, second.Y + i / 64 % 64, 1);
+    }
+    belt = new TractorBelt();
+    foreach (var point in new[] { first, second })
+    {
+      belt.HandleInput(true, true, true, point, stats);
+      belt.HandleInput(false, false, true, point, stats);
+    }
+    belt.Update(0.01f, piles, freight, stats, Vector2.Zero);
+    Check(belt.Lines.Count == 2 && belt.Lines.All(line => line.Pods.Count == 1 && line.Pods[0].Count == 1),
+      "Every intake on a dense pile loads its pod");
   }
 
   private static void Teardown()

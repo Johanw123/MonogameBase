@@ -77,7 +77,10 @@ public sealed class TractorBelt
   public const float EndReach = 14f;
   public const float ShrinkDistance = 44f;
   public const float SweepRadius = 16f;
-  // Spatial-index entries looked at per frame across every intake and sweeping pod.
+  // The most gems one search looks at: each departing pod has its own, and a belt's sweeping
+  // pods share one a frame. Searches run nearest first (GemSpatialIndex.QueryNearest), so in
+  // a field too dense to look through they still end with the gems closest to the intake,
+  // and one intake's pile never costs another its turn.
   public const int ScanBudget = 4096;
   public const float WarningSeconds = 3f;
   public const float PlaceGlowSeconds = 0.45f;
@@ -255,7 +258,6 @@ public sealed class TractorBelt
   private Line grabbed;
   private long placements;
   private bool expiredPending;
-  private int scanned;
   private int[] nearest = new int[8];
   private float[] nearestDistance = new float[8];
 
@@ -359,7 +361,6 @@ public sealed class TractorBelt
     Vector2 home, Vector2? planet = null, float planetRadius = 0)
   {
     dt = Math.Max(0, dt);
-    scanned = 0;
     float clearance = planetRadius * PlanetClearance;
     for (int l = lines.Count - 1; l >= 0; l--)
     {
@@ -396,15 +397,19 @@ public sealed class TractorBelt
           line.SpawnProgress -= PodSpacing;
           var pod = new Pod { DistanceToEnd = line.RouteLength - line.SpawnProgress, Capacity = stats.Capacity };
           if (pod.DistanceToEnd <= EndReach) continue;
-          Load(pod, line.Intake, stats.Radius, grid, cargo);
+          int search = ScanBudget;
+          Load(pod, line.Intake, stats.Radius, grid, cargo, ref search);
           line.Pods.Add(pod);
         }
       }
       line.PodPhase = line.Pods.Count > 0 ? line.Pods[^1].DistanceToEnd : line.PodPhase - advance;
       // Only a running belt picks gems up on the way; a shut-off one reels in.
       if (stats.Sweep && !line.Expired)
+      {
+        int search = ScanBudget;
         foreach (var pod in line.Pods)
-          if (!pod.Full) Load(pod, line.PodPosition(pod), SweepRadius, grid, cargo);
+          if (!pod.Full) Load(pod, line.PodPosition(pod), SweepRadius, grid, cargo, ref search);
+      }
       PlaceRiders(line, dt, cargo);
 
       if (line.Expired && Retract(line, advance))
@@ -450,36 +455,20 @@ public sealed class TractorBelt
     line.Pods.RemoveRange(0, arrived);
   }
 
-  // Loads the loose gems nearest a point into the pod's free room.
-  private void Load(Pod pod, Vector2 point, float radius, GemSpatialIndex grid, ITractorBeltCargo cargo)
+  // Loads the loose gems nearest a point into the pod's free room, looking at no more gems
+  // than budget has left.
+  private void Load(Pod pod, Vector2 point, float radius, GemSpatialIndex grid, ITractorBeltCargo cargo,
+    ref int budget)
   {
     int room = pod.Capacity - pod.Count;
-    if (room <= 0 || grid == null || cargo == null || scanned >= ScanBudget) return;
+    if (room <= 0 || grid == null || cargo == null || budget <= 0) return;
     if (nearest.Length < room)
     {
       nearest = new int[room];
       nearestDistance = new float[room];
     }
-    int found = 0;
-    float radiusSquared = radius * radius;
-    foreach (int index in grid.QueryClickCandidates(point.X, point.Y, radius))
-    {
-      if (++scanned > ScanBudget) break;
-      if (!grid.IsAvailable(index)) continue;
-      ref var gem = ref grid.Gems[index];
-      float distance = Vector2.DistanceSquared(new Vector2(gem.X, gem.Y), point);
-      if (distance > radiusSquared || (found == room && distance >= nearestDistance[found - 1])) continue;
-      int at = Math.Min(found, room - 1);
-      while (at > 0 && nearestDistance[at - 1] > distance)
-      {
-        nearest[at] = nearest[at - 1];
-        nearestDistance[at] = nearestDistance[at - 1];
-        at--;
-      }
-      nearest[at] = index;
-      nearestDistance[at] = distance;
-      if (found < room) found++;
-    }
+    // Boarding unlinks a gem from the index, so it waits until the search is over.
+    int found = grid.QueryNearest(point.X, point.Y, radius, nearest, nearestDistance, room, ref budget);
     for (int i = 0; i < found; i++)
       if (cargo.TryBoard(nearest[i], out var rider, out var position))
         pod.Riders.Add(new Rider { Gem = rider, From = position, Slot = pod.Count });
@@ -517,6 +506,5 @@ public sealed class TractorBelt
     lines.Clear();
     grabbed = null;
     expiredPending = false;
-    scanned = 0;
   }
 }

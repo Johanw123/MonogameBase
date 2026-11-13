@@ -24,7 +24,7 @@ public sealed class GemSpatialIndex
   private readonly bool[] _allocated;
   private int _freeCount;
   private int _nextSlot;
-  private readonly float _inverseCellSize;
+  private readonly float _cellSize, _inverseCellSize;
   // Int64's default hash XORs the two halves: regular (x,y) grids then collide
   // heavily along diagonals. Mix each coordinate before combining instead.
   private sealed class CellComparer : IEqualityComparer<long>
@@ -61,6 +61,7 @@ public sealed class GemSpatialIndex
   {
     ArgumentOutOfRangeException.ThrowIfNegative(maxCapacity);
     if (!float.IsFinite(cellSize) || cellSize <= 0) throw new ArgumentOutOfRangeException(nameof(cellSize));
+    _cellSize = cellSize;
     _inverseCellSize = 1f / cellSize;
     Gems = new GemData[maxCapacity];
     _slotVersions = new int[maxCapacity];
@@ -282,6 +283,66 @@ public sealed class GemSpatialIndex
   {
     float reach = radius + _maxCollectionRadius * MathF.Sqrt(2f);
     return Query(x, y, reach, reach);
+  }
+
+  // The available gems nearest a point, nearest first, among those centered within radius:
+  // fills indices and distancesSquared with up to count of them and returns how many. Cells
+  // are walked in square rings outward from the point's own, and the walk ends once nothing
+  // unvisited can be nearer, so the cost follows the count asked for, not the radius or how
+  // many gems lie in it. Each gem looked at spends one of budget; when it runs out the walk
+  // stops with the nearest found so far, which come from the nearest cells.
+  public int QueryNearest(float x, float y, float radius, int[] indices, float[] distancesSquared, int count,
+    ref int budget)
+  {
+    count = Math.Min(count, Math.Min(indices.Length, distancesSquared.Length));
+    if (count <= 0 || !(radius >= 0)) return 0;
+    int centerX = Cell(x), centerY = Cell(y);
+    // From the point to the nearest edge of its own cell: whatever lies outside the rings
+    // walked so far is at least this far away, plus a cell for every ring past the first.
+    float inset = Math.Max(0f, MathF.Min(
+      MathF.Min(x - centerX * _cellSize, (centerX + 1) * _cellSize - x),
+      MathF.Min(y - centerY * _cellSize, (centerY + 1) * _cellSize - y)));
+    float radiusSquared = radius * radius;
+    int found = 0;
+    for (int ring = 0; budget > 0; ++ring)
+    {
+      if (ring > 0)
+      {
+        float clear = inset + (ring - 1) * _cellSize;
+        if (clear > radius || (found == count && distancesSquared[found - 1] <= clear * clear)) break;
+      }
+      for (int cellY = centerY - ring; cellY <= centerY + ring; ++cellY)
+      {
+        // The ring's top and bottom rows are whole; between them only its two sides.
+        int step = ring == 0 || cellY == centerY - ring || cellY == centerY + ring ? 1 : ring * 2;
+        float gapY = Math.Max(0f, Math.Max(cellY * _cellSize - y, y - (cellY + 1) * _cellSize));
+        for (int cellX = centerX - ring; cellX <= centerX + ring; cellX += step)
+        {
+          float gapX = Math.Max(0f, Math.Max(cellX * _cellSize - x, x - (cellX + 1) * _cellSize));
+          float cellDistance = gapX * gapX + gapY * gapY;
+          if (cellDistance > radiusSquared || (found == count && cellDistance >= distancesSquared[found - 1])
+            || !_cells.TryGetValue(CellKey(cellX, cellY), out int bucket)) continue;
+          for (int index = _bucketHeads[bucket]; index >= 0; index = _nextIndices[index])
+          {
+            if (--budget < 0) return found;
+            if (!IsAvailable(index)) continue;
+            float dx = Gems[index].X - x, dy = Gems[index].Y - y;
+            float distance = dx * dx + dy * dy;
+            if (distance > radiusSquared || (found == count && distance >= distancesSquared[found - 1])) continue;
+            int at = Math.Min(found, count - 1);
+            for (; at > 0 && distancesSquared[at - 1] > distance; --at)
+            {
+              indices[at] = indices[at - 1];
+              distancesSquared[at] = distancesSquared[at - 1];
+            }
+            indices[at] = index;
+            distancesSquared[at] = distance;
+            if (found < count) ++found;
+          }
+        }
+      }
+    }
+    return found;
   }
 
   // Update on the game thread before fleet workers query the index.

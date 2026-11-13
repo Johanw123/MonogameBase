@@ -53,6 +53,17 @@ internal static class SpatialChecks
       var expected = live.Where(i => grid.Gems[i].ClaimState == 0
         && Math.Abs(grid.Gems[i].X - x) <= radius && Math.Abs(grid.Gems[i].Y - y) <= radius).ToHashSet();
       Require(expected.SetEquals(actual), $"Spatial query disagrees with brute force at mutation {step}");
+      int wanted = random.Next(1, 12), unlimited = int.MaxValue;
+      var nearest = new int[wanted];
+      var nearestDistances = new float[wanted];
+      int found = grid.QueryNearest(x, y, radius, nearest, nearestDistances, wanted, ref unlimited);
+      float Distance(int i) => Vector2.DistanceSquared(new Vector2(grid.Gems[i].X, grid.Gems[i].Y), new Vector2(x, y));
+      var inReach = live.Where(i => grid.Gems[i].ClaimState == 0 && Distance(i) <= radius * radius)
+        .Select(Distance).Order().Take(wanted).ToArray();
+      Require(found == inReach.Length && nearest.Take(found).Distinct().Count() == found
+        && nearest.Take(found).Select(Distance).SequenceEqual(inReach)
+        && nearestDistances.Take(found).SequenceEqual(inReach),
+        $"Nearest query disagrees with brute force at mutation {step}");
       Require(grid.NumActiveGems == live.Count, "Animation slot accounting drifted");
       Require(grid.AvailableCount == live.Count(i => grid.Gems[i].ClaimState == 0), "Queryable population drifted");
       Require(grid.AvailableIndices.ToArray().ToHashSet().SetEquals(live.Where(i => grid.Gems[i].ClaimState == 0)),
