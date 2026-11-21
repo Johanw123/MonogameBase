@@ -15,7 +15,7 @@
       "posy":"426",
       "addmidpoint":"False",
       "swapmidpointaxis":"False",
-      "lockedindemo":"False",
+      "lockedindemo":"True",
       "requiredexpandspacelevels":["0"],
       "tooltippercentage":"False",
       "buttonsizescale":"2"
@@ -159,7 +159,7 @@
       "posy":"995",
       "addmidpoint":"False",
       "swapmidpointaxis":"False",
-      "lockedindemo":"False",
+      "lockedindemo":"True",
       "requiredexpandspacelevels":["0"],
       "tooltippercentage":"False",
       "buttonsizescale":"1.2"
@@ -177,7 +177,7 @@
       "posy":"995",
       "addmidpoint":"False",
       "swapmidpointaxis":"False",
-      "lockedindemo":"False",
+      "lockedindemo":"True",
       "requiredexpandspacelevels":["0"],
       "tooltippercentage":"False",
       "buttonsizescale":"1.2"
@@ -537,7 +537,7 @@
       "posy":"735",
       "addmidpoint":"False",
       "swapmidpointaxis":"False",
-      "lockedindemo":"False",
+      "lockedindemo":"True",
       "requiredexpandspacelevels":["0"],
       "tooltippercentage":"False",
       "buttonsizescale":"1.2"

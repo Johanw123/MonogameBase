@@ -95,7 +95,19 @@ public static class PrestigeTalentLayout
 
   // Learnable now: its tier is reached and no owned talent rules it out.
   public static bool CanLearn(Dictionary<string, UpgradeButton> buttons, string id)
-    => IsInTree(id) && IsUnlocked(buttons, id) && ExcludedBy(buttons, id) == null;
+    => IsInTree(id) && IsUnlocked(buttons, id) && ExcludedBy(buttons, id) == null && !IsDemoLocked(id);
+
+  // Talents and free rewards of the tiers the demo holds back (DemoLimits).
+  public static bool IsDemoLocked(string id) => DemoLimits.LocksTier(TierIndex(id));
+
+  // The demo has shown what it has, asked when a run ends: the run was played with enough
+  // points spent to open the first locked tier, so the player has seen that tier held back
+  // and played the open ones. A run with the last open tier also counts once the ladder has
+  // paid its last point, since nothing is left to earn toward the wall.
+  public static bool DemoComplete(Dictionary<string, UpgradeButton> buttons, ulong pointsEarned)
+    => DemoLimits.Active && DemoLimits.TalentTiers < Tiers.Length
+      && IsTierReached(buttons, DemoLimits.TalentTiers - 1)
+      && (IsTierReached(buttons, DemoLimits.TalentTiers) || DemoLimits.PointsExhausted(pointsEarned));
 
   // An owned talent can be unlearned while every later tier holding talents keeps the
   // points it needs above it.
@@ -238,7 +250,7 @@ public static class PrestigeTalentLayout
   {
     int reached = 0;
     for (int tier = 0; tier < Tiers.Length; tier++)
-      if (HasExpandSpace[tier] && IsTierReached(buttons, tier))
+      if (HasExpandSpace[tier] && IsTierReached(buttons, tier) && !DemoLimits.LocksTier(tier))
         reached++;
     return reached;
   }

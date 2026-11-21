@@ -734,7 +734,7 @@ public partial class RenderGuiSystem
     if (!SelectedWeaponUnlocked)
       DrawWrappedSystemText(Weaponry.IsAvailable(tab.Weapon)
           ? Loc.F("Unlock the {0} blueprint to attach it and research its upgrades.", Loc.T(tab.Name))
-          : Loc.T("Not available in this version"),
+          : Weaponry.UnavailableNote(tab.Weapon),
         new Vector2(x, 470), width, 26, GuiSkin.MutedTextColor);
     else if (!WeaponLoadout.IsFitted(tab.Weapon))
       DrawWrappedSystemText(Loc.T("Not attached. This weapon won't fire until it's on a hardpoint."),
@@ -747,7 +747,7 @@ public partial class RenderGuiSystem
     // Unreleased weapons get no unlock button outside dev builds, just a note.
     if (!Weaponry.IsAvailable(tab.Weapon))
     {
-      DrawWrappedText(Loc.T("Not available in this version"), new Vector2(bounds.X, bounds.Y + 8), bounds.Width,
+      DrawWrappedText(Weaponry.UnavailableNote(tab.Weapon), new Vector2(bounds.X, bounds.Y + 8), bounds.Width,
         26, 38, GuiSkin.MutedTextColor, 2);
       return;
     }
@@ -772,7 +772,7 @@ public partial class RenderGuiSystem
     string hint = weapon == MainShipWeapon.Cannon ? Loc.T("Fixed primary mount · Click to view upgrades")
       : Loc.T("Drag to a hardpoint · Right-click an attached weapon to remove");
     if (!Weaponry.IsAvailable(weapon))
-      hint = Loc.T("Not available in this version");
+      hint = Weaponry.UnavailableNote(weapon);
     else if (!unlocked && UpgradeManager.CurrentUpgrades.UpgradeButtons.TryGetValue(tab.Root, out var root))
       hint = Loc.F("{0} gems · Click to inspect blueprint", NumberFormatter.AbbreviateBigNumber(root.GetNextLevelCost()))
         + (CanAffordUpgradeButton(root) ? "" : " · " + Loc.T("Not enough gems"));

@@ -162,8 +162,17 @@ public static class Weaponry
   // Shipped in this version (what players get; the progression simulator models this).
   public static bool IsReleased(MainShipWeapon weapon) => !UnreleasedWeapons.Contains(weapon);
 
-  // Usable in this build: released weapons, plus unreleased ones in dev builds.
-  public static bool IsAvailable(MainShipWeapon weapon) => IsReleased(weapon) || Demo.IsDev;
+  // Usable in this build: released weapons, plus unreleased ones in dev builds, less what
+  // the demo holds back (DemoLimits).
+  public static bool IsAvailable(MainShipWeapon weapon)
+    => (IsReleased(weapon) || Demo.IsDev) && !DemoLimits.LocksWeapon(weapon);
+
+  // Why a weapon can't be had in this build, for its tab and its nodes.
+  public static string UnavailableNote(MainShipWeapon weapon)
+    => IsReleased(weapon) && DemoLimits.LocksWeapon(weapon) ? DemoLimits.FullGameNote
+      : Loc.T("Not available in this version");
+
+  public static string UnavailableNote(string shortName) => UnavailableNote(Tabs[TabOf(shortName)].Weapon);
 
   // True for any node in an unreleased weapon's tree.
   public static bool IsUnreleasedNode(string shortName)
@@ -172,7 +181,8 @@ public static class Weaponry
     return tab >= 0 && !IsReleased(Tabs[tab].Weapon);
   }
 
-  // True for any node this build locks away (an unreleased weapon outside dev builds).
+  // True for any node this build locks away (an unreleased weapon outside dev builds, or
+  // one the demo holds back).
   public static bool IsUnavailableNode(string shortName)
   {
     int tab = TabOf(shortName);

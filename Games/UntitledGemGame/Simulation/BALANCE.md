@@ -1,5 +1,23 @@
 # Regular upgrade progression
 
+## Demo cut (2026-11-16)
+
+The demo (`DemoLimits` in `Demo.cs`, on when `Demo.IsDemo` and not `Demo.IsDev`) plays the first two talent tiers and stops one step short of the Shipyard:
+
+- **Talents**: tiers 3-6 can't be learned and pay no free rewards (no Shipyard, signals or Expand Space 3+). Tier 3 shows in full with "FULL GAME"; tiers 4-6 show names only.
+- **Prestige points**: the ladder stops at 8 points ever earned (`DemoLimits.PrestigePoints`), enough for 8 of the 14 open talents.
+- **Upgrades**: Unlock Prospector, Unlock Trove Hunter, Warp Drive and Repair Warp Drive are flagged `lockedindemo`, which also keeps everything behind them out. The Railgun is held back like an unreleased weapon.
+- **Ending**: once 5 points are spent (what tier 3 needs), the next extraction closes on the end-of-demo dialog, once per save. If all 8 points are earned before that, a run with tier 2 open ends on it too. Play goes on afterwards.
+
+Autoplay from a fresh save with `"demo": true` in the scene (stall rule, 5 min without a point in runs of 15+ min):
+
+| Player | Points per run | 5 points spent | Dialog | 8th point |
+|---|---|---:|---:|---:|
+| Pacing bot (3 clicks/s, shops every 10 s) | 3, 3, 2 | 35 min | 50 min, after run 3 | 42 min |
+| Slower (1.5 clicks/s, shops every 25 s) | 2, 2, 2, 1 | 66 min | 81 min, after run 4 | 84 min |
+
+Ship systems came online in run 2 (bot) and run 3 (slower), so both played at least one full run with them before the dialog. An earlier trigger (points for tier 3 earned, not spent) fired a run sooner, at 36 and 58 min, before any tier 2 talent had been played. With the limits on, neither player reached the Prospector lock by the dialog; the bot played on to 150 min and was still buying regular upgrades (Rimrunner Delivery Value at 200M), so the regular tree does not run dry after the cap.
+
 ## Late-game collection (2026-11-11)
 
 Weapons out-produced collection late: on the "Late game: fleet" preset about 5M gems a second came off the planet and a tenth of that was collected, with the field full and the rest lost. Three changes:

@@ -15,6 +15,8 @@ public class GameState
   public ulong CoreExtractions = 0;
   // Suppress another ending until prestige resets the run and its warp repair.
   public bool EscapedThisRun;
+  // The demo's ending has been shown (GameScreen.DemoEnd).
+  public bool DemoEndShown;
   // Core Drill Hollow World tunnels dug this run.
   public int CoreDrillTunnels;
   // Core fractures this run (CoreFracture); each raises the damage the next one needs.
@@ -37,7 +39,10 @@ public class GameState
   public double PrestigeEcho { get; private set; }
   // This run's best share of the next point's bar from income alone, 0 to 1.
   public double BestPrestigeProgress { get; private set; }
-  public double PrestigeProgress => PrestigeProgression.Progress(Income.PerMinute, PrestigePointsEarned);
+  // The demo's ladder ends at DemoLimits.PrestigePoints: past it nothing charges the bar.
+  public bool PrestigePointsExhausted => DemoLimits.PointsExhausted(PrestigePointsEarned);
+  public double PrestigeProgress => PrestigePointsExhausted ? 0
+    : PrestigeProgression.Progress(Income.PerMinute, PrestigePointsEarned);
   public double EchoAfterExtraction => PrestigeProgression.BankEcho(PrestigeEcho, BestPrestigeProgress);
   public ulong AbilityPointsPurchased { get; private set; }
   public ulong? NextAbilityPointPrice => AbilityPointProgression.GetPrice(AbilityPointsPurchased);
@@ -94,7 +99,7 @@ public class GameState
   {
     int earned = 0;
     double progress = PrestigeProgress;
-    while (PrestigeEcho + progress >= 1 && PrestigePointsEarned < ulong.MaxValue)
+    while (PrestigeEcho + progress >= 1 && PrestigePointsEarned < ulong.MaxValue && !PrestigePointsExhausted)
     {
       PrestigePointsEarned++;
       PendingPrestigePoints = PrestigeProgression.AddSaturating(PendingPrestigePoints, 1);
@@ -103,6 +108,7 @@ public class GameState
       earned++;
       progress = PrestigeProgress;
     }
+    if (PrestigePointsExhausted) PrestigeEcho = 0;
     BestPrestigeProgress = Math.Max(BestPrestigeProgress, Math.Min(progress, 1));
     return earned;
   }

@@ -343,6 +343,7 @@ namespace UntitledGemGame.Screens
         // Expand Space depends on extractions, so restore the count before the trees.
         m_gameState.CoreExtractions = save.CoreExtractions;
         m_gameState.EscapedThisRun = save.EscapedThisRun;
+        m_gameState.DemoEndShown = save.DemoEndShown;
         m_gameState.CoreDrillTunnels = Math.Clamp(save.CoreDrillTunnels, 0, CoreDrill.MaxTunnels);
         m_upgradeManager.RestoreProgress(save);
         m_gameState.Restore(save.RedGems, save.BlueGems, save.PurpleGems, save.RedGemsEarnedThisRun,
@@ -484,6 +485,7 @@ namespace UntitledGemGame.Screens
         CollectionMethodsThisRun = m_gameState.Collection.MethodRunTotals(),
         CoreExtractions = m_gameState.CoreExtractions,
         EscapedThisRun = m_gameState.EscapedThisRun,
+        DemoEndShown = m_gameState.DemoEndShown,
         PrestigePointsEarned = m_gameState.PrestigePointsEarned,
         PendingPrestigePoints = m_gameState.PendingPrestigePoints,
         PrestigeEcho = m_gameState.PrestigeEcho,
@@ -861,7 +863,9 @@ namespace UntitledGemGame.Screens
           DeliveredUncounted = 0;
           m_createdInitialGems = false;
           gemsPendingRestore = 0;
-          RenderGuiSystem.Instance.SetUpgradeType(RenderGuiSystem.UpgradeTypes.Meta);
+          // The demo's last run closes on its ending before the talent tree opens.
+          if (DemoEndDue) BeginDemoEnd();
+          else RenderGuiSystem.Instance.SetUpgradeType(RenderGuiSystem.UpgradeTypes.Meta);
           HarvesterCollectionSystem.Instance.flatSpatialHash.PrepareQueries();
           SaveProgress();
         }
@@ -871,6 +875,7 @@ namespace UntitledGemGame.Screens
       else if (m_postPrestige)
       {
         m_escWorld.Update(gameTime);
+        if (UpdateDemoEnd(dt)) return;
         m_upgradeManager.Update(gameTime);
         return;
       }
@@ -1264,6 +1269,7 @@ namespace UntitledGemGame.Screens
       DrawShipTerminalTooltip();
       if (HudLayout.BottomBarVisible) DrawManualAbilities();
       DrawFeedbackHud();
+      DrawDemoEndHud();
     }
 
     private readonly float[] _sideResourceSlide = [0f, 0f];

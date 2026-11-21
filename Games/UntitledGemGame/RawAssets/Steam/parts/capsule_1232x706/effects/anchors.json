@@ -1,0 +1,616 @@
+{
+ "cannon/muzzle_flash.png": {
+  "kind": "radial",
+  "size": [
+   480,
+   480
+  ]
+ },
+ "cannon/round_1.png": {
+  "end": [
+   165,
+   26
+  ],
+  "kind": "line",
+  "size": [
+   223,
+   52
+  ],
+  "start": [
+   165,
+   26
+  ]
+ },
+ "cannon/round_2.png": {
+  "end": [
+   168,
+   26
+  ],
+  "kind": "line",
+  "size": [
+   226,
+   52
+  ],
+  "start": [
+   168,
+   26
+  ]
+ },
+ "cannon/round_3.png": {
+  "end": [
+   167,
+   26
+  ],
+  "kind": "line",
+  "size": [
+   225,
+   52
+  ],
+  "start": [
+   167,
+   26
+  ]
+ },
+ "cannon/round_4.png": {
+  "end": [
+   170,
+   26
+  ],
+  "kind": "line",
+  "size": [
+   228,
+   52
+  ],
+  "start": [
+   170,
+   26
+  ]
+ },
+ "cannon/round_critical_1.png": {
+  "end": [
+   301,
+   45
+  ],
+  "kind": "line",
+  "size": [
+   404,
+   90
+  ],
+  "start": [
+   301,
+   45
+  ]
+ },
+ "cannon/round_critical_2.png": {
+  "end": [
+   305,
+   45
+  ],
+  "kind": "line",
+  "size": [
+   408,
+   90
+  ],
+  "start": [
+   305,
+   45
+  ]
+ },
+ "harpoon/energy_lance.png": {
+  "kind": "radial",
+  "size": [
+   240,
+   240
+  ]
+ },
+ "harpoon/lightning_300_1.png": {
+  "end": [
+   415,
+   157
+  ],
+  "kind": "line",
+  "size": [
+   525,
+   314
+  ],
+  "start": [
+   115,
+   157
+  ]
+ },
+ "harpoon/lightning_300_2.png": {
+  "end": [
+   414,
+   149
+  ],
+  "kind": "line",
+  "size": [
+   523,
+   298
+  ],
+  "start": [
+   114,
+   149
+  ]
+ },
+ "harpoon/lightning_300_3.png": {
+  "end": [
+   413,
+   135
+  ],
+  "kind": "line",
+  "size": [
+   522,
+   270
+  ],
+  "start": [
+   113,
+   135
+  ]
+ },
+ "harpoon/lightning_600_1.png": {
+  "end": [
+   730,
+   161
+  ],
+  "kind": "line",
+  "size": [
+   849,
+   322
+  ],
+  "start": [
+   130,
+   161
+  ]
+ },
+ "harpoon/lightning_600_2.png": {
+  "end": [
+   734,
+   158
+  ],
+  "kind": "line",
+  "size": [
+   856,
+   316
+  ],
+  "start": [
+   134,
+   158
+  ]
+ },
+ "harpoon/lightning_600_3.png": {
+  "end": [
+   731,
+   167
+  ],
+  "kind": "line",
+  "size": [
+   850,
+   334
+  ],
+  "start": [
+   131,
+   167
+  ]
+ },
+ "harpoon/lightning_900_1.png": {
+  "end": [
+   1053,
+   207
+  ],
+  "kind": "line",
+  "size": [
+   1193,
+   414
+  ],
+  "start": [
+   153,
+   207
+  ]
+ },
+ "harpoon/lightning_900_2.png": {
+  "end": [
+   1056,
+   233
+  ],
+  "kind": "line",
+  "size": [
+   1198,
+   466
+  ],
+  "start": [
+   156,
+   233
+  ]
+ },
+ "harpoon/lightning_900_3.png": {
+  "end": [
+   1056,
+   224
+  ],
+  "kind": "line",
+  "size": [
+   1199,
+   448
+  ],
+  "start": [
+   156,
+   224
+  ]
+ },
+ "harpoon/ring.png": {
+  "kind": "radial",
+  "size": [
+   160,
+   160
+  ]
+ },
+ "harpoon/ring_on_surface.png": {
+  "kind": "radial",
+  "size": [
+   160,
+   160
+  ]
+ },
+ "harpoon/ring_pulse.png": {
+  "kind": "radial",
+  "size": [
+   224,
+   224
+  ]
+ },
+ "laser/laser_beam_1000.png": {
+  "end": [
+   1132,
+   205
+  ],
+  "kind": "line",
+  "size": [
+   1337,
+   410
+  ],
+  "start": [
+   132,
+   205
+  ]
+ },
+ "laser/laser_beam_400.png": {
+  "end": [
+   532,
+   205
+  ],
+  "kind": "line",
+  "size": [
+   737,
+   410
+  ],
+  "start": [
+   132,
+   205
+  ]
+ },
+ "laser/laser_beam_700.png": {
+  "end": [
+   832,
+   205
+  ],
+  "kind": "line",
+  "size": [
+   1037,
+   410
+  ],
+  "start": [
+   132,
+   205
+  ]
+ },
+ "laser/laser_body_only.png": {
+  "end": [
+   598,
+   176
+  ],
+  "kind": "line",
+  "size": [
+   596,
+   352
+  ],
+  "start": [
+   -2,
+   176
+  ]
+ },
+ "laser/laser_emitter_flare.png": {
+  "kind": "radial",
+  "size": [
+   264,
+   264
+  ]
+ },
+ "laser/laser_impact_flare.png": {
+  "kind": "radial",
+  "size": [
+   410,
+   410
+  ]
+ },
+ "laser/laser_surge_beam_700.png": {
+  "end": [
+   874,
+   271
+  ],
+  "kind": "line",
+  "size": [
+   1145,
+   542
+  ],
+  "start": [
+   174,
+   271
+  ]
+ },
+ "laser/laser_surge_body_only.png": {
+  "end": [
+   596,
+   232
+  ],
+  "kind": "line",
+  "size": [
+   592,
+   464
+  ],
+  "start": [
+   -4,
+   232
+  ]
+ },
+ "laser/laser_surge_emitter_flare.png": {
+  "kind": "radial",
+  "size": [
+   348,
+   348
+  ]
+ },
+ "laser/laser_surge_impact_flare.png": {
+  "kind": "radial",
+  "size": [
+   540,
+   540
+  ]
+ },
+ "laser/laser_thin_beam_1000.png": {
+  "end": [
+   1080,
+   124
+  ],
+  "kind": "line",
+  "size": [
+   1204,
+   248
+  ],
+  "start": [
+   80,
+   124
+  ]
+ },
+ "laser/laser_thin_beam_400.png": {
+  "end": [
+   480,
+   124
+  ],
+  "kind": "line",
+  "size": [
+   604,
+   248
+  ],
+  "start": [
+   80,
+   124
+  ]
+ },
+ "laser/laser_thin_beam_700.png": {
+  "end": [
+   780,
+   124
+  ],
+  "kind": "line",
+  "size": [
+   904,
+   248
+  ],
+  "start": [
+   80,
+   124
+  ]
+ },
+ "laser/laser_thin_body_only.png": {
+  "end": [
+   600,
+   106
+  ],
+  "kind": "line",
+  "size": [
+   600,
+   212
+  ],
+  "start": [
+   0,
+   106
+  ]
+ },
+ "laser/laser_thin_emitter_flare.png": {
+  "kind": "radial",
+  "size": [
+   160,
+   160
+  ]
+ },
+ "laser/laser_thin_impact_flare.png": {
+  "kind": "radial",
+  "size": [
+   246,
+   246
+  ]
+ },
+ "laser/planet_cracker_beam_700.png": {
+  "end": [
+   948,
+   389
+  ],
+  "kind": "line",
+  "size": [
+   1336,
+   778
+  ],
+  "start": [
+   248,
+   389
+  ]
+ },
+ "laser/planet_cracker_body_only.png": {
+  "end": [
+   592,
+   335
+  ],
+  "kind": "line",
+  "size": [
+   584,
+   670
+  ],
+  "start": [
+   -8,
+   335
+  ]
+ },
+ "laser/planet_cracker_emitter_flare.png": {
+  "kind": "radial",
+  "size": [
+   496,
+   496
+  ]
+ },
+ "laser/planet_cracker_impact_flare.png": {
+  "kind": "radial",
+  "size": [
+   774,
+   774
+  ]
+ },
+ "railgun/charge_star.png": {
+  "kind": "radial",
+  "size": [
+   1108,
+   1108
+  ]
+ },
+ "railgun/charge_vortex.png": {
+  "kind": "radial",
+  "size": [
+   928,
+   928
+  ]
+ },
+ "railgun/ion_trail_500.png": {
+  "end": [
+   507,
+   156
+  ],
+  "kind": "line",
+  "size": [
+   520,
+   312
+  ],
+  "start": [
+   7,
+   156
+  ]
+ },
+ "railgun/ion_trail_800.png": {
+  "end": [
+   807,
+   159
+  ],
+  "kind": "line",
+  "size": [
+   819,
+   318
+  ],
+  "start": [
+   7,
+   159
+  ]
+ },
+ "railgun/muzzle_flash.png": {
+  "kind": "radial",
+  "size": [
+   1214,
+   1214
+  ]
+ },
+ "railgun/muzzle_shock_ring.png": {
+  "kind": "radial",
+  "size": [
+   1022,
+   1022
+  ]
+ },
+ "railgun/round_in_flight_500.png": {
+  "end": [
+   511,
+   263
+  ],
+  "kind": "line",
+  "size": [
+   672,
+   526
+  ],
+  "start": [
+   11,
+   263
+  ]
+ },
+ "railgun/round_in_flight_800.png": {
+  "end": [
+   811,
+   263
+  ],
+  "kind": "line",
+  "size": [
+   972,
+   526
+  ],
+  "start": [
+   11,
+   263
+  ]
+ },
+ "railgun/shot_impact_500.png": {
+  "end": [
+   508,
+   234
+  ],
+  "kind": "line",
+  "size": [
+   633,
+   468
+  ],
+  "start": [
+   8,
+   234
+  ]
+ },
+ "railgun/shot_impact_800.png": {
+  "end": [
+   808,
+   234
+  ],
+  "kind": "line",
+  "size": [
+   933,
+   468
+  ],
+  "start": [
+   8,
+   234
+  ]
+ }
+}

@@ -3,6 +3,8 @@ using System.Text.Json;
 using UntitledGemGame;
 
 CultureInfo.CurrentCulture = CultureInfo.InvariantCulture;
+// The simulator models the full game, whatever the build's demo switch says.
+DemoLimits.Override = false;
 try
 {
     var options = Options.Parse(args);

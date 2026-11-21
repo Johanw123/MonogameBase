@@ -880,7 +880,7 @@ public partial class RenderGuiSystem
     {
       UpdateButtonApplyMeta();
     }
-    else if (!UntitledGemGameGameScreen.Instance.m_prestiging)
+    else if (!UntitledGemGameGameScreen.Instance.m_prestiging && !UntitledGemGameGameScreen.Instance.DemoEndVisible)
     {
       if (HudLayout.BottomBarVisible)
       {

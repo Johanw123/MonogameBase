@@ -140,6 +140,7 @@ public static class CaptureSession
     foreach (var action in pending) Actions.Validate(action);
     if (Scene.Autoplay is { Extract: not ("never" or "points" or "stall") })
       throw new ArgumentException("autoplay.extract must be never, points or stall");
+    if (Scene.Demo) DemoLimits.Override = true;
     Active = true;
     AppDomain.CurrentDomain.ProcessExit += (_, _) => Cleanup();
     return true;

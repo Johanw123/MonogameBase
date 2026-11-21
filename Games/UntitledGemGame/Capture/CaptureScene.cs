@@ -55,6 +55,8 @@ public sealed class CaptureScene
   public bool Benchmark { get; set; }
   // A stand-in player for pacing playthroughs (Autoplay); null leaves the game to the actions.
   public SceneAutoplay Autoplay { get; set; }
+  // Play with the demo's limits (DemoLimits), which capture's dev build otherwise leaves off.
+  public bool Demo { get; set; }
 }
 
 // Changes to the preset's save before it is loaded. Levels accept a number or "max".

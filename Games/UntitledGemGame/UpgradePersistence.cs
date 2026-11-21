@@ -224,8 +224,8 @@ namespace UntitledGemGame
       foreach (var (id, button) in buttons)
       {
         if (!PrestigeTalentLayout.IsFreeReward(id)) continue;
-        bool reached = button.CurrentLevel > 0 || m_gameState.CoreExtractions > 0
-          && PrestigeTalentLayout.IsTierReached(buttons, PrestigeTalentLayout.TierIndex(id));
+        bool reached = !PrestigeTalentLayout.IsDemoLocked(id) && (button.CurrentLevel > 0 || m_gameState.CoreExtractions > 0
+          && PrestigeTalentLayout.IsTierReached(buttons, PrestigeTalentLayout.TierIndex(id)));
         button.CurrentLevel = reached ? 1 : 0;
         string stat = button.Data.UpgradeDefinition.ShortName;
         claimed[stat] = claimed.GetValueOrDefault(stat) || reached;
@@ -252,7 +252,11 @@ namespace UntitledGemGame
         bool inTree = prestigeTalents ? PrestigeTalentLayout.IsShown(data.ShortName)
           : !systemTalents || ShipSystems.IsInTree(data.ShortName);
         // Fixed-layout trees show every talent from the start, greyed out until learnable.
-        if (prestigeTalents && PrestigeTalentLayout.IsFreeReward(data.ShortName))
+        // The demo's first locked tier stays readable; the ones below it show names only.
+        if (prestigeTalents && inTree && PrestigeTalentLayout.IsDemoLocked(data.ShortName))
+          state = DemoLimits.PreviewsTier(PrestigeTalentLayout.TierIndex(data.ShortName))
+            ? UpgradeButton.UnlockState.Revealed : UpgradeButton.UnlockState.DemoLocked;
+        else if (prestigeTalents && PrestigeTalentLayout.IsFreeReward(data.ShortName))
           state = button.CurrentLevel > 0 ? UpgradeButton.UnlockState.MaxedOut : UpgradeButton.UnlockState.Revealed;
         else if (prestigeTalents && inTree)
           state = PrestigeTalentLayout.CanLearn(buttons, data.ShortName)
@@ -274,7 +278,7 @@ namespace UntitledGemGame
         else if (!fixedLayout && Purchased(data.HiddenBy))
           state = UpgradeButton.UnlockState.Hidden;
 
-        if (button.CurrentLevel > 0 && inTree)
+        if (button.CurrentLevel > 0 && inTree && !(prestigeTalents && PrestigeTalentLayout.IsDemoLocked(data.ShortName)))
           state = button.IsMaxLevel ? UpgradeButton.UnlockState.MaxedOut : UpgradeButton.UnlockState.Purchased;
         SetButtonState(button, state);
         button.ClickedTime = button.CurrentLevel > 0 ? 1.0f : 0.0f;

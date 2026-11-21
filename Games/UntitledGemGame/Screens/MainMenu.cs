@@ -80,6 +80,15 @@ namespace UntitledGemGame.Screens
     private OrthographicCamera m_camera_background;
 
     private const uint StoreAppId = 5084070;
+
+    // The game's Steam page: in the overlay when Steam is running, in the browser otherwise.
+    internal static void OpenStorePage()
+    {
+      if (Platform.GameServices.Platform.OpenStorePage(StoreAppId)) return;
+#if !KNI_WEB
+      Platform.DesktopBrowser.Open($"https://store.steampowered.com/app/{StoreAppId}/");
+#endif
+    }
     private Gum.Forms.DefaultFromFileVisuals.DefaultFromFileButtonRuntime wishlistButton;
     private Gum.Forms.DefaultFromFileVisuals.DefaultFromFileButtonRuntime feedbackButton;
 
@@ -259,10 +268,7 @@ namespace UntitledGemGame.Screens
     private void WishlistClicked(object sender, EventArgs args)
     {
       AudioManager.Instance.PlaySound(SoundEvent.MenuClick);
-      if (Platform.GameServices.Platform.OpenStorePage(StoreAppId)) return;
-#if !KNI_WEB
-      Platform.DesktopBrowser.Open($"https://store.steampowered.com/app/{StoreAppId}/");
-#endif
+      OpenStorePage();
     }
 
     private void ExitClicked(object sender, EventArgs args)

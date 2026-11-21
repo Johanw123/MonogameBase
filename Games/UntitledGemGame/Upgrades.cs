@@ -739,11 +739,12 @@ namespace UntitledGemGame
         return;
       }
 
-      if (upgradeBtn.Data.LockedInDemo && Demo.IsDemo && !Demo.IsDev && state > UpgradeButton.UnlockState.Revealed)
+      // Held back by the demo: marked as soon as the node shows, so nobody saves up for it.
+      if (upgradeBtn.Data.LockedInDemo && DemoLimits.Active && state >= UpgradeButton.UnlockState.Revealed)
       {
         state = UpgradeButton.UnlockState.DemoLocked;
       }
-      // Unreleased weapons are locked outside dev builds.
+      // Unreleased weapons are locked outside dev builds, and the demo holds some back.
       if (Weaponry.IsUnavailableNode(upgradeBtn.Data.ShortName) && state != UpgradeButton.UnlockState.Invisible)
       {
         state = UpgradeButton.UnlockState.DemoLocked;
@@ -825,7 +826,9 @@ namespace UntitledGemGame
             upgradeBtn.Button.Visual.IsEnabled = false;
             upgradeBtn.Button.Visual.Visible = true;
             SetBorderColor(upgradeBtn, borderColorHidden);
-            SetHiddenIconColor(upgradeBtn.Button.Visual, new Color(255, 255, 255, 255));
+            // A flagged node keeps its icon as a preview; the rest stay a mystery.
+            SetHiddenIconColor(upgradeBtn.Button.Visual,
+              new Color(255, 255, 255, upgradeBtn.Data.LockedInDemo ? 0 : 255));
           }
           break;
         case UpgradeButton.UnlockState.SelectedInEditorMode:
@@ -1956,6 +1959,8 @@ namespace UntitledGemGame
         return;
       // Unreleased weapons can't be bought outside dev builds, whichever button asks.
       if (Weaponry.IsUnavailableNode(upgradeButton.Data.ShortName))
+        return;
+      if (DemoLimits.Active && upgradeButton.Data.LockedInDemo)
         return;
       // The Talents tab only shows the tree during a run.
       if (CurrentUpgrades.UpgradeButtonsMeta.ContainsValue(upgradeButton)
@@ -3289,7 +3294,9 @@ namespace UntitledGemGame
           bool free = PrestigeTalentLayout.IsFreeReward(upgradeBtn.Data.ShortName);
           bool reached = PrestigeTalentLayout.IsTierReached(buttons, tier);
           // A reached talent is only greyed out when another talent rules it out (see below).
-          if (free || !reached)
+          if (PrestigeTalentLayout.IsDemoLocked(upgradeBtn.Data.ShortName))
+            tooltip += Environment.NewLine + Environment.NewLine + DemoLimits.FullGameNote + ".";
+          else if (free || !reached)
             tooltip += Environment.NewLine + Environment.NewLine
               + (!free ? Loc.F("Requires {0} spent in earlier tiers.", Loc.P(required, "{0} point", "{0} points"))
                 : reached ? Loc.T("Claimed after your first core extraction.")
@@ -3326,11 +3333,12 @@ namespace UntitledGemGame
 
         if (demoLocked)
         {
-          bool unreleased = Weaponry.IsUnavailableNode(upgradeBtn.Data.ShortName);
-          m_tooltipLabel.Text = unreleased
-            ? Loc.T(upgradeName) + Environment.NewLine + Loc.T("Not available in this version")
-            : Loc.T("Not available in Demo Mode");
-          m_tooltipDescription.Text = unreleased ? tooltip : $"???";
+          // Held-back weapons and flagged nodes say what they are; deep talent tiers only their name.
+          bool weaponNode = Weaponry.IsUnavailableNode(upgradeBtn.Data.ShortName);
+          m_tooltipLabel.Text = Loc.T(upgradeName) + Environment.NewLine
+            + (weaponNode ? Weaponry.UnavailableNote(upgradeBtn.Data.ShortName) : DemoLimits.FullGameNote);
+          m_tooltipDescription.Text = weaponNode || upgradeBtn.Data.LockedInDemo ? tooltip : $"???";
+          m_tooltipPuchasedText.Visible = false;
 
           m_tooltipValueFrom.Text = "";
           m_tooltipValueTo.Text = "";
@@ -3401,7 +3409,7 @@ namespace UntitledGemGame
               break;
           }
         }
-        else if (!hidden)
+        else if (!hidden && !(demoLocked && !Weaponry.IsUnreleasedNode(upgradeBtn.Data.ShortName)))
         {
           var currentLevelInfo = upgradeBtn.GetNextLevelInfo();
 

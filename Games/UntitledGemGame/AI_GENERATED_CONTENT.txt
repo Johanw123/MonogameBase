@@ -30,6 +30,92 @@ Content/Localization/*.json (every language except en.json)
   Content/Data/upgrades*.json were also shortened by Claude the same day.
   Added 2026-10-07. Used in game.
 
+RawAssets/Steam/parts/
+  High-resolution cut-outs of game objects, as source material for composing
+  store art by hand in Krita (overview.jpg shows a sample of each): the home
+  base cruiser from seven camera angles, bare and with its six turrets mounted
+  at the game's hardpoints (also as separate layers on the same canvas); the
+  five weapon turrets; the six harvesters; crystal ore pickups in the eight gem
+  colours; the core shard, prestige orb and crystal planet; rockets, harpoon
+  and engine flame. These are the in-game sprites listed in this file (and the
+  Synty ship and turret models) rendered again at 8 to 20 times the game's
+  resolution by the same tools/blender/prerender.py pipeline, so the same
+  split applies: Synty POLYGON meshes and palette, with AI-written materials,
+  lighting and glow compositing, and fully AI-written crystals, prestige orb
+  and engine flame. Rendered by Claude headless in Blender 5.3 with
+  tools/blender/capsule_parts.py and packed by tools/build_capsule_parts.py.
+  Added 2026-11-20. Not used by the game. Store art made from these parts
+  contains AI-generated content; move its entry out of the "not AI-generated"
+  list below when that happens.
+
+RawAssets/Steam/parts/capsule_1232x706/
+  The same parts resampled to the sizes they have in the 1232x706 main
+  capsule (home base about 850 px long; sizes in its README.txt), by
+  tools/build_capsule_set.py, plus two things made for it:
+  ship/<view>/engine_flames.png, the engine exhaust as a layer on each ship
+  view's canvas, laid out by Claude's script from the game's nozzle positions
+  and the fusion-drive flame strips listed at the top of this file; and
+  effects/laser, cannon, railgun and harpoon, 50 stills of the weapon effects
+  the game draws with shaders at runtime (mining laser, Overheat Surge and
+  Planet Cracker beams, incendiary cannon rounds, railgun charge, muzzle
+  flash, round and ion trail, Arc Harpoon lance, rings and lightning). Those
+  are NumPy ports of LaserBeam.fx, IncendiaryRound.fx, RailgunBolt.fx,
+  ArcAnchor.fx and ModuleEffects.fx written by Claude in
+  tools/build_capsule_fx.py, with a few edges softened so a still has no
+  seams; effects/cannon/muzzle_flash.png has no shader behind it and is
+  Claude's own. Added 2026-11-20. Not used by the game.
+
+RawAssets/Steam/main_capsule_scene.kra
+RawAssets/Steam/main_capsule_scene2.kra
+RawAssets/Steam/main_capsule_scene3.kra
+RawAssets/Steam/main_capsule_scene.png
+  Main capsule (1232x706) as a scene: the home base firing its mining laser
+  and cannons into the crystal planet, ore spilling out and harvesters
+  flying in. Composed by Claude in Krita through the Krita MCP server,
+  following the layout of main_capsule.kra. The space background, logo text
+  and its glow, frame and background rocks (hidden) are cloned from
+  main_capsule.kra (the user's own Krita work); the ship, planet, ore,
+  harvesters, beams, tracers and flames are the parts in
+  parts/capsule_1232x706/ listed above. Claude's own layers, drawn with
+  NumPy/Pillow from inside Krita: the planet's damage (molten laser scars,
+  and fracture cracks ported from Screens/GameScreen.PlanetCracks.cs,
+  checked against capture-mode stills of a core fracture), planet shadow,
+  atmosphere glow, rim light, highlight and impact scorch; sparks, hit
+  ripples and streaks; hull lights, ship rim glow and drop shadows; ore
+  glow, trails and glints; star glints, vignette, logo backdrop and the
+  baked bloom. Added 2026-11-20. Not used by the game; store art.
+
+RawAssets/Steam/header_capsule_scene.kra, .png            (920x430)
+RawAssets/Steam/small_capsule_scene.kra, .png             (462x174)
+RawAssets/Steam/vertical_capsule_scene.kra, .png          (748x896)
+RawAssets/Steam/shortcut_icon_scene.kra, .png             (512x512)
+RawAssets/Steam/app_icon_scene.kra, .png                  (184x184)
+RawAssets/Steam/Library/library_capsule_scene.kra, .png   (600x900)
+RawAssets/Steam/Library/library_header_scene.kra, .png    (920x430, copy of the header capsule)
+RawAssets/Steam/Library/library_hero_scene.kra, .png      (3840x1240, no logo)
+  The same scene rebuilt by Claude for the other Steam formats, with the
+  same scripts and parts as the main capsule scene above: each one frames
+  its own part of the scene, with the nebula background and logo taken
+  from main_capsule_scene and a border redrawn in the main capsule's
+  colours. The vertical and library capsules have a layout of their own
+  (the cruiser's front view at the upper left, firing down at the planet
+  in the lower right) so the whole ship is in frame. The small capsule
+  shows only the logo, planet, ore and one harvester; the icons show the
+  home base alone; the library hero was
+  built at full size from a double-size copy of the parts
+  (tools/build_capsule_set.py with ship_px 1824, kept outside the repo).
+  Added 2026-11-21. Not used by the game; store art. The older
+  header_capsule, small_capsule, verticle_capsule, app_icon, shortcut_icon
+  and Library/library_* files are the user's own and are unchanged.
+
+RawAssets/Steam/steam_page/
+  Upload copies of the store art above, one PNG per Steam asset, named by
+  asset and size: the main, header, small and vertical capsules, the
+  library capsule, header and hero, and the two icons are copies of the
+  *_scene.png exports (AI-composed, as described above).
+  library_logo_1280x720.png is a copy of the user's own
+  Library/library_logo.png and is not AI-generated. Added 2026-11-21.
+
 
 Made by Claude (Anthropic) in Antigravity
 -----------------------------------------

@@ -62,6 +62,11 @@ internal static class Autoplay
     if (screen.m_prestiging) return;
     if (screen.m_postPrestige)
     {
+      if (screen.DemoEndVisible)
+      {
+        CaptureSession.Log("demo_end", state.PrestigePointsEarned.ToString());
+        screen.ContinueAfterDemoEnd();
+      }
       LearnTalents(state);
       screen.CaptureStartNewRun();
       CaptureSession.Log("run", (extractions + 1).ToString());

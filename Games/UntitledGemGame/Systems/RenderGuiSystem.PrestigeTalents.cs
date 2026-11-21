@@ -19,6 +19,10 @@ public partial class RenderGuiSystem
   private Rectangle PrestigeRefundAllButton => new(
     PrestigeBeginRunButton.X - 320, PrestigeBeginRunButton.Y, 300, 72);
 
+  // Open to spend in: reached, and not one of the tiers the demo holds back.
+  private static bool TierOpen(System.Collections.Generic.Dictionary<string, UpgradeButton> buttons, int tier)
+    => PrestigeTalentLayout.IsTierReached(buttons, tier) && !DemoLimits.LocksTier(tier);
+
   private void DrawPrestigeTalentPanel(SpriteBatch batch)
   {
     var buttons = UpgradeManager.CurrentUpgrades.UpgradeButtonsMeta;
@@ -59,7 +63,7 @@ public partial class RenderGuiSystem
     {
       int y0 = PrestigeTalentLayout.Tiers[i].Y + 42;
       int y1 = PrestigeTalentLayout.Tiers[i + 1].Y + 42;
-      bool nextOpen = PrestigeTalentLayout.IsUnlocked(buttons, PrestigeTalentLayout.Tiers[i + 1].Talents[0]);
+      bool nextOpen = TierOpen(buttons, i + 1);
       Color spineCol = nextOpen ? PrestigeAccent * 0.58f : GuiSkin.BorderColor * 0.24f;
       batch.Draw(pixel, new Rectangle(spineX, y0 + 12, 2, Math.Max(0, y1 - y0 - 24)), spineCol);
     }
@@ -67,7 +71,7 @@ public partial class RenderGuiSystem
     for (int index = 0; index < PrestigeTalentLayout.Tiers.Length; index++)
     {
       var tier = PrestigeTalentLayout.Tiers[index];
-      bool unlocked = index == 0 || PrestigeTalentLayout.IsUnlocked(buttons, tier.Talents[0]);
+      bool unlocked = TierOpen(buttons, index);
       int centerY = tier.Y + 42;
       Color rowAccent = unlocked ? PrestigeAccent : GuiSkin.BorderColor * 0.45f;
 
@@ -89,7 +93,7 @@ public partial class RenderGuiSystem
     foreach (var (left, right) in PrestigeTalentLayout.EitherOrPairs)
     {
       if (!buttons.TryGetValue(left, out var first) || !buttons.TryGetValue(right, out var second)) continue;
-      bool open = PrestigeTalentLayout.IsUnlocked(buttons, left);
+      bool open = TierOpen(buttons, PrestigeTalentLayout.TierIndex(left));
       int leftRightEdge = first.Data.PosX + (int)first.Button.Width;
       int rightLeftEdge = second.Data.PosX;
       int betweenX = (leftRightEdge + rightLeftEdge) / 2;
@@ -141,15 +145,19 @@ public partial class RenderGuiSystem
     {
       var tier = PrestigeTalentLayout.Tiers[index];
       ulong earlier = PrestigeTalentLayout.SpentPoints(buttons, index);
-      bool unlocked = index == 0 || earlier >= (ulong)tier.RequiredEarlierPoints;
+      bool held = DemoLimits.LocksTier(index);
+      bool unlocked = !held && (index == 0 || earlier >= (ulong)tier.RequiredEarlierPoints);
       string title = Loc.F("TIER {0}", index + 1);
-      string requirement = index == 0 ? Loc.T("OPEN")
+      string requirement = held ? Loc.T("FULL GAME")
+        : index == 0 ? Loc.T("OPEN")
         : unlocked ? Loc.F("UNLOCKED  •  {0}/{1}", earlier, tier.RequiredEarlierPoints)
         : Loc.F("SPEND {0} ABOVE  •  {1}/{0}", tier.RequiredEarlierPoints, earlier);
       DrawPrestigeText(title, new Vector2(labelX, tier.Y + 12),
         unlocked ? GuiSkin.StatHeadingColor : GuiSkin.MutedTextColor, 28);
+      // The demo's next tier lights up once the points for it are spent: this is the wall.
+      bool atWall = DemoLimits.PreviewsTier(index) && earlier >= (ulong)tier.RequiredEarlierPoints;
       DrawPrestigeText(requirement, new Vector2(labelX, tier.Y + 48),
-        unlocked ? GuiSkin.ConfirmAccent : GuiSkin.MutedTextColor, 18);
+        unlocked ? GuiSkin.ConfirmAccent : atWall ? PrestigeAccent : GuiSkin.MutedTextColor, 18);
     }
   }
 
@@ -160,7 +168,7 @@ public partial class RenderGuiSystem
     foreach (var button in buttons.Values)
     {
       if (!PrestigeTalentLayout.IsShown(button.Data.ShortName)) continue;
-      if (button.State != UpgradeButton.UnlockState.Revealed) continue;
+      if (button.State is not (UpgradeButton.UnlockState.Revealed or UpgradeButton.UnlockState.DemoLocked)) continue;
       batch.Draw(AssetManager.DefaultTexture,
         new Rectangle(button.Data.PosX, button.Data.PosY,
           (int)button.Button.Width, (int)button.Button.Height), GuiPalette.Base(new Color(3, 7, 12, 175)));
@@ -182,7 +190,8 @@ public partial class RenderGuiSystem
       if (measured.X > width) size *= width / measured.X;
       measured = Measure2(name, Vector2.Zero, size);
       bool learned = button.CurrentLevel > 0;
-      Color nameColor = button.State == UpgradeButton.UnlockState.Revealed
+      bool held = PrestigeTalentLayout.IsDemoLocked(button.Data.ShortName);
+      Color nameColor = held || button.State == UpgradeButton.UnlockState.Revealed
         ? GuiSkin.MutedTextColor
         : learned ? (free ? FreeAccent : GuiSkin.StatHeadingColor) : GuiSkin.ButtonTextColor;
       FontManager.LayoutFieldFont(PrestigeFont, name, new Vector2(center - measured.X / 2, labelTop),
@@ -190,7 +199,8 @@ public partial class RenderGuiSystem
 
       bool claimed = free && button.CurrentLevel > 0;
       string excludedBy = free ? null : PrestigeTalentLayout.ExcludedBy(buttons, button.Data.ShortName);
-      string rank = free
+      string rank = held ? Loc.T("FULL GAME")
+        : free
           ? claimed ? Loc.T("CLAIMED")
           : PrestigeTalentLayout.IsUnlocked(buttons, button.Data.ShortName) ? Loc.T("AFTER EXTRACTION") : Loc.T("REACH TIER")
         // The neighbour across an either/or slash needs no name.
@@ -203,7 +213,8 @@ public partial class RenderGuiSystem
       measured = Measure2(rank, Vector2.Zero, rankSize);
       if (measured.X > width) rankSize *= width / measured.X;
       measured = Measure2(rank, Vector2.Zero, rankSize);
-      var rankColor = free ? (claimed ? FreeAccent : GuiSkin.MutedTextColor)
+      var rankColor = held ? GuiSkin.MutedTextColor
+        : free ? (claimed ? FreeAccent : GuiSkin.MutedTextColor)
         : excludedBy != null ? GuiSkin.LockedTextColor
         : button.State == UpgradeButton.UnlockState.Revealed ? GuiSkin.MutedTextColor
         : button.IsMaxLevel ? GuiSkin.ConfirmAccent : PrestigeAccent * 0.88f;
@@ -219,7 +230,7 @@ public partial class RenderGuiSystem
       float between = (first.Data.PosX + first.Button.Width + second.Data.PosX) / 2f;
       FontManager.LayoutFieldFont(PrestigeFont, "/",
         new Vector2(between - measured.X / 2, first.Data.PosY + first.Button.Height / 2f - measured.Y / 2),
-        PrestigeTalentLayout.IsUnlocked(buttons, left) ? PrestigeAccent : GuiSkin.MutedTextColor, Color.Black, slashSize);
+        TierOpen(buttons, PrestigeTalentLayout.TierIndex(left)) ? PrestigeAccent : GuiSkin.MutedTextColor, Color.Black, slashSize);
     }
     FontManager.EndFieldFonts(PrestigeFont);
   }

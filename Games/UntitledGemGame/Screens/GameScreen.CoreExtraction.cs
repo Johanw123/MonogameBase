@@ -205,6 +205,11 @@ public partial class UntitledGemGameGameScreen
       lines.Add(CanExtractCore
         ? (Loc.T("Hold the button to extract."), 29f, Color.White)
         : (Loc.T("Earn a prestige point to extract."), 27f, GuiSkin.LockedTextColor));
+      if (m_gameState.PrestigePointsExhausted)
+      {
+        lines.Add(("", 12f, Color.Transparent));
+        lines.Add((Loc.T("You have earned every prestige point in the demo."), 27f, GuiSkin.MutedTextColor));
+      }
     }
 
     const int width = 920, padding = 32;

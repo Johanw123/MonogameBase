@@ -1,5 +1,8 @@
 using UntitledGemGame;
 
+// The checks cover the full game; DemoLimitsChecks turns the demo's limits on for its own.
+DemoLimits.Override = false;
+
 if (args.Contains("--fleet-talents-check"))
 {
   FleetTalentChecks.Run();
@@ -624,6 +627,7 @@ try
   ClickUtilityChecks.CheckPersistence(upgrades);
   ClickMetaChecks.Run(upgrades);
   PrestigeTalentChecks.Run();
+  DemoLimitsChecks.Run();
   CoreShardChecks.Run(upgrades);
   CoreExtractionChecks.Run(upgrades);
   CoreDrillChecks.Run(upgrades);
