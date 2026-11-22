@@ -74,8 +74,9 @@ namespace UntitledGemGame
 #if KNI_WEB
     public static string DefaultPath => "/saves/progress.json";
 #else
-    // Capture sessions stage throwaway saves; never touch the player's progress.
+    // Capture sessions stage throwaway saves and recorded runs keep their own; never touch the player's progress.
     public static string DefaultPath => Capture.CaptureSession.Active ? Capture.CaptureSession.SavePath
+      : Capture.RunRecording.Active ? Capture.RunRecording.SavePath
       : Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
         "UntitledGemGame", "progress.json");
 #endif

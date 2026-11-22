@@ -1,5 +1,39 @@
 # Regular upgrade progression
 
+## Human baseline and a full-game estimate (2026-11-22)
+
+A recorded human run (`tools/record_run.py`, the developer playing the demo build from a fresh save, 34 minutes): first point 8:05, four points by 9:27, first extraction 10:38, eight points (the demo cap) by 20:58, demo ending 23:52. Purchases came in visits about 22 s apart (about 6 a visit), clicks about 2.4/s (about 40% on the planet until Trigger Finger, after which every click fires a shell anyway), the Tractor Belt was placed 28 times, fleet commands never, and each extraction came about 2 minutes after the run's last point.
+
+Autoplay can now follow such a run (`"profile"`, the `autoplay-profile.json` that `record_run.py` writes): that run's purchase order (saving up for the next gem purchase, at most `patience` seconds), talents in the player's order within a tier, `commands: false`, `belt_delay` (an intake placed deep in the field), `trigger_finger_share`, `talent_seconds`, the `"bar"` extraction rule (the ExtractionGuide's flat-bar test) and `warp_minutes` (save up for Repair Warp Drive once the run's income would pay for it in that time). Captures no longer buy unreleased weapons (Flak), which the dev build otherwise allows.
+
+Demo, three repeats each (`click_rate` 2.4, `shop_every` 22, `planet_share` 0.6, `trigger_finger_share` 0, `extract` "bar", `stall_minutes` 1.93, `min_run_minutes` 0, `belt_delay` 5, `talent_seconds` 29):
+
+| | Human | Old pacing bot | Profile bot |
+|---|---:|---:|---:|
+| First point | 8:05 | 9:40 | 6:36-6:47 |
+| First extraction | 10:39 | 19:49 | 9:40-10:58 |
+| Second extraction | 23:37 | 34:54 | 18:45-26:20 |
+| Demo ending | 23:52 | about 50 | 35:20-44:24 (or later) |
+| Points per run | 4, 4 | 3, 3, 2 | 2-3, 1-2, ... |
+
+The profile bot keeps the human's tempo (runs of the same length) but earns fewer points: 2-3 a run where the human earned 4. Its income levels off at about 400K/min late in run 1. The human let a large field build up, then harvested it in a burst with Sweeping Rail (gems held went from 284K to 583K in 15 s), and the ladder rewards that spike. Runs recorded from now on log an economy sample every 10 s, clicks, belt placements, commands and refunds, which should show the human's income curve.
+
+Full game (demo limits off, one take each):
+
+| | Profile bot A | Profile bot B | Old pacing bot (+ `warp_minutes` 20) |
+|---|---:|---:|---:|
+| Point 8 | 0:42 | 0:47 | 0:40 |
+| Shipyard (first tier 3 talent) | 0:37 | 0:41 | 0:36 |
+| Signals (first tier 4 talent) | 1:09 | 1:11 | 1:06 |
+| Point 20 | 2:10 | 2:05 | 1:53 |
+| First tier 6 talent | 2:23 | 2:18 | 2:07 |
+| Repair Warp Drive and escape | 2:43 | 2:53 | 2:16 |
+| Points / extractions | 30 / 17 | 30 / 17 | 29 / 8 |
+
+Each take reached the escape soon after tier 6, when income passed 5e13-1.5e14/min. The old bot's long runs (at least 15 minutes, 5 minutes without a point) finished half an hour sooner than the profile bot's short ones (2 minutes after the last point, mostly 1 point a run from the fifth run on): extracting at every point is not the fast way through the full game.
+
+Estimate for the human: the profile bot reached the 8th point about twice as slowly as the human (0:42-0:47 against 0:21) and the demo ending 1.5-1.9 times as slowly. If that ratio holds, the human would escape in about 1:25-1:50 of play; if the lead were only the first 20 minutes, about 2:25. Best guess about 1:45 for the developer. This extrapolates one demo run past the point the human data covers, and a new player would be slower.
+
 ## Demo cut (2026-11-16)
 
 The demo (`DemoLimits` in `Demo.cs`, on when `Demo.IsDemo` and not `Demo.IsDev`) plays the first two talent tiers and stops one step short of the Shipyard:

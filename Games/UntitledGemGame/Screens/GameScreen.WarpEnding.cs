@@ -35,6 +35,7 @@ public partial class UntitledGemGameGameScreen
   private static readonly Color WarpColor = new(110, 200, 255);
 
   private bool _warpEscaping;
+  internal bool WarpEscaping => _warpEscaping;
   private bool _endingDialogVisible;
   private float _endingDialogAge;
   private Vector2 _escapeOrigin;

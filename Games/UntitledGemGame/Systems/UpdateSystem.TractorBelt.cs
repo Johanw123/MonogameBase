@@ -19,7 +19,12 @@ namespace UntitledGemGame.Systems
       var stats = TractorBeltStats.From(upgrades, screen.GemClickRadius, UpgradeManager.Instance.Signals,
         UpgradeManager.Instance.UGM);
       if (belt.HandleInput(rightPressed, rightHeld, inputEnabled, pointer, stats))
+      {
         AudioManager.Instance.PlaySound(SoundEvent.TractorBeltPlace);
+#if !KNI_WEB
+        Capture.RunRecording.Input("belt");
+#endif
+      }
       var home = HomeBase.Instance?.Entity?.Get<Transform2>()?.Position ?? UntitledGemGameGameScreen.HomeBasePos;
       belt.Update(dt, grid, this, stats, home,
         PlanetObstacle.Active ? (Vector2?)PlanetObstacle.Center : null, UntitledGemGameGameScreen.PlanetRadius);

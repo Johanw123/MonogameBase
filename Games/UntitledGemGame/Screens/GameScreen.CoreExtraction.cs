@@ -24,7 +24,7 @@ public partial class UntitledGemGameGameScreen
     && (GameInput.WindowActive || _renderGuiSystem.HasInputFocus)
     && !m_upgradeManager.UpdatingButtons && !m_upgradeManager.UpgradeGuiEditMode;
 
-  private bool WarpEscapeReady => CoreExtraction.CanEscape(m_upgradeManager.UG.WarpDriveRepaired, m_gameState.EscapedThisRun);
+  internal bool WarpEscapeReady => CoreExtraction.CanEscape(m_upgradeManager.UG.WarpDriveRepaired, m_gameState.EscapedThisRun);
 
   // Worth ending the run now. The Upgrades tab and the button say so; the call stays the player's.
   internal bool ExtractRecommended => !WarpEscapeReady

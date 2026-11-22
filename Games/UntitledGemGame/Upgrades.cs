@@ -1996,6 +1996,12 @@ namespace UntitledGemGame
 
       Console.WriteLine("Upgrade: " + upgradeName);
       m_gameState.Spend(upgradeData.UpgradeDefinition.Currency, currentLevelInfo.Cost);
+#if !KNI_WEB
+      Capture.RunRecording.Purchase(
+        CurrentUpgrades.UpgradeButtonsMeta.ContainsValue(upgradeButton) ? "talent" : systemTalent ? "system" : "buy",
+        upgradeName, upgradeData.UpgradeDefinition.Name, upgradeButton.CurrentLevel + 1,
+        currentLevelInfo.Cost, upgradeData.UpgradeDefinition.Currency);
+#endif
 
       if (upgradeName == "HB")
       {
@@ -2305,7 +2311,14 @@ namespace UntitledGemGame
         if (CurrentUpgrades.UpgradeButtonsMeta.ContainsValue(refundButton)) UnlearnTalentFromTree(refundButton);
         else RespecAbilities(refundButton);
         if (refundButton.CurrentLevel < prevLevel)
+        {
           AudioManager.Instance.PlaySound(SoundEvent.UpgradeRefund);
+#if !KNI_WEB
+          // Logged with the level left after the refund.
+          Capture.RunRecording.Purchase("refund", curOverButtonName, refundButton.Data.UpgradeDefinition.Name,
+            refundButton.CurrentLevel, 0, refundButton.Data.UpgradeDefinition.Currency);
+#endif
+        }
       }
 
       // if (!string.IsNullOrEmpty(w))

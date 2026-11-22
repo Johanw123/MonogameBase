@@ -20,6 +20,10 @@ public partial class UntitledGemGameGameScreen
       mouse.IsButtonDown(MonoGame.Extended.Input.MouseButton.Left),
       GemClickInputEnabled && !mouse.IsButtonDown(MonoGame.Extended.Input.MouseButton.Right),
       seconds, UpgradeManager.Instance.UG, UpgradeManager.Instance.Signals, UpgradeManager.Instance.UGM);
+#if !KNI_WEB
+    if (WorldClickTriggered)
+      Capture.RunRecording.Input("click", held: !mouse.WasButtonPressed(MonoGame.Extended.Input.MouseButton.Left));
+#endif
   }
 
   internal bool GemClickInputEnabled => GameplayInputEnabled

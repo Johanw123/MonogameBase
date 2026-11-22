@@ -695,6 +695,9 @@ namespace UntitledGemGame.Screens
 
     public override void Update(GameTime gameTime)
     {
+#if !KNI_WEB
+      Capture.RunRecording.Update(this);
+#endif
       _renderGuiSystem?.UpdateSignalAudio();
       // Keep UI feedback, intro/ending cues and voice cleanup running through early returns.
       AudioManager.Instance.Update(gameTime, musicInMenu: !GameStarted

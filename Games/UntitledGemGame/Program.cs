@@ -60,6 +60,39 @@ namespace UntitledGemGame
         return;
       }
 
+      // Logged human playthrough: --record-run <dir>. See Capture/RunRecording.cs and tools/record_run.py.
+      // Skips Steam, so its overlay and notifications stay out of the recording.
+      int recordRun = System.Array.IndexOf(args, "--record-run");
+      if (recordRun >= 0)
+      {
+        if (recordRun + 1 >= args.Length)
+        {
+          System.Console.Error.WriteLine("--record-run needs a folder for the run's save and log.");
+          System.Environment.ExitCode = 2;
+          return;
+        }
+        try
+        {
+          Capture.RunRecording.Configure(args[recordRun + 1]);
+        }
+        catch (System.Exception e) when (e is System.IO.IOException or System.UnauthorizedAccessException)
+        {
+          System.Console.Error.WriteLine($"RECORD RUN FAILED: {e.Message}");
+          System.Environment.ExitCode = 2;
+          return;
+        }
+        try
+        {
+          using var recordedGame = new UntitledGemGame.GameMain();
+          recordedGame.Run();
+        }
+        finally
+        {
+          Capture.RunRecording.Close();
+        }
+        return;
+      }
+
       using var platform = Platform.SteamPlatformServices.Start(out var restartRequested);
       if (restartRequested)
         return;

@@ -931,6 +931,8 @@ namespace UntitledGemGame
 
 #if !KNI_WEB
       TweenHelper.UpdateSetup(gameTime);
+      Capture.RunRecording.EndFrame();
+      if (Capture.RunRecording.QuitRequested) Exit();
 #endif
       //TODO: disabled for web
       //var time = gameTime.TotalGameTime.Ticks / TimeSpan.TicksPerMillisecond;

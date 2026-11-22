@@ -138,8 +138,13 @@ public static class CaptureSession
       throw new ArgumentException($"stills must be within the recorded {Scene.Duration} s");
     pending = Scene.Actions.OrderBy(a => a.At).ToList();
     foreach (var action in pending) Actions.Validate(action);
-    if (Scene.Autoplay is { Extract: not ("never" or "points" or "stall") })
-      throw new ArgumentException("autoplay.extract must be never, points or stall");
+    if (Scene.Autoplay is { Extract: not ("never" or "points" or "stall" or "bar") })
+      throw new ArgumentException("autoplay.extract must be never, points, stall or bar");
+    if (Scene.Autoplay is { Profile.Length: > 0 } && scene >= 0)
+    {
+      Scene.Autoplay.Profile = Path.GetFullPath(Scene.Autoplay.Profile, Path.GetDirectoryName(Path.GetFullPath(Argument(scene))));
+      Autoplay.LoadProfile(Scene.Autoplay);
+    }
     if (Scene.Demo) DemoLimits.Override = true;
     Active = true;
     AppDomain.CurrentDomain.ProcessExit += (_, _) => Cleanup();
@@ -413,6 +418,10 @@ public static class CaptureSession
       cooldowns[ability] = ability.CooldownTime;
     }
   }
+
+  // Stops recording this many seconds of footage from now, if the take would run longer.
+  internal static void EndAfter(double seconds)
+    => recordFrames = Math.Min(recordFrames, recorded + Math.Max(1, (int)Math.Round(seconds * Scene.Fps)));
 
   internal static void Log(string type, string id, double[] position = null)
   {

@@ -45,7 +45,12 @@ public partial class UntitledGemGameGameScreen
         || keyboard.WasKeyPressed((Keys)((int)Keys.NumPad1 + i))
         || HudLayout.BottomBarVisible && mouse.WasButtonPressed(MouseButton.Left) && HudLayout.ManualAbilityButton(i).Contains(point);
       if (pressed && ManualAbilities.TryActivate(i, ActivateManualEffect))
+      {
         AudioManager.Instance.PlaySound(SoundEvent.ManualAbilityActivate);
+#if !KNI_WEB
+        Capture.RunRecording.Input("command", ManualFleetAbilities.Definitions[i].Name);
+#endif
+      }
     }
     ManualAbilities.Update(seconds);
   }

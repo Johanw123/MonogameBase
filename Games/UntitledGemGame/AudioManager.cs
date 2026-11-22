@@ -488,7 +488,11 @@ public partial class AudioManager
     if (m_disableSound)
       return;
 
-    music = new RadioPlayer();
+#if !KNI_WEB
+    // Recorded runs leave music out of the footage; the editor adds it later.
+    if (!UntitledGemGame.Capture.RunRecording.Active)
+#endif
+      music = new RadioPlayer();
 
     LoadSoundDefaults();
 

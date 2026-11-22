@@ -25,6 +25,9 @@ Kopa:
     sound effects too low.
     gravity well is weird
 
+Demo:
+gotta make it clear you are capped at 8 prestige points.
+
 
 Sounds:
  When in menus, upgrade, signals, shipyard the gameplay sounds needs to be very low or none at all.
